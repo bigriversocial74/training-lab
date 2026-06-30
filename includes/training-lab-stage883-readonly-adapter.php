@@ -24,6 +24,27 @@ if (!function_exists('tl_stage883_score_from_rows')) {
     }
 }
 
+if (!function_exists('tl_stage883_is_list_array')) {
+    function tl_stage883_is_list_array(array $value): bool
+    {
+        if ($value === []) return true;
+        return array_keys($value) === range(0, count($value) - 1);
+    }
+}
+
+if (!function_exists('tl_stage883_rows_from_result')) {
+    function tl_stage883_rows_from_result(array $result): array
+    {
+        foreach (['data','results','items','rows','campaigns','awards','records'] as $key) {
+            if (isset($result[$key]) && is_array($result[$key])) {
+                $candidate = $result[$key];
+                return tl_stage883_is_list_array($candidate) ? array_values($candidate) : [$candidate];
+            }
+        }
+        return tl_stage883_is_list_array($result) ? array_values($result) : [$result];
+    }
+}
+
 if (!function_exists('tl_stage883_safe_call')) {
     function tl_stage883_safe_call(string $fn, array $args = []): array
     {
@@ -54,7 +75,8 @@ if (!function_exists('tl_stage883_first_read')) {
         foreach ($available as $fn) {
             $call = tl_stage883_safe_call($fn, $args);
             if (!empty($call['ok'])) {
-                return ['source' => 'adapter', 'function' => $fn, 'available_functions' => $available, 'connected' => true, 'developer_key_present' => $hasKey, 'rows' => (array)$call['result'], 'error' => null];
+                $rows = tl_stage883_rows_from_result((array)$call['result']);
+                return ['source' => 'adapter', 'function' => $fn, 'available_functions' => $available, 'connected' => true, 'developer_key_present' => $hasKey, 'rows' => $rows, 'error' => null];
             }
         }
         return ['source' => 'adapter_error', 'function' => $available[0], 'available_functions' => $available, 'connected' => false, 'developer_key_present' => $hasKey, 'rows' => [], 'error' => 'adapter calls did not return array data'];
@@ -77,7 +99,10 @@ if (!function_exists('tl_stage883_shape_score')) {
             if ($rowOk && $requiredAny) {
                 $anyOk = false;
                 foreach ($requiredAny as $key) {
-                    if (array_key_exists($key, $row) && trim((string)$row[$key]) !== '') { $anyOk = true; break; }
+                    if (array_key_exists($key, $row)) {
+                        $value = $row[$key];
+                        if (is_array($value) || trim((string)$value) !== '') { $anyOk = true; break; }
+                    }
                 }
                 $rowOk = $anyOk;
             }
