@@ -1,0 +1,12 @@
+# Local secrets / environment
+.env
+.env.*
+*.local.php
+config/*.local.php
+labs/*.local.php
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

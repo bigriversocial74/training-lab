@@ -1,0 +1,10 @@
+<?php
+require_once __DIR__ . '/includes/training-lab-public-template.php';
+tl_public_site_header('Contact | Training Lab', 'Contact Training Lab by Microgifter.', 'contact', 'Sign In', '/signin.php');
+?>
+<main class="tl-container tl-page-shell">
+  <section class="tl-template-hero"><div class="tl-template-copy"><p class="tl-kicker">Contact</p><h1>Talk to us about Training Lab.</h1><p>Need help setting up training campaigns, proof review, or Microgifter reward sync? Send a note and we’ll point you in the right direction.</p></div><div class="tl-template-art"><?php echo tl_public_img('auth_guy', 'tl-template-main-art'); ?></div></section>
+  <section class="tl-two-col"><article class="tl-panel-card"><h2>Send a message</h2><form class="tl-form-grid"><label>Name<input placeholder="Your name"></label><label>Email<input placeholder="you@company.com"></label><label class="full">Topic<select><option>Training Lab setup</option><option>Microgifter account</option><option>Reward bridge</option><option>Admin templates</option></select></label><label class="full">Message<textarea placeholder="How can we help?"></textarea></label><button class="tl-btn tl-btn-primary full" type="button">Send message</button></form></article><aside class="tl-panel-card"><h2>Support routes</h2><?php echo tl_public_feature_item('verified','Account access','Use the same account for labs.microgifter.com and microgifter.com.'); ?><?php echo tl_public_feature_item('gift','Reward bridge','Microgifter issuing remains adapter-gated.'); ?><?php echo tl_public_feature_item('check_list','Template QA','Use the mockup images as layout references, not screenshot panels.'); ?></aside></section>
+  <section class="tl-section"><div class="tl-contact-gallery"><h2>Admin/template mockups used as style precedent</h2><p class="tl-page-lead">This contact-sheet asset contains the admin/mobile template references used for the app/admin UI restoration pass.</p><?php echo tl_public_img('contact_visual', '', 'Admin and app template contact sheet'); ?></div></section>
+</main>
+<?php tl_public_site_footer(); ?>

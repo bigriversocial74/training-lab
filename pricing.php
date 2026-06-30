@@ -1,0 +1,10 @@
+<?php
+require_once __DIR__ . '/includes/training-lab-public-template.php';
+tl_public_site_header('Pricing | Training Lab', 'Training Lab pricing concepts and team plans.', 'pricing', 'Sign In', '/signin.php');
+?>
+<main class="tl-container tl-page-shell">
+  <section class="tl-template-hero"><div class="tl-template-copy"><p class="tl-kicker">Pricing</p><h1>Plans for teams that want proof-based training with reward accountability.</h1><p>Pricing is presented around guided campaigns, review operations, reward lifecycle tracking, and Microgifter integration readiness.</p><div class="tl-actions"><a class="tl-btn tl-btn-primary" href="<?php echo tl_public_e(labs_url('/cart.php')); ?>">Start Team Plan</a><a class="tl-btn tl-btn-secondary" href="<?php echo tl_public_e(labs_url('/contact.php')); ?>">Request quote</a></div></div><div class="tl-template-art"><?php echo tl_public_img('pricing_growth', 'tl-template-main-art'); ?></div></section>
+  <section class="tl-template-cards"><article><div class="tl-card-visual"><?php echo tl_public_img('sprout'); ?></div><h3>Starter</h3><p>Launch one challenge and test the workflow.</p><p><strong>$0</strong> / trial</p></article><article><div class="tl-card-visual"><?php echo tl_public_img('heart'); ?></div><h3>Team</h3><p>Run proof-based training with participants and reviewers.</p><p><strong>$9</strong> / user / month</p><p><a class="tl-btn tl-btn-primary" href="<?php echo tl_public_e(labs_url('/cart.php')); ?>">Add to cart</a></p></article><article><div class="tl-card-visual"><?php echo tl_public_img('growth'); ?></div><h3>Growth</h3><p>Advanced reporting, reward assurance, and operations support.</p><p><strong>Custom</strong></p></article></section>
+  <section class="tl-section"><div class="tl-newsletter-cta"><?php echo tl_public_img('success_visual'); ?><div><h2>Use one account across the lab and Microgifter.</h2><p>Plans can connect to Microgifter when the adapter is configured.</p></div><a class="tl-btn tl-btn-primary" href="<?php echo tl_public_e(labs_url('/signup.php')); ?>">Create account</a></div></section>
+</main>
+<?php tl_public_site_footer(); ?>

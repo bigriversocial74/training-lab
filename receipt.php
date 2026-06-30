@@ -1,0 +1,5 @@
+<?php
+require_once __DIR__ . '/includes/training-lab-public-template.php';
+tl_public_page([
+  'title'=>'Receipt | Training Lab','description'=>'Training Lab receipt preview.','active'=>'receipt','eyebrow'=>'Receipt','headline'=>'Action receipts and reward history stay connected.','copy'=>'Every training action can produce a receipt trail that helps participants and reviewers understand what happened next.','hero_asset'=>'receipt_visual','support_asset'=>'verified','primary_href'=>'/app/rewards.php','primary_label'=>'View Rewards','secondary_href'=>'/app/flow-board.php','secondary_label'=>'View Flow','steps'=>[['icon'=>'check_list','title'=>'Action completed','copy'=>'A participant completes the assigned task.'],['icon'=>'upload','title'=>'Proof submitted','copy'=>'Evidence is submitted for review.'],['icon'=>'verified','title'=>'Review accepted','copy'=>'A reviewer records the decision.'],['icon'=>'gift','title'=>'Reward tracked','copy'=>'The reward lifecycle updates.']],'cta_asset'=>'receipt_visual','cta_title'=>'Receipts are part of the training loop.','cta_copy'=>'Receipts connect task progress, reviews, and reward status.']);
+?>
