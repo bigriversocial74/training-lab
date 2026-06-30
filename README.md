@@ -1,11 +1,41 @@
-# Training Lab Stage 2 Template Package
+# Training Lab Stage 880 Baseline
 
-Public-facing pages have been restyled to match the approved mocked Training Lab landing template.
+This repository now contains the unpacked Stage 880 Training Lab baseline as real source files. The zip artifact was used only as the sanitized import package and is not part of the active source tree.
+
+## Current baseline
+
+Stage 880 is the accepted baseline on `main`.
+
+Core source folders:
+
+```text
+admin/
+api/
+app/
+assets/
+config/
+database/
+includes/
+labs/
+```
+
+Important source-of-truth files:
+
+```text
+IMPORT-NOTES.md
+stage-841-880-microgifter-adapter-sync-award-handoff-report.md
+includes/training-lab-stage880-adapter-sync.php
+api/training/microgifter-adapter-sync.php
+admin/db-health.php
+run-full-syntax-check.sh
+```
 
 ## Local preview
 
+From the repository root:
+
 ```bash
-php -S 127.0.0.1:8091 -t labs
+php -S 127.0.0.1:8091
 ```
 
 Open:
@@ -14,132 +44,147 @@ Open:
 http://127.0.0.1:8091/
 ```
 
-## Updated public pages
+You can also preview the app/admin routes directly:
 
 ```text
-labs/index.php
-labs/how-it-works.php
-labs/pricing.php
-labs/about.php
-labs/team.php
-labs/blog.php
-labs/blog-article.php
-labs/contact.php
-labs/signup.php
-labs/signin.php
-labs/cart.php
-labs/checkout.php
-labs/success.php
-labs/receipt.php
+http://127.0.0.1:8091/app/index.php
+http://127.0.0.1:8091/admin/command-center.php
+http://127.0.0.1:8091/admin/db-health.php
 ```
 
-## Shared public style
+## Deployment config
+
+The active database config path is:
 
 ```text
-labs/assets/css/public-template.css
+labs/config.php
 ```
 
-## Stage 2 boundary
+The sanitized public repository must keep the password placeholder:
 
 ```text
-visual/browser-only shell
-no database writes
-no real uploads
-no payments
-no wallet balance changes
-no claim/redeem logic
-no separate account system
-no production hosting changes
+PUT_YOUR_DATABASE_PASSWORD_HERE
 ```
 
+Do not commit live database credentials.
 
-## Mobile header cleanup
+The root `config.php` and `labs/config.php` are intentionally sanitized in the repo. On a deployed server, edit the deployed private config only.
+
+## Database status
+
+Training Lab expects the existing Training Lab tables:
 
 ```text
-Main public navigation uses a hamburger slide-out on mobile.
-Logo lockup is text-only: Training Lab by Microgifter. No adjacent logo icon and no extra tagline under the logo.
-Public pages include /assets/js/public-template.js for nav open/close behavior.
+training_campaigns
+training_campaign_tasks
+training_participants
+training_proof_submissions
+training_reviews
+training_action_receipts
+training_reward_rules
+training_reward_events
+training_streaks
+training_events
+training_permission_catalog
 ```
 
-## Stage 3/4 Checkpoint
-
-Stage 3 and Stage 4 are now built as a read-only scaffold:
-
-- Shared service: `includes/training-lab-stage34-service.php`
-- API contract endpoints: `api/training/*.php`
-- App/admin pages consume centralized service data
-- Demo actions still use browser-only `localStorage`
-- No SQL has been created yet
-- SQL should be delivered later as one consolidated SQL file after review
-
-Stage 3/4 report: `stage-3-4-build-report.md`
-
-## Stage 5 Pre-SQL Integration Prep
-
-Stage 5 adds a read-only adapter shell and database mapping checklist while keeping the build inside the safe boundary.
-
-New files:
+Use this read-only admin route to verify config, connection, table presence, schema readiness, row counts, and latest events:
 
 ```text
-labs/includes/training-lab-stage5-adapters.php
-labs/api/training/readiness.php
-labs/stage-5-pre-sql-build-report.md
-labs/stage-5-single-sql-boundary.md
+/admin/db-health.php
 ```
 
-New readiness endpoint:
-
-```text
-/api/training/readiness.php
-```
-
-SQL policy:
-
-```text
-When database work begins, create one consolidated SQL file only after the existing schema is uploaded and reviewed.
-```
-
-Still not included:
-
-```text
-No SQL
-No database connection
-No database writes
-No real uploads
-No payments
-No wallet balance changes
-No reward issuing
-No claim/redeem logic
-No separate account system
-No production hosting/DNS changes
-```
-
-## Stage 7 controlled backend build
-
-After importing `labs/database/training_lab_stage6_consolidated_import_safe.sql`, copy:
-
-```bash
-cp labs/config/training-lab-db.sample.php labs/config/training-lab-db.local.php
-```
-
-Then fill in the database credentials.
-
-Stage 7 endpoints:
+Use this API route for machine-readable status:
 
 ```text
 /api/training/db-status.php
-/api/training/actions/seed-demo.php
-/api/training/actions/create-campaign.php
-/api/training/actions/join-campaign.php
-/api/training/actions/submit-proof.php
-/api/training/actions/review-proof.php
-/api/training/actions/evaluate-rewards.php
 ```
 
-Admin control page:
+## Stage 880 adapter sync
+
+Stage 880 adds Microgifter adapter sync visibility and award handoff control.
+
+Primary Stage 880 route:
 
 ```text
-/admin/stage7-control.php
+/api/training/microgifter-adapter-sync.php
 ```
 
-Stage 7 writes only to Training Lab tables. It does not process real uploads, issue rewards, change wallet balances, process payments, or create claim/redeem behavior.
+Supported sections:
+
+```text
+/api/training/microgifter-adapter-sync.php?section=config
+/api/training/microgifter-adapter-sync.php?section=identity
+/api/training/microgifter-adapter-sync.php?section=sync
+/api/training/microgifter-adapter-sync.php?section=handoff
+/api/training/microgifter-adapter-sync.php?section=audit
+```
+
+Stage 880 covers:
+
+```text
+Microgifter Adapter Configuration Center
+Merchant + Customer Identity Matching
+Campaign Sync Health + Inventory Refresh
+Award Handoff Queue
+Adapter Sync API Layer
+```
+
+## Safe boundaries
+
+Keep these boundaries unless a later stage explicitly changes them:
+
+```text
+No hard auth gates forced onto active app/admin pages
+No config files moved or overwritten
+No new SQL unless a missing schema is proven
+No real upload processing
+No payment processing
+No wallet balance mutation
+No production claim/redeem mutation without adapter/developer-key gating
+No destructive sync back to Microgifter
+Award handoff remains preview/control by default
+Microgifter reward issuing remains adapter/developer-key gated
+```
+
+## Validation
+
+Run the full recursive PHP syntax check:
+
+```bash
+./run-full-syntax-check.sh
+```
+
+Stage 881 adds a deployment acceptance layer that checks:
+
+```text
+required source folders
+config placeholder safety
+DB config path expectations
+key public/app/admin/API routes
+Stage 880 adapter sync API
+safe mutation boundaries
+recursive syntax script coverage
+```
+
+Human-readable Stage 881 route:
+
+```text
+/admin/deployment-acceptance.php
+```
+
+Machine-readable Stage 881 route:
+
+```text
+/api/training/deployment-acceptance.php
+```
+
+## Stage history
+
+The latest accepted feature layer before Stage 881 QA is:
+
+```text
+Stage 841-880 Microgifter Adapter Sync + Award Handoff Control
+```
+
+Earlier reports remain in the repo for audit history. Do not use old Stage 2/5 notes as the current operating boundary; this README is now the current baseline summary.
