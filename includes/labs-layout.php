@@ -108,6 +108,8 @@ if (!function_exists('labs_core_admin_nav')) {
                 'admin-reporting-center' => ['/admin/reporting-center.php', 'Reporting Center'],
                 'admin-event-timeline' => ['/admin/event-timeline.php', 'Event Timeline'],
                 'admin-db-health' => ['/admin/db-health.php', 'DB Health'],
+                'admin-deployment-acceptance' => ['/admin/deployment-acceptance.php', 'Deployment QA'],
+                'admin-live-smoke' => ['/admin/live-smoke.php', 'Live Smoke'],
                 'admin-route-check' => ['/admin/route-check.php', 'Route Check'],
             ],
         ];

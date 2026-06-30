@@ -4,7 +4,7 @@ This repository now contains the unpacked Stage 880 Training Lab baseline as rea
 
 ## Current baseline
 
-Stage 880 is the accepted baseline on `main`.
+Stage 880 is the accepted product/integration baseline on `main`. Stage 881 and Stage 882 are QA and live-smoke layers on top of that baseline.
 
 Core source folders:
 
@@ -24,9 +24,17 @@ Important source-of-truth files:
 ```text
 IMPORT-NOTES.md
 stage-841-880-microgifter-adapter-sync-award-handoff-report.md
+stage-881-deployment-acceptance-route-qa-report.md
+stage-882-live-smoke-adapter-dry-run-report.md
 includes/training-lab-stage880-adapter-sync.php
+includes/training-lab-stage881-deployment-acceptance.php
+includes/training-lab-stage882-live-smoke.php
 api/training/microgifter-adapter-sync.php
+api/training/deployment-acceptance.php
+api/training/live-smoke.php
 admin/db-health.php
+admin/deployment-acceptance.php
+admin/live-smoke.php
 run-full-syntax-check.sh
 ```
 
@@ -50,6 +58,8 @@ You can also preview the app/admin routes directly:
 http://127.0.0.1:8091/app/index.php
 http://127.0.0.1:8091/admin/command-center.php
 http://127.0.0.1:8091/admin/db-health.php
+http://127.0.0.1:8091/admin/deployment-acceptance.php
+http://127.0.0.1:8091/admin/live-smoke.php
 ```
 
 ## Deployment config
@@ -130,30 +140,7 @@ Award Handoff Queue
 Adapter Sync API Layer
 ```
 
-## Safe boundaries
-
-Keep these boundaries unless a later stage explicitly changes them:
-
-```text
-No hard auth gates forced onto active app/admin pages
-No config files moved or overwritten
-No new SQL unless a missing schema is proven
-No real upload processing
-No payment processing
-No wallet balance mutation
-No production claim/redeem mutation without adapter/developer-key gating
-No destructive sync back to Microgifter
-Award handoff remains preview/control by default
-Microgifter reward issuing remains adapter/developer-key gated
-```
-
-## Validation
-
-Run the full recursive PHP syntax check:
-
-```bash
-./run-full-syntax-check.sh
-```
+## Stage 881 deployment acceptance
 
 Stage 881 adds a deployment acceptance layer that checks:
 
@@ -179,12 +166,92 @@ Machine-readable Stage 881 route:
 /api/training/deployment-acceptance.php
 ```
 
+## Stage 882 live smoke and adapter dry run
+
+Stage 882 adds live environment smoke checks and read-only adapter dry-run visibility.
+
+Human-readable Stage 882 route:
+
+```text
+/admin/live-smoke.php
+```
+
+Machine-readable Stage 882 route:
+
+```text
+/api/training/live-smoke.php
+```
+
+Stage 882 checks:
+
+```text
+Stage 881 deployment acceptance status
+/admin/deployment-acceptance.php
+/api/training/deployment-acceptance.php
+/admin/db-health.php
+/api/training/db-status.php
+/api/training/microgifter-adapter-sync.php
+/api/training/microgifter-adapter-sync.php?section=audit
+DB config readiness
+DB connection status
+required Training Lab table readiness
+Stage 880 adapter audit status
+developer-key presence
+adapter mode
+mutation boundary status
+```
+
+Stage 882 read-only adapter dry run surfaces:
+
+```text
+Merchant campaign catalog
+Customer awards
+Identity matching
+Inventory freshness
+Award handoff preview
+```
+
+## Safe boundaries
+
+Keep these boundaries unless a later stage explicitly changes them:
+
+```text
+No hard auth gates forced onto active app/admin pages
+No config files moved or overwritten
+No new SQL unless a missing schema is proven
+No real upload processing
+No payment processing
+No wallet balance mutation
+No production claim/redeem mutation without adapter/developer-key gating
+No destructive sync back to Microgifter
+Adapter dry run remains read-only
+Award handoff remains preview/control by default
+Microgifter reward issuing remains adapter/developer-key gated
+```
+
+## Validation
+
+Run the full recursive PHP syntax check:
+
+```bash
+./run-full-syntax-check.sh
+```
+
+GitHub Actions also runs the PHP syntax workflow on PRs to `main` and pushes to key branch patterns.
+
 ## Stage history
 
-The latest accepted feature layer before Stage 881 QA is:
+Latest accepted feature layer:
 
 ```text
 Stage 841-880 Microgifter Adapter Sync + Award Handoff Control
+```
+
+QA layers after Stage 880:
+
+```text
+Stage 881 Deployment Acceptance + Route QA
+Stage 882 Live Environment Smoke + Microgifter Adapter Dry Run
 ```
 
 Earlier reports remain in the repo for audit history. Do not use old Stage 2/5 notes as the current operating boundary; this README is now the current baseline summary.
