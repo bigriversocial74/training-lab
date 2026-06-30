@@ -4,7 +4,7 @@ This repository now contains the unpacked Stage 880 Training Lab baseline as rea
 
 ## Current baseline
 
-Stage 880 is the accepted product/integration baseline on `main`. Stage 881 and Stage 882 are QA and live-smoke layers on top of that baseline. Stage 883 adds read-only Microgifter adapter wiring on top of the accepted live smoke gate.
+Stage 880 is the accepted product/integration baseline on `main`. Stage 881 and Stage 882 are QA and live-smoke layers on top of that baseline. Stage 883 adds read-only Microgifter adapter wiring, and Stage 884 connects the first real DB-backed read adapter source.
 
 Core source folders:
 
@@ -27,10 +27,13 @@ stage-841-880-microgifter-adapter-sync-award-handoff-report.md
 stage-881-deployment-acceptance-route-qa-report.md
 stage-882-live-smoke-adapter-dry-run-report.md
 stage-883-readonly-microgifter-adapter-wiring-report.md
+stage-884-real-microgifter-read-adapter-report.md
 includes/training-lab-stage880-adapter-sync.php
 includes/training-lab-stage881-deployment-acceptance.php
 includes/training-lab-stage882-live-smoke.php
 includes/training-lab-stage883-readonly-adapter.php
+includes/training-lab-stage884-real-read-adapter.php
+includes/training-lab-stage884-real-read-render.php
 api/training/microgifter-adapter-sync.php
 api/training/deployment-acceptance.php
 api/training/live-smoke.php
@@ -219,9 +222,9 @@ Award handoff preview
 
 ## Stage 883 read-only adapter wiring
 
-Stage 883 validates real Microgifter read adapter functions while preserving safe fixture fallback.
+Stage 883 validates Microgifter read adapter function shape while preserving safe fixture fallback.
 
-Human-readable Stage 883 route:
+Human-readable Stage 883/884 route:
 
 ```text
 /admin/adapter-readiness.php
@@ -230,7 +233,7 @@ Human-readable Stage 883 route:
 Machine-readable Stage 883 route:
 
 ```text
-/api/training/microgifter-adapter-sync.php?section=readonly
+/api/training/microgifter-adapter-sync.php?section=stage883
 ```
 
 Stage 883 checks:
@@ -244,6 +247,36 @@ Inventory freshness read shape
 Developer-key presence
 Fixture fallback safety
 No production mutation
+```
+
+## Stage 884 real read adapter connection
+
+Stage 884 exposes live Training Lab database rows through Microgifter-style read adapter functions.
+
+Human-readable Stage 884 route:
+
+```text
+/admin/adapter-readiness.php
+```
+
+Machine-readable Stage 884 routes:
+
+```text
+/api/training/microgifter-adapter-sync.php?section=readonly
+/api/training/microgifter-adapter-sync.php?section=real-read
+/api/training/microgifter-adapter-sync.php?section=stage884
+/api/training/microgifter-adapter-sync.php?section=db-read
+```
+
+Stage 884 provides read-only functions for:
+
+```text
+Merchant campaign catalog
+Reward catalog
+Customer awards
+Customer account status
+Adapter status
+Inventory freshness
 ```
 
 ## Safe boundaries
@@ -279,7 +312,7 @@ GitHub Actions also runs the PHP syntax workflow on PRs to `main` and pushes to 
 Latest accepted feature layer:
 
 ```text
-Stage 883 Read-only Microgifter Adapter Wiring
+Stage 884 Real Microgifter Read Adapter Connection
 ```
 
 QA layers after Stage 880:
@@ -287,6 +320,7 @@ QA layers after Stage 880:
 ```text
 Stage 881 Deployment Acceptance + Route QA
 Stage 882 Live Environment Smoke + Microgifter Adapter Dry Run
+Stage 883 Read-only Microgifter Adapter Wiring
 ```
 
 Earlier reports remain in the repo for audit history. Do not use old Stage 2/5 notes as the current operating boundary; this README is now the current baseline summary.
