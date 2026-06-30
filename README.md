@@ -4,7 +4,7 @@ This repository now contains the unpacked Stage 880 Training Lab baseline as rea
 
 ## Current baseline
 
-Stage 880 is the accepted product/integration baseline on `main`. Stage 881 and Stage 882 are QA and live-smoke layers on top of that baseline.
+Stage 880 is the accepted product/integration baseline on `main`. Stage 881 and Stage 882 are QA and live-smoke layers on top of that baseline. Stage 883 adds read-only Microgifter adapter wiring on top of the accepted live smoke gate.
 
 Core source folders:
 
@@ -26,15 +26,18 @@ IMPORT-NOTES.md
 stage-841-880-microgifter-adapter-sync-award-handoff-report.md
 stage-881-deployment-acceptance-route-qa-report.md
 stage-882-live-smoke-adapter-dry-run-report.md
+stage-883-readonly-microgifter-adapter-wiring-report.md
 includes/training-lab-stage880-adapter-sync.php
 includes/training-lab-stage881-deployment-acceptance.php
 includes/training-lab-stage882-live-smoke.php
+includes/training-lab-stage883-readonly-adapter.php
 api/training/microgifter-adapter-sync.php
 api/training/deployment-acceptance.php
 api/training/live-smoke.php
 admin/db-health.php
 admin/deployment-acceptance.php
 admin/live-smoke.php
+admin/adapter-readiness.php
 run-full-syntax-check.sh
 ```
 
@@ -60,6 +63,7 @@ http://127.0.0.1:8091/admin/command-center.php
 http://127.0.0.1:8091/admin/db-health.php
 http://127.0.0.1:8091/admin/deployment-acceptance.php
 http://127.0.0.1:8091/admin/live-smoke.php
+http://127.0.0.1:8091/admin/adapter-readiness.php
 ```
 
 ## Deployment config
@@ -213,6 +217,35 @@ Inventory freshness
 Award handoff preview
 ```
 
+## Stage 883 read-only adapter wiring
+
+Stage 883 validates real Microgifter read adapter functions while preserving safe fixture fallback.
+
+Human-readable Stage 883 route:
+
+```text
+/admin/adapter-readiness.php
+```
+
+Machine-readable Stage 883 route:
+
+```text
+/api/training/microgifter-adapter-sync.php?section=readonly
+```
+
+Stage 883 checks:
+
+```text
+Merchant campaign catalog read shape
+Customer awards read shape
+Customer account status read shape
+Adapter status read shape
+Inventory freshness read shape
+Developer-key presence
+Fixture fallback safety
+No production mutation
+```
+
 ## Safe boundaries
 
 Keep these boundaries unless a later stage explicitly changes them:
@@ -246,7 +279,7 @@ GitHub Actions also runs the PHP syntax workflow on PRs to `main` and pushes to 
 Latest accepted feature layer:
 
 ```text
-Stage 841-880 Microgifter Adapter Sync + Award Handoff Control
+Stage 883 Read-only Microgifter Adapter Wiring
 ```
 
 QA layers after Stage 880:
