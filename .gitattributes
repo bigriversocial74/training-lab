@@ -1,0 +1,10 @@
+# Keep generated GitHub deploy archives clean.
+# Source zip/package artifacts should never be included inside deploy zips.
+*.zip export-ignore
+*.tar export-ignore
+*.tar.gz export-ignore
+*.tgz export-ignore
+
+# Local docs/reports are useful in the repo but not required inside cPanel deploy archives.
+stage-*-report.md export-ignore
+IMPORT-NOTES.md export-ignore
