@@ -212,6 +212,55 @@ if (!function_exists('tl_stage882_group_score')) {
     }
 }
 
+if (!function_exists('tl_stage882_stage881_live_gate')) {
+    function tl_stage882_stage881_live_gate(array $stage881, array $dbRows): array
+    {
+        $scores = (array)($stage881['scores'] ?? []);
+        $configRows = (array)($stage881['config_placeholders'] ?? []);
+        $repoPlaceholderTotal = 0;
+        $repoPlaceholderPassed = 0;
+        $dbPathPassed = false;
+
+        foreach ($configRows as $row) {
+            $label = (string)($row['label'] ?? '');
+            if ($label === 'config.php' || $label === 'labs/config.php') {
+                $repoPlaceholderTotal++;
+                if (!empty($row['passed'])) $repoPlaceholderPassed++;
+            }
+            if ($label === 'DB config path' && !empty($row['passed'])) {
+                $dbPathPassed = true;
+            }
+        }
+
+        $dbScore = tl_stage882_group_score($dbRows);
+        $stableChecksPass =
+            (int)($scores['source_folders'] ?? 0) === 100 &&
+            (int)($scores['route_presence'] ?? 0) === 100 &&
+            (int)($scores['validation_coverage'] ?? 0) === 100 &&
+            (int)($scores['safe_boundaries'] ?? 0) === 100;
+
+        $repoPlaceholdersPass = $repoPlaceholderTotal > 0 && $repoPlaceholderPassed === $repoPlaceholderTotal;
+        $livePrivateConfigDetected = $repoPlaceholderTotal > 0 && $repoPlaceholderPassed < $repoPlaceholderTotal && $dbPathPassed && $dbScore === 100;
+        $accepted = !empty($stage881['accepted']) || ($stableChecksPass && ($repoPlaceholdersPass || $livePrivateConfigDetected));
+
+        return [
+            'label' => 'Stage 881 live gate',
+            'status' => $accepted ? 'pass' : 'check',
+            'passed' => $accepted,
+            'detail' => $livePrivateConfigDetected
+                ? 'live private DB config detected; repo placeholder check is not required on deployed server'
+                : ($accepted ? 'Stage 881 acceptance checks pass' : 'Stage 881 stable checks or DB config path need review'),
+            'repo_placeholder_check' => [
+                'total' => $repoPlaceholderTotal,
+                'passed' => $repoPlaceholderPassed,
+                'required_for_repo_archive' => true,
+                'required_for_live_private_config' => false,
+            ],
+            'live_private_config_detected' => $livePrivateConfigDetected,
+        ];
+    }
+}
+
 if (!function_exists('tl_stage882_live_smoke_summary')) {
     function tl_stage882_live_smoke_summary(): array
     {
@@ -220,27 +269,29 @@ if (!function_exists('tl_stage882_live_smoke_summary')) {
         $adapter = tl_stage882_adapter_smoke();
         $dryRun = tl_stage882_adapter_dry_run_cards();
         $stage881 = function_exists('tl_stage881_deployment_acceptance_summary') ? tl_stage881_deployment_acceptance_summary() : [];
+        $stage881LiveGate = tl_stage882_stage881_live_gate($stage881, $db);
 
         $routeScore = tl_stage882_group_score($routes);
         $dbScore = tl_stage882_group_score($db);
         $adapterScore = tl_stage882_group_score($adapter, false);
         $dryRunScore = tl_stage882_group_score($dryRun, false);
-        $stage881Accepted = !empty($stage881['accepted']);
+        $stage881LiveScore = !empty($stage881LiveGate['passed']) ? 100 : 0;
 
-        $strictAccepted = $routeScore === 100 && $dbScore === 100 && $stage881Accepted;
+        $strictAccepted = $routeScore === 100 && $dbScore === 100 && !empty($stage881LiveGate['passed']);
 
         return [
             'stage' => 'Stage 882 Live Environment Smoke + Microgifter Adapter Dry Run',
             'built_from' => 'Stage 881 Deployment Acceptance + Route QA',
             'accepted' => $strictAccepted,
-            'score' => (int)round(($routeScore + $dbScore + $adapterScore + $dryRunScore + ($stage881Accepted ? 100 : 0)) / 5),
+            'score' => (int)round(($routeScore + $dbScore + $adapterScore + $dryRunScore + $stage881LiveScore) / 5),
             'scores' => [
-                'stage881_deployment_acceptance' => $stage881Accepted ? 100 : 0,
+                'stage881_live_gate' => $stage881LiveScore,
                 'live_routes' => $routeScore,
                 'database_smoke' => $dbScore,
                 'adapter_smoke' => $adapterScore,
                 'adapter_dry_run' => $dryRunScore,
             ],
+            'stage881_live_gate' => $stage881LiveGate,
             'deployment_acceptance' => $stage881,
             'live_routes' => $routes,
             'database_smoke' => $db,
@@ -296,6 +347,10 @@ if (!function_exists('tl_stage882_render_live_smoke')) {
         echo '<div class="labs-kpi"><span class="labs-muted">Score</span><strong>' . (int)$summary['score'] . '/100</strong><small>route/db/adapter</small></div>';
         echo '<div class="labs-kpi"><span class="labs-muted">Stage</span><strong>882</strong><small>dry run only</small></div>';
         echo '<div class="labs-kpi"><span class="labs-muted">Mutation</span><strong>Closed</strong><small>safe boundary</small></div>';
+        echo '</section>';
+
+        echo '<section class="labs-card"><h2>Stage 881 live gate</h2>';
+        tl_stage882_render_rows([(array)($summary['stage881_live_gate'] ?? [])]);
         echo '</section>';
 
         $groups = [
