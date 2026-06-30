@@ -80,6 +80,8 @@ Do not commit live database credentials.
 
 The root `config.php` and `labs/config.php` are intentionally sanitized in the repo. On a deployed server, edit the deployed private config only.
 
+Generated GitHub deploy archives intentionally omit `/config.php` and `/labs/config.php` so a fresh `main.zip` deployment does not overwrite the live private DB credentials. First-time installs should copy from `config-example.php` / `labs/config-example.php` and fill credentials on the server.
+
 ## Database status
 
 Training Lab expects the existing Training Lab tables:
