@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/labs-layout.php';
 require_once __DIR__ . '/../includes/training-lab-stage34-service.php';
 require_once __DIR__ . '/../includes/training-lab-app-service.php';
+require_once __DIR__ . '/../includes/training-lab-stage884-real-read-adapter.php';
 require_once __DIR__ . '/../includes/training-lab-stage883-readonly-adapter.php';
 
 $userId = max(0, (int)($_GET['user_id'] ?? 0));
