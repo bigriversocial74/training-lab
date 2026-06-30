@@ -5,6 +5,11 @@
 *.tar.gz export-ignore
 *.tgz export-ignore
 
+# Preserve live private DB configuration during cPanel deploys.
+# These tracked sanitized examples stay in the repo, but generated deploy archives omit them.
+/config.php export-ignore
+/labs/config.php export-ignore
+
 # Local docs/reports are useful in the repo but not required inside cPanel deploy archives.
 stage-*-report.md export-ignore
 IMPORT-NOTES.md export-ignore
