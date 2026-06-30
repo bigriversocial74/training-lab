@@ -1,0 +1,11 @@
+<?php
+require_once __DIR__ . '/../includes/labs-layout.php';
+require_once __DIR__ . '/../includes/training-lab-stage34-service.php';
+require_once __DIR__ . '/../includes/training-lab-app-service.php';
+
+$userId = max(0, (int)($_GET['user_id'] ?? 0));
+labs_page_start(['title' => 'Adapter Readiness | Training Lab', 'section' => 'admin', 'active' => 'admin-adapter-readiness']);
+?>
+<?php if (function_exists('tl_design_render_logged_in_template')) tl_design_render_logged_in_template('admin-adapter-readiness'); ?>
+<?php if (function_exists('tl_stage883_render_readonly_adapter')) tl_stage883_render_readonly_adapter($userId); ?>
+<?php labs_page_end(['section' => 'admin']); ?>
