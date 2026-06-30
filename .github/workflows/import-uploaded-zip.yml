@@ -1,0 +1,111 @@
+name: Import Uploaded Training Lab Zip
+
+on:
+  workflow_dispatch:
+    inputs:
+      zip_path:
+        description: 'Zip file path committed in the repo, for example training_dave_v2_repo_ready_sanitized.zip'
+        required: true
+        default: 'training_dave_v2_repo_ready_sanitized.zip'
+      target_branch:
+        description: 'Branch to commit the extracted files to'
+        required: true
+        default: 'import/stage880-baseline-20260630'
+
+permissions:
+  contents: write
+
+jobs:
+  import_zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.target_branch }}
+          fetch-depth: 0
+
+      - name: Validate zip exists
+        run: |
+          set -euo pipefail
+          ZIP_PATH="${{ github.event.inputs.zip_path }}"
+          if [ ! -f "$ZIP_PATH" ]; then
+            echo "Zip file not found: $ZIP_PATH"
+            echo "Upload/commit the zip to the repo first, then run this workflow."
+            exit 1
+          fi
+
+      - name: Extract zip into repo root
+        run: |
+          set -euo pipefail
+          ZIP_PATH="${{ github.event.inputs.zip_path }}"
+          WORK_DIR="_import_zip_work"
+          rm -rf "$WORK_DIR"
+          mkdir -p "$WORK_DIR"
+          unzip -q "$ZIP_PATH" -d "$WORK_DIR"
+
+          # If the zip contains one top-level folder, use its contents.
+          top_count=$(find "$WORK_DIR" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')
+          if [ "$top_count" = "1" ] && [ -d "$(find "$WORK_DIR" -mindepth 1 -maxdepth 1 | head -n 1)" ]; then
+            SRC_DIR="$(find "$WORK_DIR" -mindepth 1 -maxdepth 1 | head -n 1)"
+          else
+            SRC_DIR="$WORK_DIR"
+          fi
+
+          rsync -a "$SRC_DIR"/ ./
+          rm -rf "$WORK_DIR"
+
+      - name: Sanitize config secrets
+        run: |
+          set -euo pipefail
+          for file in config.php labs/config.php; do
+            if [ -f "$file" ]; then
+              perl -0pi -e "s/'password'\s*=>\s*'[^']*'/'password' => 'PUT_YOUR_DATABASE_PASSWORD_HERE'/g" "$file"
+            fi
+          done
+
+      - name: Add import notes and gitignore
+        run: |
+          set -euo pipefail
+          cat > .gitignore <<'EOF'
+.env
+.env.*
+*.local.php
+config/*.local.php
+labs/*.local.php
+.DS_Store
+Thumbs.db
+_import_zip_work/
+EOF
+
+          cat > IMPORT-NOTES.md <<'EOF'
+# Stage 880 Training Lab Import Notes
+
+This repository was populated from an uploaded Training Lab zip package.
+
+Before commit, the import workflow sanitizes:
+
+- `config.php`
+- `labs/config.php`
+
+The database password is replaced with:
+
+```txt
+PUT_YOUR_DATABASE_PASSWORD_HERE
+```
+
+Do not commit live database passwords to this public repository.
+EOF
+
+      - name: Commit extracted files
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Import uploaded Training Lab baseline"
+          git push origin HEAD:${{ github.event.inputs.target_branch }}
