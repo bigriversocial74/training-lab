@@ -10,8 +10,8 @@ if ($section === 'config' || $section === 'adapter') { tl_stage34_json(tl_stage8
 if ($section === 'identity' || $section === 'matching') { tl_stage34_json(tl_stage880_identity_matching($userId)); exit; }
 if ($section === 'sync' || $section === 'inventory') { tl_stage34_json(tl_stage880_campaign_sync_health()); exit; }
 if ($section === 'handoff' || $section === 'queue') { tl_stage34_json(tl_stage880_award_handoff_queue($userId)); exit; }
-if ($section === 'real-read' || $section === 'stage884' || $section === 'db-read') { tl_stage34_json(tl_stage884_real_read_adapter_summary($userId)); exit; }
-if ($section === 'readonly' || $section === 'stage883' || $section === 'readiness') { tl_stage34_json(tl_stage883_readonly_summary($userId)); exit; }
+if ($section === 'readonly' || $section === 'readiness' || $section === 'real-read' || $section === 'stage884' || $section === 'db-read') { tl_stage34_json(tl_stage884_real_read_adapter_summary($userId)); exit; }
+if ($section === 'stage883') { tl_stage34_json(tl_stage883_readonly_summary($userId)); exit; }
 if ($section === 'audit') { tl_stage34_json(tl_stage880_adapter_sync_audit()); exit; }
 $summary = tl_stage880_adapter_sync_summary($userId);
 $summary['stage840_user_awards_overlay'] = function_exists('tl_stage840_user_award_summary') ? tl_stage840_user_award_summary($userId, false) : [];
