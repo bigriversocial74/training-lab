@@ -1,0 +1,5 @@
+<?php
+require_once __DIR__ . '/includes/training-lab-public-template.php';
+tl_public_page([
+  'title'=>'Success | Training Lab','description'=>'Training Lab success confirmation.','active'=>'success','eyebrow'=>'Success','headline'=>'Your Training Lab setup is ready.','copy'=>'You can now launch a challenge, invite participants, collect proof, and reward verified action.','hero_asset'=>'success_visual','support_asset'=>'verified','primary_href'=>'/app/index.php','primary_label'=>'Open App','secondary_href'=>'/admin/command-center.php','secondary_label'=>'Admin Console','steps'=>[['icon'=>'sprout','title'=>'Launch','copy'=>'Create or open your training campaign.'],['icon'=>'calendar','title'=>'Schedule','copy'=>'Guide participants through the plan.'],['icon'=>'verified','title'=>'Verify','copy'=>'Review proof and outcomes.'],['icon'=>'gift','title'=>'Reward','copy'=>'Track claimable rewards safely.']],'cta_asset'=>'success_visual','cta_title'=>'Next step: open the app.','cta_copy'=>'Use the same account on labs.microgifter.com and microgifter.com.']);
+?>
