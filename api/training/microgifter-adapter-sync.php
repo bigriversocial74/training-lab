@@ -8,9 +8,11 @@ if ($section === 'config' || $section === 'adapter') { tl_stage34_json(tl_stage8
 if ($section === 'identity' || $section === 'matching') { tl_stage34_json(tl_stage880_identity_matching($userId)); exit; }
 if ($section === 'sync' || $section === 'inventory') { tl_stage34_json(tl_stage880_campaign_sync_health()); exit; }
 if ($section === 'handoff' || $section === 'queue') { tl_stage34_json(tl_stage880_award_handoff_queue($userId)); exit; }
+if ($section === 'readonly' || $section === 'stage883' || $section === 'readiness') { tl_stage34_json(function_exists('tl_stage883_readonly_summary') ? tl_stage883_readonly_summary($userId) : ['ok'=>false,'error'=>'Stage 883 not loaded']); exit; }
 if ($section === 'audit') { tl_stage34_json(tl_stage880_adapter_sync_audit()); exit; }
 $summary = tl_stage880_adapter_sync_summary($userId);
 $summary['stage840_user_awards_overlay'] = function_exists('tl_stage840_user_award_summary') ? tl_stage840_user_award_summary($userId, false) : [];
 $summary['stage800_campaign_import_overlay'] = function_exists('tl_stage800_microgifter_campaign_import_summary') ? tl_stage800_microgifter_campaign_import_summary(false) : [];
+$summary['stage883_readonly_adapter_overlay'] = function_exists('tl_stage883_readonly_summary') ? tl_stage883_readonly_summary($userId) : [];
 tl_stage34_json($summary);
 exit;
