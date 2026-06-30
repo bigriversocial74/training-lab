@@ -5,6 +5,12 @@
 config/*.local.php
 labs/*.local.php
 
+# Local package/archive artifacts
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
 # OS/editor files
 .DS_Store
 Thumbs.db
