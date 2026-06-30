@@ -42,7 +42,8 @@ if (!function_exists('tl_stage884_count_table')) {
     function tl_stage884_count_table(string $table): int
     {
         if (!tl_stage884_table_ready($table)) return 0;
-        $rows = tl_stage884_fetch_all('SELECT COUNT(*) AS row_count FROM `' . str_replace('`', '', $table) . '`');
+        $safe = str_replace('`', '', $table);
+        $rows = tl_stage884_fetch_all('SELECT COUNT(*) AS row_count FROM `' . $safe . '`');
         return (int)($rows[0]['row_count'] ?? 0);
     }
 }
@@ -114,19 +115,8 @@ if (!function_exists('microgifter_training_campaign_catalog')) {
     }
 }
 
-if (!function_exists('microgifter_merchant_reward_campaigns')) {
-    function microgifter_merchant_reward_campaigns(): array
-    {
-        return microgifter_training_campaign_catalog();
-    }
-}
-
-if (!function_exists('microgifter_reward_campaign_catalog')) {
-    function microgifter_reward_campaign_catalog(): array
-    {
-        return microgifter_training_campaign_catalog();
-    }
-}
+if (!function_exists('microgifter_merchant_reward_campaigns')) { function microgifter_merchant_reward_campaigns(): array { return microgifter_training_campaign_catalog(); } }
+if (!function_exists('microgifter_reward_campaign_catalog')) { function microgifter_reward_campaign_catalog(): array { return microgifter_training_campaign_catalog(); } }
 
 if (!function_exists('microgifter_reward_catalog')) {
     function microgifter_reward_catalog(): array
@@ -171,7 +161,7 @@ if (!function_exists('tl_stage884_normalize_award_row')) {
         return [
             'user_id' => (string)($row['submitted_by_user_id'] ?? $row['user_id'] ?? 'training-user'),
             'microgifter_user_id' => 'training-lab-user-' . (string)($row['submitted_by_user_id'] ?? $row['user_id'] ?? '0'),
-            'award_id' => (string)($row['reward_event_public_id'] ?? $row['proof_public_id'] ?? $row['proof_id'] ?? ('db-award-' . ($idx + 1))),
+            'award_id' => (string)($row['reward_event_id'] ?? $row['proof_public_id'] ?? $row['proof_id'] ?? ('db-award-' . ($idx + 1))),
             'campaign_id' => (string)($row['campaign_public_id'] ?? $row['campaign_slug'] ?? $row['campaign_id'] ?? ''),
             'merchant_id' => 'training-lab-db',
             'merchant_name' => 'Training Lab Live Database',
@@ -181,7 +171,7 @@ if (!function_exists('tl_stage884_normalize_award_row')) {
             'claim_status' => $claimStatus,
             'reward_type' => (string)($row['reward_type'] ?? 'training_reward'),
             'quantity_available' => 1,
-            'earned_from_task_id' => (string)($row['task_public_id'] ?? $row['task_id'] ?? ''),
+            'earned_from_task_id' => (string)($row['task_id'] ?? ''),
             'earned_from_task_title' => (string)($row['task_title'] ?? 'Training task'),
             'proof_id' => (string)($row['proof_public_id'] ?? $row['proof_id'] ?? ''),
             'review_status' => $decision !== '' ? $decision : ($proofStatus ?: 'pending'),
@@ -205,7 +195,7 @@ if (!function_exists('microgifter_training_user_awards')) {
             $where = '';
             if ($userId > 0) { $where = 'WHERE re.user_id = ?'; $params[] = $userId; }
             $rows = tl_stage884_fetch_all(
-                "SELECT re.public_id AS reward_event_public_id, re.user_id, re.event_type, re.created_at, re.updated_at,
+                "SELECT re.id AS reward_event_id, re.user_id, 'issued' AS event_type, re.created_at,
                         c.public_id AS campaign_public_id, c.slug AS campaign_slug, c.title AS campaign_title,
                         rr.reward_label, tp.participant_label
                  FROM training_reward_events re
@@ -226,7 +216,7 @@ if (!function_exists('microgifter_training_user_awards')) {
             $rows = tl_stage884_fetch_all(
                 "SELECT p.id AS proof_id, p.public_id AS proof_public_id, p.status AS proof_status, p.submitted_by_user_id, p.submitted_at, p.updated_at,
                         c.public_id AS campaign_public_id, c.slug AS campaign_slug, c.title AS campaign_title,
-                        t.public_id AS task_public_id, t.title AS task_title,
+                        t.id AS task_id, t.title AS task_title,
                         (SELECT r.decision FROM training_reviews r WHERE r.proof_submission_id = p.id ORDER BY r.created_at DESC LIMIT 1) AS latest_decision
                  FROM training_proof_submissions p
                  LEFT JOIN training_campaigns c ON c.id = p.campaign_id
@@ -242,36 +232,20 @@ if (!function_exists('microgifter_training_user_awards')) {
     }
 }
 
-if (!function_exists('microgifter_customer_awards')) {
-    function microgifter_customer_awards(int $userId = 0): array
-    {
-        return microgifter_training_user_awards($userId);
-    }
-}
-
-if (!function_exists('microgifter_user_awards')) {
-    function microgifter_user_awards(int $userId = 0): array
-    {
-        return microgifter_training_user_awards($userId);
-    }
-}
+if (!function_exists('microgifter_customer_awards')) { function microgifter_customer_awards(int $userId = 0): array { return microgifter_training_user_awards($userId); } }
+if (!function_exists('microgifter_user_awards')) { function microgifter_user_awards(int $userId = 0): array { return microgifter_training_user_awards($userId); } }
 
 if (!function_exists('microgifter_user_account_status')) {
     function microgifter_user_account_status(int $userId = 0): array
     {
         $participant = [];
         if (tl_stage884_table_ready('training_participants')) {
-            $params = [];
-            $where = '';
-            if ($userId > 0) { $where = 'WHERE tp.user_id = ?'; $params[] = $userId; }
             $rows = tl_stage884_fetch_all(
                 "SELECT tp.*, c.public_id AS campaign_public_id, c.slug AS campaign_slug, c.title AS campaign_title
                  FROM training_participants tp
                  LEFT JOIN training_campaigns c ON c.id = tp.campaign_id
-                 $where
                  ORDER BY tp.updated_at DESC, tp.id DESC
-                 LIMIT 1",
-                $params
+                 LIMIT 1"
             );
             $participant = $rows[0] ?? [];
         }
@@ -290,19 +264,8 @@ if (!function_exists('microgifter_user_account_status')) {
     }
 }
 
-if (!function_exists('microgifter_customer_account_status')) {
-    function microgifter_customer_account_status(int $userId = 0): array
-    {
-        return microgifter_user_account_status($userId);
-    }
-}
-
-if (!function_exists('microgifter_training_user_account_status')) {
-    function microgifter_training_user_account_status(int $userId = 0): array
-    {
-        return microgifter_user_account_status($userId);
-    }
-}
+if (!function_exists('microgifter_customer_account_status')) { function microgifter_customer_account_status(int $userId = 0): array { return microgifter_user_account_status($userId); } }
+if (!function_exists('microgifter_training_user_account_status')) { function microgifter_training_user_account_status(int $userId = 0): array { return microgifter_user_account_status($userId); } }
 
 if (!function_exists('microgifter_adapter_status')) {
     function microgifter_adapter_status(): array
@@ -326,19 +289,8 @@ if (!function_exists('microgifter_adapter_status')) {
     }
 }
 
-if (!function_exists('microgifter_training_sync_status')) {
-    function microgifter_training_sync_status(): array
-    {
-        return microgifter_adapter_status();
-    }
-}
-
-if (!function_exists('microgifter_adapter_sync_status')) {
-    function microgifter_adapter_sync_status(): array
-    {
-        return microgifter_adapter_status();
-    }
-}
+if (!function_exists('microgifter_training_sync_status')) { function microgifter_training_sync_status(): array { return microgifter_adapter_status(); } }
+if (!function_exists('microgifter_adapter_sync_status')) { function microgifter_adapter_sync_status(): array { return microgifter_adapter_status(); } }
 
 if (!function_exists('microgifter_campaign_sync_health')) {
     function microgifter_campaign_sync_health(): array
@@ -360,12 +312,7 @@ if (!function_exists('microgifter_campaign_sync_health')) {
     }
 }
 
-if (!function_exists('microgifter_reward_inventory_refresh_preview')) {
-    function microgifter_reward_inventory_refresh_preview(): array
-    {
-        return microgifter_campaign_sync_health();
-    }
-}
+if (!function_exists('microgifter_reward_inventory_refresh_preview')) { function microgifter_reward_inventory_refresh_preview(): array { return microgifter_campaign_sync_health(); } }
 
 if (!function_exists('tl_stage884_real_read_adapter_summary')) {
     function tl_stage884_real_read_adapter_summary(int $userId = 0): array
