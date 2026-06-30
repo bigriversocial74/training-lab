@@ -110,6 +110,7 @@ if (!function_exists('labs_core_admin_nav')) {
                 'admin-db-health' => ['/admin/db-health.php', 'DB Health'],
                 'admin-deployment-acceptance' => ['/admin/deployment-acceptance.php', 'Deployment QA'],
                 'admin-live-smoke' => ['/admin/live-smoke.php', 'Live Smoke'],
+                'admin-adapter-readiness' => ['/admin/adapter-readiness.php', 'Adapter Readiness'],
                 'admin-route-check' => ['/admin/route-check.php', 'Route Check'],
             ],
         ];
