@@ -101,7 +101,7 @@ if (!function_exists('labs_core_admin_nav')) {
                 'admin-campaign-inspector' => ['/admin/campaign-inspector.php', 'Campaign Inspector'],
                 'admin-cohort-manager' => ['/admin/cohort-manager.php', 'Cohort Manager'],
                 'admin-review' => ['/admin/review-queue.php', 'Review Queue'],
-                'admin-review-workbench' => ['/admin/review-workbench.php', 'Review Workbench'],
+                'admin-review-workbench' => ['/admin/review-workbench.php', 'Stage 885 Review Workflow'],
             ],
             'Access & QA' => [
                 'admin-permissions' => ['/admin/permissions.php', 'Roles & Permissions'],
