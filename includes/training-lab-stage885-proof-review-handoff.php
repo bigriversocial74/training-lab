@@ -2,22 +2,38 @@
 /**
  * Stage 885 Proof Review + Award Handoff Preview.
  *
- * Real Training Lab operating workflow:
- * submitted proof -> review decision -> Training Lab receipt/eligibility record ->
- * award handoff preview. This remains inside Training Lab tables and does not
- * issue Microgifter rewards, mutate wallets, process payments, or redeem claims.
+ * Keeps the Stage 885 route lightweight: only DB/service helpers and controlled
+ * Training Lab actions are loaded. It does not load the full app shell for API
+ * requests, which prevents optional UI-stage dependencies from causing a hard
+ * 500 on the JSON endpoint.
  */
-require_once __DIR__ . '/training-lab-app-service.php';
-require_once __DIR__ . '/training-lab-stage884-real-read-adapter.php';
+require_once __DIR__ . '/training-lab-stage34-service.php';
+require_once __DIR__ . '/training-lab-actions.php';
+$stage884Path = __DIR__ . '/training-lab-stage884-real-read-adapter.php';
+if (is_file($stage884Path)) require_once $stage884Path;
 
-if (!function_exists('tl_stage885_e')) { function tl_stage885_e($value): string { return function_exists('labs_e') ? labs_e((string)$value) : htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); } }
+if (!function_exists('tl_stage885_e')) {
+    function tl_stage885_e($value): string
+    {
+        return function_exists('labs_e') ? labs_e((string)$value) : htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('tl_stage885_safe_count')) {
+    function tl_stage885_safe_count(string $table): int
+    {
+        if (!function_exists('tl_table_row_count')) return 0;
+        $count = tl_table_row_count($table);
+        return $count === null ? 0 : (int)$count;
+    }
+}
 
 if (!function_exists('tl_stage885_fetch_queue')) {
     function tl_stage885_fetch_queue(int $limit = 25): array
     {
         $limit = max(1, min(100, $limit));
         $pdo = function_exists('tl_db') ? tl_db() : null;
-        if (!$pdo || !tl_table_exists('training_proof_submissions')) return [];
+        if (!$pdo || !function_exists('tl_table_exists') || !tl_table_exists('training_proof_submissions')) return [];
         try {
             $sql = "SELECT p.id, p.public_id, p.campaign_id, p.task_id, p.participant_id, p.submitted_by_user_id, p.proof_type, p.proof_text, p.external_url, p.status AS proof_status, p.submitted_at, p.reviewed_at, p.created_at, p.updated_at,
                            c.public_id AS campaign_public_id, c.slug AS campaign_slug, c.title AS campaign_title, c.target_action_count,
@@ -34,7 +50,8 @@ if (!function_exists('tl_stage885_fetch_queue')) {
                     LEFT JOIN training_participants tp ON tp.id = p.participant_id
                     ORDER BY CASE WHEN p.status IN ('submitted','in_review') THEN 0 ELSE 1 END, COALESCE(p.updated_at, p.submitted_at, p.created_at) DESC, p.id DESC
                     LIMIT " . $limit;
-            return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            $stmt = $pdo->query($sql);
+            return $stmt ? ($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []) : [];
         } catch (Throwable $e) {
             return [];
         }
@@ -47,6 +64,7 @@ if (!function_exists('tl_stage885_status_counts')) {
         $counts = [];
         foreach ($rows as $row) {
             $status = strtolower((string)($row['proof_status'] ?? 'unknown'));
+            if ($status === '') $status = 'unknown';
             $counts[$status] = ($counts[$status] ?? 0) + 1;
         }
         ksort($counts);
@@ -59,7 +77,7 @@ if (!function_exists('tl_stage885_find_proof')) {
     {
         $proofRef = trim((string)$proofRef);
         $pdo = function_exists('tl_db') ? tl_db() : null;
-        if (!$pdo || !tl_table_exists('training_proof_submissions')) return null;
+        if (!$pdo || !function_exists('tl_table_exists') || !tl_table_exists('training_proof_submissions')) return null;
         try {
             $base = "SELECT p.*, c.public_id AS campaign_public_id, c.slug AS campaign_slug, c.title AS campaign_title, c.target_action_count,
                             t.title AS task_title, t.position_no, t.proof_required,
@@ -91,10 +109,16 @@ if (!function_exists('tl_stage885_handoff_preview_for_proof')) {
                 'ready' => false,
                 'status' => 'no_proof',
                 'detail' => 'No proof submission is available for handoff preview.',
-                'would_issue_microgifter_reward' => false,
+                'handoff' => [
+                    'handoff_mode' => 'preview_only',
+                    'would_issue_microgifter_reward' => false,
+                    'would_create_claim' => false,
+                    'would_mutate_wallet' => false,
+                ],
             ];
         }
-        $pdo = tl_db();
+
+        $pdo = function_exists('tl_db') ? tl_db() : null;
         $reviews = $receipts = $events = [];
         try {
             if ($pdo && tl_table_exists('training_reviews')) {
@@ -117,18 +141,20 @@ if (!function_exists('tl_stage885_handoff_preview_for_proof')) {
                 $events = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
             }
         } catch (Throwable $e) {}
+
         $latestReview = $reviews[0] ?? [];
         $decision = strtolower((string)($latestReview['decision'] ?? ''));
         $proofStatus = strtolower((string)($proof['status'] ?? 'submitted'));
         $approved = $decision === 'approved' || $proofStatus === 'approved';
         $previewStatus = $approved ? (count($events) ? 'handoff_preview_ready' : 'approved_receipt_ready') : 'blocked_pending_review';
+
         return [
             'ready' => $approved,
             'status' => $previewStatus,
             'proof' => [
-                'id' => (int)$proof['id'],
-                'public_id' => (string)$proof['public_id'],
-                'status' => (string)$proof['status'],
+                'id' => (int)($proof['id'] ?? 0),
+                'public_id' => (string)($proof['public_id'] ?? ''),
+                'status' => (string)($proof['status'] ?? ''),
                 'campaign_name' => (string)($proof['campaign_title'] ?? 'Training Campaign'),
                 'task_title' => (string)($proof['task_title'] ?? 'Training task'),
                 'participant_label' => (string)($proof['participant_label'] ?? 'Participant'),
@@ -154,6 +180,9 @@ if (!function_exists('tl_stage885_submit_review_decision')) {
         $decision = (string)($input['decision'] ?? '');
         if (!in_array($decision, ['approved','rejected','needs_more_info'], true)) {
             throw new RuntimeException('Invalid Stage 885 decision.');
+        }
+        if (!function_exists('tl_review_proof')) {
+            throw new RuntimeException('Training Lab proof review action is not available.');
         }
         $input['training_action'] = 'review_proof';
         $input['confirm_training_action'] = '1';
@@ -184,18 +213,32 @@ if (!function_exists('tl_stage885_summary')) {
     function tl_stage885_summary(?string $proofRef = null): array
     {
         $queue = tl_stage885_fetch_queue(50);
-        $pending = array_values(array_filter($queue, fn($row) => in_array(strtolower((string)($row['proof_status'] ?? '')), ['submitted','in_review'], true)));
-        $selected = $proofRef ? tl_stage885_find_proof($proofRef) : null;
+        $pending = [];
+        foreach ($queue as $row) {
+            $status = strtolower((string)($row['proof_status'] ?? ''));
+            if ($status === 'submitted' || $status === 'in_review') $pending[] = $row;
+        }
         $selectedRef = $proofRef ?: (string)($pending[0]['public_id'] ?? $queue[0]['public_id'] ?? '');
         $handoff = tl_stage885_handoff_preview_for_proof($selectedRef);
-        $stage884 = function_exists('tl_stage884_real_read_adapter_summary') ? tl_stage884_real_read_adapter_summary(0) : [];
-        $accepted = !empty($stage884['accepted']) && count($queue) > 0;
+
+        $stage884 = [];
+        try {
+            if (function_exists('tl_stage884_real_read_adapter_summary')) {
+                $stage884 = tl_stage884_real_read_adapter_summary(0);
+            }
+        } catch (Throwable $e) {
+            $stage884 = [];
+        }
+
+        $dbReady = function_exists('tl_db_ready') && tl_db_ready();
+        $accepted = $dbReady && tl_stage885_safe_count('training_proof_submissions') > 0;
+
         return [
             'stage' => 'Stage 885 Proof Review + Award Handoff Preview',
             'built_from' => 'Stage 884 Real Microgifter Read Adapter Connection',
             'accepted' => $accepted,
             'score' => $accepted ? 100 : 80,
-            'mode' => tl_db_ready() ? 'database' : 'demo-fallback',
+            'mode' => $dbReady ? 'database' : 'demo-fallback',
             'queue_count' => count($queue),
             'pending_review_count' => count($pending),
             'status_counts' => tl_stage885_status_counts($queue),
@@ -205,8 +248,8 @@ if (!function_exists('tl_stage885_summary')) {
             'stage884_adapter' => [
                 'accepted' => !empty($stage884['accepted']),
                 'adapter_source' => (string)($stage884['adapter_source'] ?? ''),
-                'campaign_count' => (int)($stage884['campaign_count'] ?? 0),
-                'award_count' => (int)($stage884['award_count'] ?? 0),
+                'campaign_count' => (int)($stage884['campaign_count'] ?? tl_stage885_safe_count('training_campaigns')),
+                'award_count' => (int)($stage884['award_count'] ?? tl_stage885_safe_count('training_reward_events')),
             ],
             'safe_boundaries' => [
                 'review_decisions_write_training_lab_only' => true,
@@ -227,7 +270,12 @@ if (!function_exists('tl_stage885_summary')) {
 if (!function_exists('tl_stage885_render_workflow')) {
     function tl_stage885_render_workflow(?string $proofRef = null): void
     {
-        $summary = tl_stage885_summary($proofRef);
+        try {
+            $summary = tl_stage885_summary($proofRef);
+        } catch (Throwable $e) {
+            echo '<section class="labs-card labs-error-card"><h2>Stage 885 needs attention</h2><p class="labs-copy">' . tl_stage885_e($e->getMessage()) . '</p></section>';
+            return;
+        }
         $queue = (array)($summary['queue'] ?? []);
         $handoff = (array)($summary['handoff_preview'] ?? []);
         echo '<section class="labs-page-title"><div><span class="labs-eyebrow">Stage 885</span><h1>Proof Review + Award Handoff Preview</h1><p class="labs-copy">Review submitted proof, record a Training Lab decision, and generate a preview-only Microgifter award handoff. Production issuing remains closed.</p></div><div class="labs-actions"><a class="labs-btn labs-btn-primary" href="' . tl_stage885_e(function_exists('labs_url') ? labs_url('/api/training/proof-review-workflow.php') : '/api/training/proof-review-workflow.php') . '">View JSON</a><a class="labs-btn" href="' . tl_stage885_e(function_exists('labs_url') ? labs_url('/admin/reward-bridge.php') : '/admin/reward-bridge.php') . '">Reward Bridge</a></div></section>';
