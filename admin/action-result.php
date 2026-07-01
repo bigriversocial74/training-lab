@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/labs-layout.php';
 require_once __DIR__ . '/../includes/training-lab-app-service.php';
+$stage885Path = __DIR__ . '/../includes/training-lab-stage885-proof-review-handoff.php';
+if (is_file($stage885Path)) require_once $stage885Path;
 $isAdmin = __DIR__ === dirname(__DIR__) . '/admin';
 $result = null;
 $error = null;
@@ -9,7 +11,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     try {
         $data = tl_request_data();
         $action = (string)($data['training_action'] ?? $data['action'] ?? '');
-        $result = tl_training_handle_app_action($data);
+        if ($action === 'stage885_review_proof' && function_exists('tl_stage885_submit_review_decision')) {
+            $result = tl_stage885_submit_review_decision($data);
+        } else {
+            $result = tl_training_handle_app_action($data);
+        }
     } catch (Throwable $e) {
         $error = $e->getMessage();
     }
@@ -21,6 +27,7 @@ $nextMap = [
     'join_campaign' => ['/app/task-runner.php', 'Run Tasks'],
     'complete_task' => ['/app/participant-portal.php', 'Return to Mission Control'],
     'review_proof' => ['/admin/reward-bridge.php', 'Check Reward Bridge'],
+    'stage885_review_proof' => ['/admin/review-workbench.php', 'Return to Stage 885 Review Workbench'],
     'claim_training_reward' => ['/app/rewards.php', 'Return to Rewards'],
     'retry_microgifter_reward_issue' => ['/admin/reward-bridge.php', 'Return to Reward Bridge'],
     'mark_reward_manual_issued' => ['/admin/reward-bridge.php', 'Return to Reward Bridge'],

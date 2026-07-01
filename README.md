@@ -4,7 +4,7 @@ This repository now contains the unpacked Stage 880 Training Lab baseline as rea
 
 ## Current baseline
 
-Stage 880 is the accepted product/integration baseline on `main`. Stage 881 and Stage 882 are QA and live-smoke layers on top of that baseline. Stage 883 adds read-only Microgifter adapter wiring, and Stage 884 connects the first real DB-backed read adapter source.
+Stage 880 is the accepted product/integration baseline on `main`. Stage 881 and Stage 882 are QA and live-smoke layers on top of that baseline. Stage 883 adds read-only Microgifter adapter wiring, Stage 884 connects the first real DB-backed read adapter source, and Stage 885 adds the first real proof-review operating workflow with award handoff preview.
 
 Core source folders:
 
@@ -28,19 +28,23 @@ stage-881-deployment-acceptance-route-qa-report.md
 stage-882-live-smoke-adapter-dry-run-report.md
 stage-883-readonly-microgifter-adapter-wiring-report.md
 stage-884-real-microgifter-read-adapter-report.md
+stage-885-proof-review-handoff-preview-report.md
 includes/training-lab-stage880-adapter-sync.php
 includes/training-lab-stage881-deployment-acceptance.php
 includes/training-lab-stage882-live-smoke.php
 includes/training-lab-stage883-readonly-adapter.php
 includes/training-lab-stage884-real-read-adapter.php
 includes/training-lab-stage884-real-read-render.php
+includes/training-lab-stage885-proof-review-handoff.php
 api/training/microgifter-adapter-sync.php
+api/training/proof-review-workflow.php
 api/training/deployment-acceptance.php
 api/training/live-smoke.php
 admin/db-health.php
 admin/deployment-acceptance.php
 admin/live-smoke.php
 admin/adapter-readiness.php
+admin/review-workbench.php
 run-full-syntax-check.sh
 ```
 
@@ -67,6 +71,7 @@ http://127.0.0.1:8091/admin/db-health.php
 http://127.0.0.1:8091/admin/deployment-acceptance.php
 http://127.0.0.1:8091/admin/live-smoke.php
 http://127.0.0.1:8091/admin/adapter-readiness.php
+http://127.0.0.1:8091/admin/review-workbench.php
 ```
 
 ## Deployment config
@@ -279,6 +284,36 @@ Adapter status
 Inventory freshness
 ```
 
+## Stage 885 proof review + award handoff preview
+
+Stage 885 adds the first real Training Lab operating workflow around live proof rows.
+
+Human-readable Stage 885 route:
+
+```text
+/admin/review-workbench.php
+```
+
+Machine-readable Stage 885 route:
+
+```text
+/api/training/proof-review-workflow.php
+```
+
+Stage 885 supports:
+
+```text
+Submitted proof queue
+Approve / reject / needs-more-info decisions
+Training Lab review writes
+Training Lab receipt / reward eligibility writes after approval
+Preview-only Microgifter award handoff visibility
+No Microgifter issuing
+No claim/redeem mutation
+No wallet mutation
+No payments
+```
+
 ## Safe boundaries
 
 Keep these boundaries unless a later stage explicitly changes them:
@@ -312,7 +347,7 @@ GitHub Actions also runs the PHP syntax workflow on PRs to `main` and pushes to 
 Latest accepted feature layer:
 
 ```text
-Stage 884 Real Microgifter Read Adapter Connection
+Stage 885 Proof Review + Award Handoff Preview
 ```
 
 QA layers after Stage 880:
@@ -321,6 +356,7 @@ QA layers after Stage 880:
 Stage 881 Deployment Acceptance + Route QA
 Stage 882 Live Environment Smoke + Microgifter Adapter Dry Run
 Stage 883 Read-only Microgifter Adapter Wiring
+Stage 884 Real Microgifter Read Adapter Connection
 ```
 
 Earlier reports remain in the repo for audit history. Do not use old Stage 2/5 notes as the current operating boundary; this README is now the current baseline summary.
