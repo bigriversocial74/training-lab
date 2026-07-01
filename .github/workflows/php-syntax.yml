@@ -11,6 +11,7 @@ on:
       - 'docs/**'
       - 'import/**'
       - 'adapter/**'
+      - 'ops/**'
 
 permissions:
   contents: read
