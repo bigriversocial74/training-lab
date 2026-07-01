@@ -1,0 +1,98 @@
+/* Stage 885 layout rule: never split the Review Workbench into two columns. */
+.labs-stage885-single-column,
+.labs-stage885-single-column * {
+  box-sizing: border-box;
+}
+
+.labs-stage885-single-column .labs-page-title,
+.labs-stage885-single-column .labs-card-headline,
+.labs-stage885-single-column .labs-panel-item,
+.labs-stage885-single-column .labs-stage35-review-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+}
+
+.labs-stage885-single-column .labs-actions,
+.labs-stage885-single-column .labs-stage30-form,
+.labs-stage885-single-column .labs-stage35-decision-form {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+}
+
+.labs-stage885-single-column .labs-actions .labs-btn,
+.labs-stage885-single-column .labs-stage30-form .labs-btn,
+.labs-stage885-single-column .labs-stage35-decision-form .labs-btn {
+  width: 100% !important;
+}
+
+.labs-stage885-single-column .labs-kpis,
+.labs-stage885-single-column .labs-flow-grid,
+.labs-stage885-single-column .labs-stage280-grid,
+.labs-stage885-single-column .labs-dashboard-grid,
+.labs-stage885-single-column .labs-split-card,
+.labs-stage885-single-column .labs-admin-band,
+.labs-stage885-single-column .labs-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+  gap: 16px !important;
+}
+
+.labs-stage885-single-column .labs-kpi,
+.labs-stage885-single-column .labs-card,
+.labs-stage885-single-column .labs-safe-note {
+  width: 100% !important;
+}
+
+.labs-stage885-single-column .labs-table {
+  min-width: 0 !important;
+}
+
+.labs-stage885-single-column .labs-table,
+.labs-stage885-single-column .labs-table thead,
+.labs-stage885-single-column .labs-table tbody,
+.labs-stage885-single-column .labs-table tr,
+.labs-stage885-single-column .labs-table th,
+.labs-stage885-single-column .labs-table td {
+  display: block !important;
+  width: 100% !important;
+}
+
+.labs-stage885-single-column .labs-table thead {
+  display: none !important;
+}
+
+.labs-stage885-single-column .labs-table tr {
+  margin: 0 0 16px !important;
+  padding: 14px !important;
+  border: 1px solid var(--labs-border) !important;
+  border-radius: 18px !important;
+  background: #fff !important;
+}
+
+.labs-stage885-single-column .labs-table td {
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 8px 0 !important;
+}
+
+.labs-stage885-single-column .labs-table td:first-child,
+.labs-stage885-single-column .labs-table td:last-child {
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.labs-stage885-single-column .labs-table td::before {
+  content: attr(data-label);
+  display: block;
+  color: var(--labs-muted);
+  font-size: .76rem;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
