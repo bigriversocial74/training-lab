@@ -9,8 +9,10 @@ putenv('TL_ACCOUNT_BRIDGE_ISSUER=https://microgifter.example.test');
 putenv('TL_ACCOUNT_BRIDGE_AUDIENCE=training-lab-test');
 putenv('TL_ACCOUNT_BRIDGE_MAX_TTL=300');
 putenv('TL_ACCOUNT_BRIDGE_CLOCK_SKEW=30');
+putenv('TL_ACCOUNT_BRIDGE_SESSION_TTL=28800');
 
 require_once $root . '/includes/training-lab-stage886-account-integration.php';
+require_once $root . '/includes/training-lab-stage886-session-policy.php';
 
 $failures = [];
 $assert = static function (bool $condition, string $message) use (&$failures): void {
@@ -93,6 +95,7 @@ try {
 $installSql = $read('database/stage886_shared_account_integration_v1.sql');
 $rollbackSql = $read('database/stage886_shared_account_integration_v1_rollback.sql');
 $service = $read('includes/training-lab-stage886-account-integration.php');
+$sessionPolicy = $read('includes/training-lab-stage886-session-policy.php');
 $authGate = $read('includes/training-lab-auth-gate.php');
 $runner = $read('run-quality-gate.sh');
 
@@ -102,16 +105,19 @@ $assert(str_contains($installSql, 'UNIQUE KEY uq_training_auth_nonces_nonce_hash
 $assert(str_contains($installSql, 'FOREIGN KEY (account_link_id)'), 'Nonce audit rows must reference account links.');
 $assert(str_contains($rollbackSql, 'DROP TABLE IF EXISTS training_auth_nonces') && str_contains($rollbackSql, 'DROP TABLE IF EXISTS training_account_links'), 'Rollback SQL must remove both Stage 886 tables in dependency order.');
 $assert(str_contains($service, "hash_hmac('sha256'") && str_contains($service, 'hash_equals'), 'Assertion signatures must use HMAC-SHA256 and timing-safe comparison.');
-$assert(str_contains($service, "LIMIT 1 FOR UPDATE"), 'Account links must be row-locked during assertion consumption.');
+$assert(str_contains($service, 'LIMIT 1 FOR UPDATE'), 'Account links must be row-locked during assertion consumption.');
 $assert(str_contains($service, 'assertion_replayed'), 'Replay attempts must have a machine-readable rejection code.');
 $assert(str_contains($service, 'session_regenerate_id(true)'), 'Trusted session creation must rotate the session ID.');
 $assert(str_contains($service, "'source' => 'microgifter_assertion'"), 'Trusted sessions must have an explicit assertion source.');
-$assert(str_contains($authGate, 'tl_stage886_current_principal') && str_contains($authGate, 'tl_stage886_enabled()), return null') === false, 'Auth gate source must be present and syntactically explicit.');
+$assert(tl_stage886_session_ttl_seconds() === 28800, 'Trusted-session TTL must be independent from assertion TTL.');
+$assert(str_contains($sessionPolicy, 'TL_ACCOUNT_BRIDGE_SESSION_TTL') && str_contains($sessionPolicy, "link_status='active'"), 'Session policy must be configurable and update active links only.');
+$assert(str_contains($authGate, 'tl_stage886_current_principal'), 'Auth gate must resolve verified Stage 886 principals first.');
 $assert(str_contains($authGate, 'if (function_exists(\'tl_stage886_enabled\') && tl_stage886_enabled()) return null;'), 'Configured Stage 886 must close legacy raw-session fallback.');
 $assert(is_file($root . '/account-link.php'), 'Browser account-link receiver must exist.');
 $assert(is_file($root . '/admin/account-integration.php'), 'Admin account integration console must exist.');
 $assert(is_file($root . '/api/training/account-link.php'), 'Account-link API must exist.');
 $assert(is_file($root . '/api/training/account-integration-status.php'), 'Integration status API must exist.');
+$assert(is_file($root . '/examples/microgifter-stage886-emitter.php'), 'Microgifter emitter reference must exist.');
 $assert(str_contains($runner, 'stage886-account-integration-contract-test.php'), 'Main quality runner must execute Stage 886 contracts.');
 
 if ($failures) {
