@@ -17,6 +17,12 @@ php ./tests/campaign-discovery-detail-enrollment-contract-test.php
 echo "== Campaign discovery detail and enrollment scored audit =="
 php ./scripts/campaign-discovery-detail-enrollment-quality-audit.php
 
+echo "== Task detail status and proof revisions contracts =="
+php ./tests/task-detail-status-proof-revisions-contract-test.php
+
+echo "== Task detail status and proof revisions scored audit =="
+php ./scripts/task-detail-status-proof-revisions-quality-audit.php
+
 echo "== Security runtime =="
 php ./tests/security-runtime-test.php
 

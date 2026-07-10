@@ -64,6 +64,12 @@ jobs:
       - name: Campaign discovery detail and enrollment scored audit
         run: php ./scripts/campaign-discovery-detail-enrollment-quality-audit.php
 
+      - name: Task detail status and proof revisions contract
+        run: php ./tests/task-detail-status-proof-revisions-contract-test.php
+
+      - name: Task detail status and proof revisions scored audit
+        run: php ./scripts/task-detail-status-proof-revisions-quality-audit.php
+
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
 
