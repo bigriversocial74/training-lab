@@ -27,7 +27,7 @@ try {
     ];
     $stage891Actions = [
         'stage891_recover_stale_handoffs' => ['Recover stale reward handoffs', 'tl_stage891_recover_stale_processing'],
-        'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage891_requeue_handoff'],
+        'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage893_requeue_handoff_guarded'],
         'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage893_process_guarded_batch'],
         'stage891_run_handoff_acceptance' => ['Run reward handoff acceptance', 'tl_stage891_run_acceptance'],
     ];
