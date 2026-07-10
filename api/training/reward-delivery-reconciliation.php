@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
-require_once __DIR__ . '/../../includes/training-lab-stage893-processing-wrapper.php';
+require_once __DIR__ . '/../../includes/training-lab-stage894-reconciliation-bootstrap.php';
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 try {
@@ -9,7 +9,7 @@ try {
         if (!tl_security_developer_key_valid() && !tl_auth_role_allowed($user, 'manager')) {
             throw new TlHttpException('A trusted manager or administrator account is required.', 403, 'reward_reconciliation_forbidden');
         }
-        tl_security_json_response(['ok'=>true,'data'=>tl_stage893_summary_guarded()]);
+        tl_security_json_response(['ok'=>true,'data'=>tl_stage893_summary_guarded(),'client'=>tl_stage894_summary()]);
         exit;
     }
     if ($method !== 'POST') {
@@ -27,7 +27,7 @@ try {
     } else {
         throw new TlHttpException('Unsupported Stage 893 action.', 422, 'unsupported_stage893_action');
     }
-    tl_security_json_response(['ok'=>true,'action'=>$action,'data'=>$result,'summary'=>tl_stage893_summary_guarded()]);
+    tl_security_json_response(['ok'=>true,'action'=>$action,'data'=>$result,'summary'=>tl_stage893_summary_guarded(),'client'=>tl_stage894_summary()]);
 } catch (Throwable $e) {
     tl_security_json_exception($e);
 }
