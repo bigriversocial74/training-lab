@@ -1,6 +1,8 @@
 <?php
 /** Training Lab session/auth bridge with trusted-role enforcement. */
 require_once __DIR__ . '/training-lab-security.php';
+$stage886Path = __DIR__ . '/training-lab-stage886-account-integration.php';
+if (is_file($stage886Path)) require_once $stage886Path;
 
 if (!function_exists('tl_auth_session_start')) {
     function tl_auth_session_start(): void { tl_security_session_start(); }
@@ -25,6 +27,19 @@ if (!function_exists('tl_auth_existing_microgifter_user')) {
     function tl_auth_existing_microgifter_user(): ?array
     {
         tl_auth_session_start();
+
+        // Stage 886 is the production trust boundary. It re-checks link status,
+        // role, issuer, schema readiness, and assertion/session expiration.
+        if (function_exists('tl_stage886_current_principal')) {
+            $verified = tl_stage886_current_principal();
+            if ($verified) return $verified;
+            // Once the signed bridge is configured, never fall back to trusting
+            // browser-controlled/raw legacy session fields.
+            if (function_exists('tl_stage886_enabled') && tl_stage886_enabled()) return null;
+        }
+
+        // Compatibility fallback for deployments that have not configured Stage
+        // 886 yet. This path is automatically closed once the bridge secret is set.
         foreach (['microgifter_user_id','mg_user_id','auth_user_id','logged_in_user_id','user_id'] as $key) {
             if (empty($_SESSION[$key])) continue;
             $role = strtolower((string)($_SESSION['role'] ?? $_SESSION['user_role'] ?? 'participant'));
@@ -53,6 +68,7 @@ if (!function_exists('tl_auth_current_user')) {
         if ($existing) return $existing;
         $local = $_SESSION['training_lab_user'] ?? null;
         if (!is_array($local)) return null;
+        if ((string)($local['source'] ?? '') === 'microgifter_assertion') return null;
         $local['role'] = 'participant';
         $local['source'] = (string)($local['source'] ?? 'training_lab_demo_session');
         return $local;
