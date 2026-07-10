@@ -4,23 +4,12 @@
  *
  * IMPORTANT FOR DAVID'S CPANEL WORKFLOW
  * ------------------------------------
- * This file is packaged at:
- *   /labs/labs/config.php
+ * This file is packaged at /labs/labs/config.php. After extracting the zip and
+ * moving the CONTENTS of the first /labs/ folder into web root, it lands at
+ * /labs/config.php. Edit only that deployed private file.
  *
- * Because David extracts the zip, then moves the CONTENTS of the first /labs/
- * folder up into the web root.
- *
- * After that move, this file lands at:
- *   /labs/config.php
- *
- * Edit this final file:
- *   /labs/config.php
- *
- * No /config/ folder.
- * No root /config.php required.
- * No database password stored in /includes/.
+ * Do not commit live credentials or a production developer key.
  */
-
 return [
     'db' => [
         'host' => 'localhost',
@@ -30,13 +19,15 @@ return [
         'password' => 'PUT_YOUR_DATABASE_PASSWORD_HERE',
         'charset' => 'utf8mb4',
     ],
-
     'training_lab' => [
         'mode' => 'database',
+        'debug' => false,
+        'allow_demo_session_login' => false,
         'proof_records_only_no_real_uploads' => true,
         'reward_events_only_no_wallet_balance_changes' => true,
         'payments_enabled' => false,
         'claim_redeem_enabled' => false,
         'use_existing_microgifter_auth' => true,
+        // Prefer TL_DEVELOPER_KEY in the server environment. Never commit it here.
     ],
 ];
