@@ -172,8 +172,11 @@ if (!function_exists('tl_product_admin_nav')) {
                 'admin-campaigns' => ['/admin/campaigns.php', 'Campaigns'],
                 'admin-cohort-manager' => ['/admin/cohort-manager.php', 'Participants'],
                 'admin-review-workbench' => ['/admin/review-workbench.php', 'Reviews'],
-                'admin-reward-bridge' => ['/admin/reward-bridge.php', 'Rewards'],
-                'admin-reporting-center' => ['/admin/reporting-center.php', 'Reports'],
+            ],
+            'Rewards & Insights' => [
+                'admin-reward-rules' => ['/admin/reward-rules.php', 'Reward Rules'],
+                'admin-reward-bridge' => ['/admin/reward-bridge.php', 'Fulfillment'],
+                'admin-analytics' => ['/admin/analytics.php', 'Analytics'],
             ],
             'Account' => [
                 'app-dashboard' => ['/app/index.php', 'My Training'],
@@ -183,6 +186,7 @@ if (!function_exists('tl_product_admin_nav')) {
 
         if ($role === 'admin') {
             $groups['System'] = [
+                'admin-reward-operations' => ['/admin/reward-operations.php', 'Advanced Rewards'],
                 'admin-permissions' => ['/admin/permissions.php', 'Access'],
                 'admin-backend-readiness' => ['/admin/backend-readiness.php', 'System Health'],
                 'admin-db-health' => ['/admin/db-health.php', 'Database'],
