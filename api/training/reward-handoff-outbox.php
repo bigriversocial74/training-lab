@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
-require_once __DIR__ . '/../../includes/training-lab-stage893-processing-wrapper.php';
+require_once __DIR__ . '/../../includes/training-lab-stage893-legacy-action-guard.php';
 
 try {
     $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
@@ -10,8 +10,8 @@ try {
         $allowed = [
             'enqueue_reward_handoff' => 'tl_stage893_enqueue_reward_event_guarded',
             'sync_reward_handoff_outbox' => 'tl_stage893_sync_outbox_guarded',
-            'process_reward_handoff' => 'tl_stage893_process_handoff_guarded',
-            'process_reward_handoff_batch' => 'tl_stage893_process_guarded_batch',
+            'process_reward_handoff' => 'tl_stage893_process_handoff_production_guarded',
+            'process_reward_handoff_batch' => 'tl_stage893_process_batch_production_guarded',
             'cancel_reward_handoff' => 'tl_stage890_cancel_handoff',
         ];
         if (!isset($allowed[$action])) throw new TlHttpException('Unsupported reward handoff action.', 422, 'reward_handoff_action_invalid');
