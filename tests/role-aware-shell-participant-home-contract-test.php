@@ -38,7 +38,7 @@ $forbids($layout, 'Stage 885 Review Workflow', 'Stage labels must not appear in 
 $forbids($layout, "'Backend'", 'Participant navigation must not expose the old Backend label.');
 
 $requires($shell, "return 'participant';", 'App pages must default to participant access.');
-$requires($shell, "return in_array($script, $reviewerPages, true) ? 'reviewer' : 'manager';", 'Admin pages must separate reviewer and manager access.');
+$requires($shell, 'return in_array($script, $reviewerPages, true) ? \'reviewer\' : \'manager\';', 'Admin pages must separate reviewer and manager access.');
 $requires($shell, "'manager' => 3", 'Manager role ranking is required.');
 $requires($shell, "'admin' => 4", 'Administrator role ranking is required.');
 $requires($shell, 'tl_product_redirect', 'Unauthorized page access must use a safe redirect.');
@@ -54,7 +54,7 @@ $requires($homeService, 'tl_product_manager_home_scope', 'Manager dashboard data
 $requires($homeService, 'WHERE c.owner_user_id=?', 'Manager campaign reads must be scoped to the trusted owner user ID.');
 $requires($homeService, 'WHERE owner_user_id=?', 'Manager campaign list must be scoped by owner_user_id.');
 $requires($homeService, '$countStmt = $pdo->prepare($countSql)', 'Manager aggregate counts must use a prepared query.');
-$requires($homeService, "$role === 'manager'", 'Manager-only ownership scoping must be explicit.');
+$requires($homeService, '$role === \'manager\'', 'Manager-only ownership scoping must be explicit.');
 $requires($homeService, "'scope' => 'owned_campaigns'", 'Manager results must declare owned-campaign scope.');
 $requires($documentation, 'Merchant managers see only campaigns where `training_campaigns.owner_user_id` matches their trusted account', 'Documentation must define merchant tenant scoping.');
 
@@ -76,7 +76,7 @@ $forbids($adminHome, 'Stage ', 'Management home must not expose stage terminolog
 
 foreach (['app/launchpad.php' => $launchpad, 'app/participant-portal.php' => $portal] as $path => $content) {
     $requires($content, 'tl_product_require_page_access($page)', $path . ' must preserve participant access enforcement.');
-    $requires($content, "tl_product_redirect($destination)", $path . ' must redirect to the consolidated participant home.');
+    $requires($content, 'tl_product_redirect($destination)', $path . ' must redirect to the consolidated participant home.');
     $forbids($content, "\$_GET['user_id']", $path . ' must ignore legacy user_id switching.');
 }
 
