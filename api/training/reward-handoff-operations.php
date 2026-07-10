@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-stage891-reward-handoff-recovery.php';
+require_once __DIR__ . '/../../includes/training-lab-stage891-owned-processor.php';
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 try {
@@ -26,7 +27,7 @@ try {
     } elseif ($action === 'stage891_requeue_handoff') {
         $result = tl_stage891_requeue_handoff($input);
     } elseif ($action === 'stage891_process_resilient_batch') {
-        $result = tl_stage891_process_resilient_batch($input);
+        $result = tl_stage891_process_owned_batch($input);
     } elseif ($action === 'stage891_run_handoff_acceptance') {
         $result = tl_stage891_run_acceptance($input);
     } else {
