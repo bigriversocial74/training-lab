@@ -19,7 +19,9 @@ $functionBody = static function (string $source, string $name, ?string $next = n
 $service = $read('includes/training-lab-stage893-external-delivery-reconciliation.php');
 $processing = $read('includes/training-lab-stage893-processing-wrapper.php');
 $workerWrapper = $read('includes/training-lab-stage893-worker-wrapper.php');
+$legacyGuard = $read('includes/training-lab-stage893-legacy-action-guard.php');
 $cli = $read('bin/reward-handoff-worker.php');
+$appAction = $read('api/training/app-action.php');
 $outboxApi = $read('api/training/reward-handoff-outbox.php');
 $operationsApi = $read('api/training/reward-handoff-operations.php');
 $reconciliationApi = $read('api/training/reward-delivery-reconciliation.php');
@@ -47,6 +49,7 @@ $singleGuardBody = $functionBody($processing, 'tl_stage893_reconcile_handoff_gua
 $enqueueBody = $functionBody($processing, 'tl_stage893_enqueue_reward_event_guarded', 'tl_stage893_sync_outbox_guarded');
 $syncBody = $functionBody($processing, 'tl_stage893_sync_outbox_guarded', 'tl_stage893_requeue_handoff_guarded');
 $requeueBody = $functionBody($processing, 'tl_stage893_requeue_handoff_guarded', 'tl_stage893_process_guarded_batch');
+$claimRetryBody = $functionBody($legacyGuard, 'tl_stage893_claim_or_retry_reward_guarded');
 
 $check(str_contains($service, 'microgifter_training_reward_lookup'), 'read adapter contract includes training reward lookup');
 $check(str_contains($service, 'microgifter_find_reward_by_idempotency_key'), 'read adapter contract supports idempotency lookup');
@@ -94,6 +97,16 @@ $check(str_contains($syncBody, 'tl_stage893_enqueue_reward_event_guarded'), 'bul
 $check(str_contains($requeueBody, 'external_delivery_reconciliation_required'), 'manual requeue rejects reconciliation quarantine');
 $check(str_contains($requeueBody, 'tl_stage891_requeue_handoff'), 'safe requeue delegates to Stage 891');
 
+$check(str_contains($legacyGuard, 'tl_stage893_require_reconciliation_processing_gate'), 'manual production operations require reconciliation gate');
+$check(str_contains($legacyGuard, 'external_delivery_reconciliation_disabled'), 'production guard exposes clear disabled code');
+$check(str_contains($legacyGuard, 'tl_stage893_process_handoff_guarded($input)'), 'production single guard keeps quarantine processor');
+$check(str_contains($legacyGuard, 'tl_stage893_process_guarded_batch($input)'), 'production batch guard keeps quarantine-aware batch');
+$check(str_contains($claimRetryBody, 'tl_stage893_enqueue_reward_event_guarded'), 'claim and retry route through guarded outbox enqueue');
+$check(str_contains($claimRetryBody, 'tl_stage893_process_handoff_guarded'), 'claim and retry route through guarded handoff processing');
+$check(str_contains($claimRetryBody, 'legacy_direct_adapter_bypassed'), 'claim and retry report legacy direct adapter bypass');
+$check(!str_contains($claimRetryBody, 'tl_mg_claim_training_reward'), 'claim guard never calls legacy direct claim function');
+$check(!str_contains($claimRetryBody, 'tl_mg_stage160_retry_microgifter_issue'), 'retry guard never calls legacy direct retry function');
+
 $check(str_contains($workerWrapper, 'external_delivery_reconciliation_disabled'), 'scheduled process requires reconciliation gate');
 $check(str_contains($workerWrapper, 'tl_stage893_reconcile_batch_guarded'), 'worker runs guarded reconciliation preflight');
 $check(str_contains($workerWrapper, 'tl_stage893_sync_outbox_guarded'), 'worker uses quarantine-aware sync');
@@ -102,6 +115,11 @@ $check(str_contains($workerWrapper, 'active_worker_leases_excluded_from_reconcil
 $check(str_contains($cli, 'training-lab-stage893-worker-wrapper.php'), 'CLI loads Stage 893 wrapper');
 $check(str_contains($cli, 'tl_stage893_run_scheduled_worker'), 'CLI calls Stage 893 worker wrapper');
 
+$check(str_contains($appAction, "in_array(\$action, ['claim_training_reward','retry_microgifter_reward_issue'], true)"), 'generic app action intercepts claim and retry');
+$check(str_contains($appAction, 'tl_stage893_claim_or_retry_reward_guarded'), 'generic app action uses Stage 893 claim guard');
+$check(!str_contains($appAction, 'tl_mg_claim_training_reward($data)'), 'generic route does not call legacy claim function');
+$check(!str_contains($appAction, 'tl_mg_stage160_retry_microgifter_issue($data)'), 'generic route does not call legacy retry function');
+
 $check(str_contains($reconciliationApi, 'if ($method === \'GET\')'), 'reconciliation API supports protected GET summary');
 $check(str_contains($reconciliationApi, 'tl_security_guard_write($action, $raw)'), 'reconciliation API protects writes');
 $check(str_contains($reconciliationApi, 'tl_auth_role_allowed'), 'reconciliation API restricts GET to manager/admin');
@@ -109,17 +127,20 @@ $check(str_contains($reconciliationApi, 'tl_stage893_reconcile_handoff_guarded')
 $check(str_contains($reconciliationApi, 'tl_stage893_reconcile_batch_guarded'), 'reconciliation API uses guarded candidates');
 $check(str_contains($outboxApi, "'enqueue_reward_handoff' => 'tl_stage893_enqueue_reward_event_guarded'"), 'outbox API guards explicit enqueue');
 $check(str_contains($outboxApi, "'sync_reward_handoff_outbox' => 'tl_stage893_sync_outbox_guarded'"), 'outbox API guards bulk sync');
-$check(str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage893_process_handoff_guarded'"), 'outbox API uses guarded single processor');
-$check(str_contains($outboxApi, "'process_reward_handoff_batch' => 'tl_stage893_process_guarded_batch'"), 'outbox API uses guarded batch');
-$check(str_contains($operationsApi, 'tl_stage893_process_guarded_batch'), 'operations API uses guarded batch');
+$check(str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage893_process_handoff_production_guarded'"), 'outbox API requires reconciliation before single processing');
+$check(str_contains($outboxApi, "'process_reward_handoff_batch' => 'tl_stage893_process_batch_production_guarded'"), 'outbox API requires reconciliation before batch processing');
+$check(str_contains($operationsApi, 'tl_stage893_process_batch_production_guarded'), 'operations API requires reconciliation before processing');
 $check(str_contains($operationsApi, 'tl_stage893_requeue_handoff_guarded'), 'operations API guards manual requeue');
 $check(str_contains($proofReviewApi, 'tl_stage893_sync_outbox_guarded'), 'proof review uses quarantine-aware outbox sync');
 $check(str_contains($actionResult, "'stage893_reconcile_delivery' => ['Reconcile external reward delivery', 'tl_stage893_reconcile_handoff_guarded']"), 'admin single reconciliation guards active leases');
 $check(str_contains($actionResult, "'stage893_reconcile_delivery_batch' => ['Reconcile external reward delivery batch', 'tl_stage893_reconcile_batch_guarded']"), 'admin batch reconciliation uses guarded candidates');
+$check(str_contains($actionResult, "'claim_training_reward' => ['Claim Training Lab reward', 'tl_stage893_claim_or_retry_reward_guarded']"), 'admin claim uses Stage 893 outbox guard');
+$check(str_contains($actionResult, "'retry_microgifter_reward_issue' => ['Retry Microgifter reward issue', 'tl_stage893_claim_or_retry_reward_guarded']"), 'admin retry uses Stage 893 outbox guard');
 $check(str_contains($actionResult, "'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage893_requeue_handoff_guarded']"), 'admin requeue uses Stage 893 guard');
 $check(str_contains($actionResult, "'enqueue_reward_handoff' => ['Enqueue reward handoff', 'tl_stage893_enqueue_reward_event_guarded']"), 'admin enqueue uses Stage 893 guard');
 $check(str_contains($actionResult, "'sync_reward_handoff_outbox' => ['Sync reward handoff outbox', 'tl_stage893_sync_outbox_guarded']"), 'admin sync uses Stage 893 guard');
-$check(str_contains($actionResult, "'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_guarded']"), 'admin single processing uses guard');
+$check(str_contains($actionResult, "'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_production_guarded']"), 'admin single processing requires reconciliation');
+$check(str_contains($actionResult, "'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage893_process_batch_production_guarded']"), 'admin batch processing requires reconciliation');
 $check(str_contains($rewardBridge, 'tl_stage893_render_admin_panel_guarded'), 'Reward Bridge renders guarded Stage 893 panel');
 
 foreach ([$config, $labsConfig] as $index => $example) {
