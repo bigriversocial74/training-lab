@@ -32,7 +32,7 @@ $sections = [
             'protected_outbox_api'=>$contains('api/training/reward-handoff-outbox.php', 'tl_security_guard_write') && $contains('api/training/reward-handoff-outbox.php', 'tl_auth_role_allowed'),
             'protected_recovery_api'=>$contains('api/training/reward-handoff-operations.php', 'tl_security_guard_write') && $contains('api/training/reward-handoff-operations.php', 'tl_auth_role_allowed'),
             'owned_processor_routes'=>$contains('api/training/reward-handoff-outbox.php', 'tl_stage891_process_handoff_owned') && $contains('api/training/reward-handoff-operations.php', 'tl_stage891_process_owned_batch'),
-            'protected_worker_status_api'=>$exists('api/training/reward-handoff-worker-status.php') && $contains('api/training/reward-handoff-worker-status.php', "if ($method !== 'GET')") && $contains('api/training/reward-handoff-worker-status.php', 'tl_auth_role_allowed'),
+            'protected_worker_status_api'=>$exists('api/training/reward-handoff-worker-status.php') && $contains('api/training/reward-handoff-worker-status.php', "if (\$method !== 'GET')") && $contains('api/training/reward-handoff-worker-status.php', 'tl_auth_role_allowed'),
             'safe_json_errors'=>$contains('includes/training-lab-security.php', 'tl_security_json_exception'),
             'request_ids'=>$contains('includes/training-lab-security.php', 'X-Request-ID'),
             'payload_limit'=>$contains('includes/training-lab-security.php', 'payload_too_large'),
