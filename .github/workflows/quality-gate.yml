@@ -70,6 +70,12 @@ jobs:
       - name: Task detail status and proof revisions scored audit
         run: php ./scripts/task-detail-status-proof-revisions-quality-audit.php
 
+      - name: Reward rules analytics and operational health contract
+        run: php ./tests/reward-rules-analytics-operational-health-contract-test.php
+
+      - name: Reward rules analytics and operational health scored audit
+        run: php ./scripts/reward-rules-analytics-operational-health-quality-audit.php
+
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
 
