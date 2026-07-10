@@ -19,7 +19,7 @@ try {
         $data = tl_security_apply_actor($raw, $user);
         $fn = $allowed[$action];
         $result = $fn($data);
-        tl_security_json_response(['ok'=>true,'action'=>$action,'result'=>$result,'outbox'=>tl_stage890_summary(),'reconciliation'=>tl_stage893_summary()]);
+        tl_security_json_response(['ok'=>true,'action'=>$action,'result'=>$result,'outbox'=>tl_stage890_summary(),'reconciliation'=>tl_stage893_summary_guarded()]);
         exit;
     }
     if ($method !== 'GET') {
@@ -30,7 +30,7 @@ try {
     if (!tl_security_developer_key_valid() && !tl_auth_role_allowed($user, 'manager')) {
         throw new TlHttpException('A trusted manager or administrator account is required.', 403, 'reward_handoff_outbox_forbidden');
     }
-    tl_security_json_response(['ok'=>true,'outbox'=>tl_stage890_summary(),'acceptance'=>tl_stage891_acceptance_summary(),'reconciliation'=>tl_stage893_summary()]);
+    tl_security_json_response(['ok'=>true,'outbox'=>tl_stage890_summary(),'acceptance'=>tl_stage891_acceptance_summary(),'reconciliation'=>tl_stage893_summary_guarded()]);
 } catch (Throwable $e) {
     tl_security_json_exception($e);
 }
