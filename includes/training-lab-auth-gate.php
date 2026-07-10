@@ -21,13 +21,24 @@ if (!function_exists('tl_auth_clean_path')) {
     function tl_auth_clean_path(?string $path, string $fallback = '/admin/index.php'): string { return tl_auth_safe_path($path, $fallback); }
 }
 
+if (!function_exists('tl_auth_signed_identity_configured')) {
+    function tl_auth_signed_identity_configured(): bool
+    {
+        $envSecret = getenv('TL_IDENTITY_SHARED_SECRET');
+        $secret = $envSecret !== false && $envSecret !== ''
+            ? (string)$envSecret
+            : (string)(tl_security_config()['identity_shared_secret'] ?? '');
+        return strlen($secret) >= 32;
+    }
+}
+
 if (!function_exists('tl_auth_existing_microgifter_user')) {
     function tl_auth_existing_microgifter_user(): ?array
     {
         tl_auth_session_start();
-        // Once Stage 886 signed identity is configured, raw legacy session fields are
-        // no longer accepted as a trusted Microgifter identity source.
-        if (function_exists('tl_stage886_ready') && tl_stage886_ready()) return null;
+        // Once signed identity is configured, raw legacy session fields are no
+        // longer accepted as a trusted Microgifter identity source.
+        if (tl_auth_signed_identity_configured()) return null;
         foreach (['microgifter_user_id','mg_user_id','auth_user_id','logged_in_user_id','user_id'] as $key) {
             if (empty($_SESSION[$key])) continue;
             $role = strtolower((string)($_SESSION['role'] ?? $_SESSION['user_role'] ?? 'participant'));
@@ -58,6 +69,10 @@ if (!function_exists('tl_auth_current_user')) {
         if (!is_array($local)) return null;
         $source = (string)($local['source'] ?? 'training_lab_demo_session');
         if ($source === 'microgifter_adapter') {
+            if (!function_exists('tl_stage886_validate_current_session')) {
+                $validator = __DIR__ . '/training-lab-stage886-account-integration.php';
+                if (is_file($validator)) require_once $validator;
+            }
             if (function_exists('tl_stage886_validate_current_session')) {
                 return tl_stage886_validate_current_session($local);
             }
