@@ -1,0 +1,59 @@
+/* Campaign discovery, detail, and enrollment product surfaces. */
+.labs-campaign-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;padding:16px;border:1px solid var(--labs-border);border-radius:22px;background:#fff}
+.labs-campaign-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.labs-campaign-tabs a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1px solid var(--labs-border);border-radius:999px;color:var(--labs-muted);font-weight:850;font-size:.86rem}
+.labs-campaign-tabs a.is-active{border-color:var(--labs-primary);background:var(--labs-primary);color:#fff}
+.labs-campaign-search{display:flex;gap:8px;min-width:min(100%,360px)}
+.labs-campaign-search input{margin:0;min-height:42px;padding:10px 13px;border-radius:999px}
+.labs-campaign-search .labs-btn{min-height:42px}
+.labs-campaign-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.labs-campaign-card{display:flex;flex-direction:column;min-height:100%;padding:0;overflow:hidden}
+.labs-campaign-card-top{min-height:132px;padding:22px;background:linear-gradient(145deg,#f0faf4,#fff);border-bottom:1px solid var(--labs-border)}
+.labs-campaign-card-top h2{margin:10px 0 8px;font-size:1.35rem;line-height:1.05;letter-spacing:-.04em}
+.labs-campaign-card-top p{margin:0;color:var(--labs-muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.labs-campaign-card-body{display:flex;flex:1;flex-direction:column;gap:16px;padding:20px}
+.labs-campaign-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.labs-campaign-fact{padding:12px;border-radius:15px;background:var(--labs-surface-soft)}
+.labs-campaign-fact span{display:block;color:var(--labs-muted);font-size:.7rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+.labs-campaign-fact strong{display:block;margin-top:4px;font-size:.93rem}
+.labs-campaign-card-actions{display:flex;gap:9px;margin-top:auto}
+.labs-campaign-card-actions .labs-btn{flex:1}
+.labs-campaign-status{display:inline-flex;align-items:center;width:max-content;padding:6px 10px;border-radius:999px;font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.labs-campaign-status.is-success{background:#e8f8ee;color:#0e6b3e}
+.labs-campaign-status.is-info{background:#edf5ff;color:#245b94}
+.labs-campaign-status.is-warning{background:#fff0df;color:#8a5600}
+.labs-campaign-status.is-pending{background:#f5efff;color:#6841a5}
+.labs-campaign-status.is-neutral{background:#f2f5f3;color:#66736d}
+.labs-campaign-empty{grid-column:1/-1}
+
+.labs-campaign-detail-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:20px;margin-bottom:20px}
+.labs-campaign-detail-main,.labs-campaign-enroll-card{border:1px solid var(--labs-border);border-radius:30px;background:#fff;box-shadow:var(--labs-shadow)}
+.labs-campaign-detail-main{padding:34px;background:linear-gradient(145deg,#fff,#f1faf5)}
+.labs-campaign-detail-main h1{margin:9px 0 14px;font-size:clamp(2.2rem,5vw,4.6rem);line-height:.95;letter-spacing:-.065em}
+.labs-campaign-detail-main>p{max-width:760px;margin:0;color:var(--labs-muted);font-size:1.06rem}
+.labs-campaign-detail-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+.labs-campaign-detail-meta span{display:inline-flex;padding:8px 11px;border:1px solid var(--labs-border);border-radius:999px;background:#fff;color:var(--labs-text);font-size:.8rem;font-weight:800}
+.labs-campaign-enroll-card{display:flex;flex-direction:column;justify-content:space-between;padding:26px}
+.labs-campaign-enroll-card h2{margin:8px 0;font-size:1.55rem;letter-spacing:-.04em}
+.labs-campaign-enroll-card p{margin:0 0 18px;color:var(--labs-muted)}
+.labs-campaign-enroll-card form{margin:0}
+.labs-campaign-enroll-card .labs-btn{width:100%}
+.labs-campaign-detail-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);gap:20px;align-items:start}
+.labs-campaign-task-sequence{display:grid;gap:11px}
+.labs-campaign-task-row{display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:14px;padding:15px;border:1px solid var(--labs-border);border-radius:18px;background:#fff}
+.labs-campaign-task-number{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:var(--labs-surface-soft);color:var(--labs-primary);font-weight:900}
+.labs-campaign-task-row strong{display:block}
+.labs-campaign-task-row p{margin:4px 0 0;color:var(--labs-muted);font-size:.9rem}
+.labs-campaign-task-tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}
+.labs-campaign-task-tags span{padding:6px 9px;border-radius:999px;background:#f2f5f3;color:#65736c;font-size:.72rem;font-weight:850;white-space:nowrap}
+.labs-campaign-side-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.labs-campaign-side-list li{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:16px;background:var(--labs-surface-soft)}
+.labs-campaign-side-list li:before{content:"✓";display:grid;place-items:center;width:22px;height:22px;border-radius:99px;background:#fff;color:var(--labs-primary);font-size:.72rem;font-weight:900;flex:0 0 auto}
+.labs-campaign-flash{margin-bottom:18px;padding:15px 18px;border:1px solid var(--labs-border);border-radius:18px;background:#fff;font-weight:750}
+.labs-campaign-flash.is-success{border-color:#a9dfbd;background:#effaf3;color:#0e6b3e}
+.labs-campaign-flash.is-error{border-color:#efb2a4;background:#fff4f1;color:#8f2f1c}
+.labs-campaign-flash.is-info{border-color:#b9d3ee;background:#f3f8fd;color:#245b94}
+.labs-campaign-back{display:inline-flex;margin-bottom:14px;color:var(--labs-primary);font-weight:850}
+@media(max-width:1100px){.labs-campaign-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.labs-campaign-detail-hero,.labs-campaign-detail-layout{grid-template-columns:1fr}}
+@media(max-width:760px){.labs-campaign-toolbar{align-items:stretch;flex-direction:column}.labs-campaign-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.labs-campaign-tabs a{justify-content:center}.labs-campaign-search{min-width:0;width:100%}.labs-campaign-grid{grid-template-columns:1fr}.labs-campaign-detail-main,.labs-campaign-enroll-card{padding:20px;border-radius:22px}.labs-campaign-detail-main h1{font-size:2.45rem}.labs-campaign-task-row{grid-template-columns:40px minmax(0,1fr)}.labs-campaign-task-number{width:40px;height:40px}.labs-campaign-task-tags{grid-column:2;justify-content:flex-start}.labs-campaign-card-actions{flex-direction:column}.labs-campaign-card-actions .labs-btn{width:100%}}
+@media(max-width:460px){.labs-campaign-tabs{grid-template-columns:1fr}.labs-campaign-search{flex-direction:column}.labs-campaign-search .labs-btn{width:100%}.labs-campaign-facts{grid-template-columns:1fr}}
