@@ -4,6 +4,8 @@ require_once __DIR__ . '/../includes/labs-layout.php';
 require_once __DIR__ . '/../includes/training-lab-app-service.php';
 $stage885Path = __DIR__ . '/../includes/training-lab-stage885-proof-review-handoff.php';
 if (is_file($stage885Path)) require_once $stage885Path;
+$stage894Path = __DIR__ . '/../includes/training-lab-stage894-reconciliation-bootstrap.php';
+if (is_file($stage894Path)) require_once $stage894Path;
 $stage893Path = __DIR__ . '/../includes/training-lab-stage893-legacy-action-guard.php';
 if (is_file($stage893Path)) require_once $stage893Path;
 
@@ -57,6 +59,7 @@ try {
             $result['stage890_outbox_sync'] = ['ok'=>false, 'error'=>$syncError->getMessage()];
         }
     }
+    if (function_exists('tl_stage894_summary')) $result['stage894_reward_lookup_client'] = tl_stage894_summary();
 } catch (Throwable $e) {
     [$payload] = tl_security_error_payload($e);
     $error = (string)$payload['error'];
@@ -97,6 +100,6 @@ labs_page_start(['title'=>'Action Result | Training Lab','section'=>'admin','act
 ?>
 <?php if (function_exists('tl_design_render_logged_in_template')) tl_design_render_logged_in_template('admin-action-result'); ?>
 <section class="labs-page-title labs-stage200-title"><div><span class="labs-eyebrow">Training Lab action</span><h1><?php echo $error ? 'Action needs attention.' : 'Action completed.'; ?></h1><p class="labs-copy">The result below comes from the protected Training Lab action router.</p></div><div class="labs-actions"><a class="labs-btn labs-btn-primary" href="<?php echo labs_url($next[0]); ?>"><?php echo labs_e($next[1]); ?></a><a class="labs-btn" href="<?php echo labs_url('/app/flow-board.php'); ?>">Flow Board</a></div></section>
-<section class="labs-card <?php echo $error ? 'labs-error-card' : 'labs-success-card'; ?>"><?php if ($error): ?><h2>Error</h2><p class="labs-copy"><?php echo labs_e($error); ?></p><small>Request ID: <?php echo labs_e($requestId); ?></small><?php else: ?><h2><?php echo labs_e((string)($result['label'] ?? 'Action complete')); ?></h2><p class="labs-copy">Written to Training Lab tables only unless the explicitly gated Stage 893 guarded processor confirms or reconciles a Microgifter handoff.</p><pre class="labs-stage25-code"><?php echo labs_e(json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)); ?></pre><?php endif; ?></section>
-<section class="labs-safe-note">Protected by authenticated actor mapping, role permissions, CSRF verification, worker-lease ownership, external-delivery reconciliation, and safe error handling.</section>
+<section class="labs-card <?php echo $error ? 'labs-error-card' : 'labs-success-card'; ?>"><?php if ($error): ?><h2>Error</h2><p class="labs-copy"><?php echo labs_e($error); ?></p><small>Request ID: <?php echo labs_e($requestId); ?></small><?php else: ?><h2><?php echo labs_e((string)($result['label'] ?? 'Action complete')); ?></h2><p class="labs-copy">Written to Training Lab tables only unless the explicitly gated Stage 893 processor confirms delivery through the Stage 894 signed read-only Microgifter client.</p><pre class="labs-stage25-code"><?php echo labs_e(json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)); ?></pre><?php endif; ?></section>
+<section class="labs-safe-note">Protected by authenticated actor mapping, role permissions, CSRF verification, worker-lease ownership, signed read-only delivery lookup, external-delivery reconciliation, and safe error handling.</section>
 <?php labs_page_end(['section'=>'admin']); ?>

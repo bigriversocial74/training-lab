@@ -7,10 +7,6 @@ on:
   push:
     branches:
       - main
-      - 'feature/**'
-      - 'fix/**'
-      - 'hotfix/**'
-      - 'qa/**'
 
 permissions:
   contents: read
@@ -36,5 +32,41 @@ jobs:
           coverage: none
           extensions: mbstring, pdo, pdo_mysql
 
-      - name: Run syntax and repository quality gates
-        run: bash ./run-quality-gate.sh
+      - name: Recursive PHP syntax
+        run: bash ./run-full-syntax-check.sh
+
+      - name: Security runtime contract
+        run: php ./tests/security-runtime-test.php
+
+      - name: Production runtime acceptance contract
+        run: php ./tests/production-runtime-acceptance-contract-test.php
+
+      - name: Stage 886 account integration contract
+        run: php ./tests/stage886-account-integration-contract-test.php
+
+      - name: Stage 889 shared session hardening contract
+        run: php ./tests/stage889-shared-session-hardening-contract-test.php
+
+      - name: Stage 890 reward handoff outbox contract
+        run: php ./tests/stage890-reward-handoff-outbox-contract-test.php
+
+      - name: Stage 891 reward handoff recovery contract
+        run: php ./tests/stage891-reward-handoff-recovery-contract-test.php
+
+      - name: Stage 892 scheduled worker contract
+        run: php ./tests/stage892-scheduled-worker-contract-test.php
+
+      - name: Stage 893 external delivery reconciliation contract
+        run: php ./tests/stage893-external-delivery-reconciliation-contract-test.php
+
+      - name: Stage 894 signed reward lookup client contract
+        run: php ./tests/stage894-signed-reward-lookup-client-contract-test.php
+
+      - name: Data integrity contract
+        run: php ./tests/data-integrity-contract-test.php
+
+      - name: HTTP route contract
+        run: php ./tests/http-route-contract-test.php
+
+      - name: Scored quality audit
+        run: php ./scripts/quality-audit.php

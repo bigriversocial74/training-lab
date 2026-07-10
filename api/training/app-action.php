@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-app-service.php';
+require_once __DIR__ . '/../../includes/training-lab-stage894-reconciliation-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-stage893-legacy-action-guard.php';
 
 try {
@@ -18,7 +19,7 @@ try {
     } else {
         $result = tl_training_handle_app_action($data);
     }
-    tl_security_json_response(['ok'=>true,'data'=>$result,'flow'=>tl_app_flow_summary()]);
+    tl_security_json_response(['ok'=>true,'data'=>$result,'flow'=>tl_app_flow_summary(),'reward_lookup_client'=>tl_stage894_summary()]);
 } catch (Throwable $e) {
     tl_security_json_exception($e);
 }
