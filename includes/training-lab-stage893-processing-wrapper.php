@@ -12,6 +12,28 @@ if (!function_exists('tl_stage893_due_handoff_ids')) {
     }
 }
 
+if (!function_exists('tl_stage893_enqueue_reward_event_guarded')) {
+    function tl_stage893_enqueue_reward_event_guarded(array $input): array
+    {
+        if (!tl_stage890_table_ready()) throw new TlHttpException('Stage 890 database migration is required.', 503, 'stage890_schema_missing');
+        $rewardRef = trim((string)($input['reward_event_id'] ?? $input['reward_id'] ?? $input['public_id'] ?? ''));
+        if ($rewardRef === '') throw new TlHttpException('Reward event reference is required.', 422, 'reward_event_required');
+        $pdo = tl_require_db();
+        $reward = tl_stage890_load_reward($pdo, $rewardRef);
+        $stmt = $pdo->prepare('SELECT failure_code, metadata_json FROM training_reward_handoffs WHERE reward_event_id=? OR idempotency_key=? LIMIT 1');
+        $stmt->execute([(int)$reward['id'], tl_stage890_idempotency_key($reward)]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $metadata = tl_stage890_json_decode($row['metadata_json'] ?? null);
+            $reconciliationRequired = !empty($metadata['stage893_reconciliation']['reconciliation_required']);
+            if ((string)($row['failure_code'] ?? '') === 'external_delivery_confirmation_required' || $reconciliationRequired) {
+                throw new TlHttpException('This reward handoff is quarantined pending external delivery confirmation and cannot be refreshed or enqueued.', 409, 'external_delivery_reconciliation_required');
+            }
+        }
+        return tl_stage890_enqueue_reward_event($input);
+    }
+}
+
 if (!function_exists('tl_stage893_sync_outbox_guarded')) {
     function tl_stage893_sync_outbox_guarded(array $input = []): array
     {
@@ -40,7 +62,7 @@ if (!function_exists('tl_stage893_sync_outbox_guarded')) {
         foreach ($rows as $reward) {
             if (!tl_stage890_reward_bridge_enabled($reward)) continue;
             try {
-                $results[] = tl_stage890_enqueue_reward_event([
+                $results[] = tl_stage893_enqueue_reward_event_guarded([
                     'reward_event_id'=>(string)$reward['id'],
                     'actor_user_id'=>(int)($input['actor_user_id'] ?? $input['user_id'] ?? 1),
                 ]);
