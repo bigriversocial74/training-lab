@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../includes/labs-layout.php';
-require_once __DIR__ . '/../includes/training-lab-reward-management.php';
+require_once __DIR__ . '/../includes/training-lab-reward-management-queries.php';
 $page=['title'=>'Reward Fulfillment | Training Lab','section'=>'admin','active'=>'admin-reward-bridge','required_role'=>'manager'];
 $user=tl_product_require_page_access($page);
-$state=tl_reward_management_fulfillment($user ?? [],150);
+$state=tl_reward_management_fulfillment_v2($user ?? [],150);
 $c=$state['counts'];
 labs_page_start($page);
 ?>
