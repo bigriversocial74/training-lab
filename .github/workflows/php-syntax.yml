@@ -15,6 +15,8 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+  issues: write
 
 jobs:
   php-syntax:
@@ -42,6 +44,20 @@ jobs:
           path: php-syntax.log
           if-no-files-found: error
           retention-days: 7
+
+      - name: Comment failed syntax output
+        if: github.event_name == 'pull_request' && steps.syntax.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('php-syntax.log', 'utf8').slice(-12000);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `### PHP syntax diagnostic\n\n\`\`\`text\n${log}\n\`\`\``
+            });
 
       - name: Enforce syntax result
         if: steps.syntax.outcome == 'failure'
