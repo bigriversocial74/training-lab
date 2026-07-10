@@ -35,6 +35,29 @@ jobs:
       - name: Recursive PHP syntax
         run: bash ./run-full-syntax-check.sh
 
+      - name: Role-aware shell and participant home contract
+        id: role_contract
+        continue-on-error: true
+        run: php ./tests/role-aware-shell-participant-home-contract-test.php > role-aware-contract.log 2>&1
+
+      - name: Upload role-aware contract output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: role-aware-contract-php-${{ matrix.php }}
+          path: role-aware-contract.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce role-aware contract result
+        if: steps.role_contract.outcome == 'failure'
+        run: |
+          cat role-aware-contract.log
+          exit 1
+
+      - name: Role-aware shell and participant home scored audit
+        run: php ./scripts/role-aware-shell-participant-home-quality-audit.php
+
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
 

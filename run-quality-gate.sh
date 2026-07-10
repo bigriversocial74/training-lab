@@ -5,6 +5,12 @@ cd "$(dirname "$0")"
 echo "== PHP syntax =="
 bash ./run-full-syntax-check.sh
 
+echo "== Role-aware shell and participant home contracts =="
+php ./tests/role-aware-shell-participant-home-contract-test.php
+
+echo "== Role-aware shell and participant home scored audit =="
+php ./scripts/role-aware-shell-participant-home-quality-audit.php
+
 echo "== Security runtime =="
 php ./tests/security-runtime-test.php
 
