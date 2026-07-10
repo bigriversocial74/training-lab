@@ -33,6 +33,7 @@ return [
             'audience' => 'training-lab',
             'max_ttl_seconds' => 300,
             'clock_skew_seconds' => 30,
+            'session_ttl_seconds' => 28800,
             // Set TL_ACCOUNT_BRIDGE_SECRET in the server environment.
             // During rotation, TL_ACCOUNT_BRIDGE_PREVIOUS_SECRET may temporarily
             // contain the former secret. Never commit either secret here.
