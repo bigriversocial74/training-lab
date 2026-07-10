@@ -8,7 +8,7 @@
  * moving the CONTENTS of the first /labs/ folder into web root, it lands at
  * /labs/config.php. Edit only that deployed private file.
  *
- * Do not commit live credentials or a production developer key.
+ * Do not commit live credentials, developer keys, or account bridge secrets.
  */
 return [
     'db' => [
@@ -28,6 +28,15 @@ return [
         'payments_enabled' => false,
         'claim_redeem_enabled' => false,
         'use_existing_microgifter_auth' => true,
+        'account_integration' => [
+            'issuer' => 'https://microgifter.com',
+            'audience' => 'training-lab',
+            'max_ttl_seconds' => 300,
+            'clock_skew_seconds' => 30,
+            // Set TL_ACCOUNT_BRIDGE_SECRET in the server environment.
+            // During rotation, TL_ACCOUNT_BRIDGE_PREVIOUS_SECRET may temporarily
+            // contain the former secret. Never commit either secret here.
+        ],
         // Prefer TL_DEVELOPER_KEY in the server environment. Never commit it here.
     ],
 ];
