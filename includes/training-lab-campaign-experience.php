@@ -39,36 +39,58 @@ if (!function_exists('tl_campaign_money')) {
     }
 }
 
+if (!function_exists('tl_campaign_datetime')) {
+    function tl_campaign_datetime($value, string $timezone = 'America/Phoenix'): ?DateTimeImmutable
+    {
+        $value = trim((string)$value);
+        if ($value === '') return null;
+        try {
+            $zone = new DateTimeZone($timezone !== '' ? $timezone : 'America/Phoenix');
+            return new DateTimeImmutable($value, $zone);
+        } catch (Throwable $e) {
+            return null;
+        }
+    }
+}
+
 if (!function_exists('tl_campaign_derive_state')) {
     function tl_campaign_derive_state(array $row): array
     {
         $settings = tl_campaign_settings($row['settings_json'] ?? null);
-        $now = time();
-        $startsAt = !empty($row['starts_at']) ? (strtotime((string)$row['starts_at']) ?: null) : null;
-        $endsAt = !empty($row['ends_at']) ? (strtotime((string)$row['ends_at']) ?: null) : null;
+        $timezone = trim((string)($row['timezone'] ?? 'America/Phoenix')) ?: 'America/Phoenix';
+        try { $now = new DateTimeImmutable('now', new DateTimeZone($timezone)); }
+        catch (Throwable $e) { $now = new DateTimeImmutable('now', new DateTimeZone('America/Phoenix')); }
+        $startsAt = tl_campaign_datetime($row['starts_at'] ?? null, $timezone);
+        $endsAt = tl_campaign_datetime($row['ends_at'] ?? null, $timezone);
         $participantStatus = (string)($row['participant_status'] ?? '');
-        $enrolled = !empty($row['participant_id']) && $participantStatus !== 'removed';
-        $completed = $participantStatus === 'completed' || (string)($row['status'] ?? '') === 'completed';
-        $ended = $endsAt !== null && $endsAt < $now;
-        $notStarted = $startsAt !== null && $startsAt > $now;
+        $hasAccess = !empty($row['participant_id']) && $participantStatus !== 'removed';
+        $invited = $hasAccess && $participantStatus === 'invited';
+        $enrolled = $hasAccess && !$invited;
+        $completed = $participantStatus === 'completed';
+        $ended = $endsAt instanceof DateTimeImmutable && $endsAt < $now;
+        $notStarted = $startsAt instanceof DateTimeImmutable && $startsAt > $now;
         $capacity = max(0, (int)($settings['participant_limit'] ?? $settings['capacity'] ?? 0));
         $enrolledCount = max(0, (int)($row['enrolled_count'] ?? 0));
-        $full = !$enrolled && $capacity > 0 && $enrolledCount >= $capacity;
+        $full = !$hasAccess && $capacity > 0 && $enrolledCount >= $capacity;
         $published = (string)($row['visibility'] ?? '') === 'published';
         $joinableStatus = in_array((string)($row['status'] ?? ''), ['scheduled', 'active'], true);
-        $canJoin = !$enrolled && $published && $joinableStatus && !$ended && !$full;
+        $canJoin = $invited || (!$hasAccess && $published && $joinableStatus && !$ended && !$full);
 
         if ($completed) {
             $state = ['key' => 'completed', 'label' => 'Completed', 'tone' => 'success', 'reason' => 'You completed this campaign.'];
+        } elseif ($invited) {
+            $state = ['key' => 'invited', 'label' => 'Invitation', 'tone' => 'pending', 'reason' => 'You have been invited to join this campaign.'];
         } elseif ($enrolled && $participantStatus === 'paused') {
             $state = ['key' => 'paused', 'label' => 'Paused', 'tone' => 'warning', 'reason' => 'Your enrollment is currently paused.'];
+        } elseif ($enrolled && $ended) {
+            $state = ['key' => 'ended_enrolled', 'label' => 'Campaign ended', 'tone' => 'neutral', 'reason' => 'The campaign has ended. Your progress remains available.'];
         } elseif ($enrolled) {
             $state = ['key' => 'enrolled', 'label' => $notStarted ? 'Enrolled · Starts soon' : 'In progress', 'tone' => 'info', 'reason' => $notStarted ? 'You are enrolled and can begin when the campaign starts.' : 'Continue from your next task.'];
         } elseif ($ended || in_array((string)($row['status'] ?? ''), ['completed', 'archived'], true)) {
             $state = ['key' => 'closed', 'label' => 'Closed', 'tone' => 'neutral', 'reason' => 'Enrollment is closed for this campaign.'];
         } elseif ($full) {
             $state = ['key' => 'full', 'label' => 'Full', 'tone' => 'warning', 'reason' => 'This campaign has reached its participant limit.'];
-        } elseif ($notStarted) {
+        } elseif ($notStarted && $canJoin) {
             $state = ['key' => 'upcoming', 'label' => 'Upcoming', 'tone' => 'pending', 'reason' => 'Enroll now and begin on the start date.'];
         } elseif ($canJoin) {
             $state = ['key' => 'available', 'label' => 'Open', 'tone' => 'success', 'reason' => 'Enrollment is open.'];
@@ -77,6 +99,8 @@ if (!function_exists('tl_campaign_derive_state')) {
         }
 
         return $state + [
+            'has_access' => $hasAccess,
+            'invited' => $invited,
             'enrolled' => $enrolled,
             'can_join' => $canJoin,
             'not_started' => $notStarted,
@@ -85,6 +109,7 @@ if (!function_exists('tl_campaign_derive_state')) {
             'capacity' => $capacity,
             'spots_remaining' => $capacity > 0 ? max(0, $capacity - $enrolledCount) : null,
             'settings' => $settings,
+            'timezone' => $timezone,
         ];
     }
 }
@@ -138,7 +163,7 @@ if (!function_exists('tl_campaign_catalog')) {
                     LEFT JOIN training_participants tp ON tp.campaign_id=c.id AND tp.user_id=? AND tp.status<>'removed'
                     WHERE (c.visibility='published' OR tp.id IS NOT NULL OR c.owner_user_id=?)
                     ORDER BY
-                        CASE WHEN tp.id IS NOT NULL AND tp.status='active' THEN 0 WHEN c.status='active' THEN 1 WHEN c.status='scheduled' THEN 2 ELSE 3 END,
+                        CASE WHEN tp.status='invited' THEN 0 WHEN tp.id IS NOT NULL AND tp.status='active' THEN 1 WHEN c.status='active' THEN 2 WHEN c.status='scheduled' THEN 3 ELSE 4 END,
                         COALESCE(c.starts_at,c.updated_at) DESC,
                         c.id DESC";
             $stmt = $pdo->prepare($sql);
@@ -154,7 +179,7 @@ if (!function_exists('tl_campaign_catalog')) {
                 'mine' => !empty($state['enrolled']) && $state['key'] !== 'completed',
                 'completed' => $state['key'] === 'completed',
                 'all' => true,
-                default => !$state['enrolled'] && in_array($state['key'], ['available', 'upcoming'], true),
+                default => in_array($state['key'], ['available', 'upcoming', 'invited'], true),
             };
             if (!$matchesFilter) return false;
             if ($query === '') return true;
