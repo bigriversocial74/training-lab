@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-app-service.php';
+require_once __DIR__ . '/../../includes/training-lab-campaign-enrollment.php';
 require_once __DIR__ . '/../../includes/training-lab-stage894-reconciliation-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-stage893-legacy-action-guard.php';
 
@@ -10,7 +11,14 @@ try {
     if ($action === '') throw new TlHttpException('Training action is required.', 422, 'action_required');
     $user = tl_security_guard_write($action, $raw);
     $data = tl_security_apply_actor($raw, $user);
-    if (in_array($action, ['claim_training_reward','retry_microgifter_reward_issue'], true)) {
+    if ($action === 'join_campaign') {
+        $campaignRef = tl_campaign_clean_ref((string)($data['campaign_id'] ?? $data['campaign'] ?? $data['slug'] ?? ''));
+        $result = [
+            'action'=>'join_campaign',
+            'label'=>'Join Training Lab campaign',
+            'result'=>tl_campaign_secure_enroll($user, $campaignRef),
+        ];
+    } elseif (in_array($action, ['claim_training_reward','retry_microgifter_reward_issue'], true)) {
         $result = [
             'action'=>$action,
             'label'=>$action === 'claim_training_reward' ? 'Claim Training Lab reward' : 'Retry Microgifter reward issue',
