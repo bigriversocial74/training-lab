@@ -8,6 +8,8 @@ $stage890Path = __DIR__ . '/../includes/training-lab-stage890-reward-handoff-out
 if (is_file($stage890Path)) require_once $stage890Path;
 $stage891Path = __DIR__ . '/../includes/training-lab-stage891-reward-handoff-recovery.php';
 if (is_file($stage891Path)) require_once $stage891Path;
+$stage891ProcessorPath = __DIR__ . '/../includes/training-lab-stage891-owned-processor.php';
+if (is_file($stage891ProcessorPath)) require_once $stage891ProcessorPath;
 
 $result = null;
 $error = null;
@@ -22,14 +24,14 @@ try {
     $stage891Actions = [
         'stage891_recover_stale_handoffs' => ['Recover stale reward handoffs', 'tl_stage891_recover_stale_processing'],
         'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage891_requeue_handoff'],
-        'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage891_process_resilient_batch'],
+        'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage891_process_owned_batch'],
         'stage891_run_handoff_acceptance' => ['Run reward handoff acceptance', 'tl_stage891_run_acceptance'],
     ];
     $stage890Actions = [
         'enqueue_reward_handoff' => ['Enqueue reward handoff', 'tl_stage890_enqueue_reward_event'],
         'sync_reward_handoff_outbox' => ['Sync reward handoff outbox', 'tl_stage890_sync_outbox'],
-        'process_reward_handoff' => ['Process reward handoff', 'tl_stage890_process_handoff'],
-        'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage890_process_batch'],
+        'process_reward_handoff' => ['Process reward handoff', 'tl_stage891_process_handoff_owned'],
+        'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage891_process_owned_batch'],
         'cancel_reward_handoff' => ['Cancel reward handoff', 'tl_stage890_cancel_handoff'],
     ];
     if (isset($stage891Actions[$action]) && function_exists($stage891Actions[$action][1])) {
@@ -88,6 +90,6 @@ labs_page_start(['title'=>'Action Result | Training Lab','section'=>'admin','act
 ?>
 <?php if (function_exists('tl_design_render_logged_in_template')) tl_design_render_logged_in_template('admin-action-result'); ?>
 <section class="labs-page-title labs-stage200-title"><div><span class="labs-eyebrow">Training Lab action</span><h1><?php echo $error ? 'Action needs attention.' : 'Action completed.'; ?></h1><p class="labs-copy">The result below comes from the protected Training Lab action router.</p></div><div class="labs-actions"><a class="labs-btn labs-btn-primary" href="<?php echo labs_url($next[0]); ?>"><?php echo labs_e($next[1]); ?></a><a class="labs-btn" href="<?php echo labs_url('/app/flow-board.php'); ?>">Flow Board</a></div></section>
-<section class="labs-card <?php echo $error ? 'labs-error-card' : 'labs-success-card'; ?>"><?php if ($error): ?><h2>Error</h2><p class="labs-copy"><?php echo labs_e($error); ?></p><small>Request ID: <?php echo labs_e($requestId); ?></small><?php else: ?><h2><?php echo labs_e((string)($result['label'] ?? 'Action complete')); ?></h2><p class="labs-copy">Written to Training Lab tables only unless the explicitly gated Stage 890 adapter delivery confirms a Microgifter handoff.</p><pre class="labs-stage25-code"><?php echo labs_e(json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)); ?></pre><?php endif; ?></section>
-<section class="labs-safe-note">Protected by authenticated actor mapping, role permissions, CSRF verification, and safe error handling.</section>
+<section class="labs-card <?php echo $error ? 'labs-error-card' : 'labs-success-card'; ?>"><?php if ($error): ?><h2>Error</h2><p class="labs-copy"><?php echo labs_e($error); ?></p><small>Request ID: <?php echo labs_e($requestId); ?></small><?php else: ?><h2><?php echo labs_e((string)($result['label'] ?? 'Action complete')); ?></h2><p class="labs-copy">Written to Training Lab tables only unless the explicitly gated Stage 891 owned-lease processor confirms a Microgifter handoff.</p><pre class="labs-stage25-code"><?php echo labs_e(json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)); ?></pre><?php endif; ?></section>
+<section class="labs-safe-note">Protected by authenticated actor mapping, role permissions, CSRF verification, worker-lease ownership, and safe error handling.</section>
 <?php labs_page_end(['section'=>'admin']); ?>
