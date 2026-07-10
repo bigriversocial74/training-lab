@@ -65,6 +65,9 @@ jobs:
       - name: Stage 895 signed integration acceptance contract
         run: php ./tests/stage895-signed-integration-acceptance-contract-test.php
 
+      - name: Stage 896 limited reward pilot contract
+        run: php ./tests/stage896-limited-reward-pilot-contract-test.php
+
       - name: Data integrity contract
         run: php ./tests/data-integrity-contract-test.php
 
