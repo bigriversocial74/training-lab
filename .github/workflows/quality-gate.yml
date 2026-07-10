@@ -77,6 +77,12 @@ jobs:
       - name: Stage 897 scored quality audit
         run: php ./scripts/stage897-quality-audit.php
 
+      - name: Stage 898 worker canary monitoring contract
+        run: php ./tests/stage898-worker-canary-monitoring-contract-test.php
+
+      - name: Stage 898 scored quality audit
+        run: php ./scripts/stage898-quality-audit.php
+
       - name: Data integrity contract
         run: php ./tests/data-integrity-contract-test.php
 
