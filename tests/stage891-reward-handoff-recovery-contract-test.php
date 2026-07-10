@@ -11,8 +11,10 @@ $check = static function (bool $condition, string $label) use (&$failures): void
 $read = static fn(string $path): string => is_file($root . '/' . $path) ? (file_get_contents($root . '/' . $path) ?: '') : '';
 
 $service = $read('includes/training-lab-stage891-reward-handoff-recovery.php');
+$ownedProcessor = $read('includes/training-lab-stage891-owned-processor.php');
 $panel = $read('includes/training-lab-stage891-terminal-failure-panel.php');
 $api = $read('api/training/reward-handoff-operations.php');
+$outboxApi = $read('api/training/reward-handoff-outbox.php');
 $actionResult = $read('admin/action-result.php');
 $rewardBridge = $read('admin/reward-bridge.php');
 $config = $read('config-example.php');
@@ -47,6 +49,14 @@ $check(str_contains($requeueBody, 'stage891_handoff_requeued'), 'manual requeue 
 $check(str_contains($requeueBody, 'stage891_recovery_history'), 'operator history is retained');
 $check(!str_contains($requeueBody, 'tl_stage890_call_adapter'), 'manual requeue never calls Microgifter adapter');
 
+$check(str_contains($ownedProcessor, 'function tl_stage891_process_handoff_owned'), 'owned processor exists');
+$check(str_contains($ownedProcessor, "hash_equals((string)($current['locked_by'] ?? ''), $worker)"), 'owned processor verifies worker token');
+$check(str_contains($ownedProcessor, "handoff_status='processing' AND locked_by=?"), 'final updates require active worker ownership');
+$check(str_contains($ownedProcessor, 'ownership_lost'), 'late worker result is rejected');
+$check(str_contains($ownedProcessor, 'adapter_result_unapplied'), 'lost-lease adapter result is not applied');
+$check(str_contains($ownedProcessor, 'stage891_worker_lease_lost'), 'lost lease is audit logged');
+$check(str_contains($ownedProcessor, 'tl_stage891_process_owned_batch'), 'owned batch processor exists');
+
 $check(str_contains($service, 'orphan_handoffs'), 'acceptance checks orphan handoffs');
 $check(str_contains($service, 'delivered_reward_mismatch'), 'acceptance checks delivered reward consistency');
 $check(str_contains($service, 'duplicate_idempotency_keys'), 'acceptance checks duplicate idempotency keys');
@@ -56,11 +66,20 @@ $check(str_contains($service, 'ready_for_production_processing'), 'acceptance se
 $check(str_contains($service, 'processing_disabled_or_all_gates_open'), 'acceptance verifies production gate state');
 
 $check(str_contains($api, 'tl_security_guard_write($action, $raw)'), 'operations API protects POST actions');
-$check(str_contains($api, "method === 'GET'"), 'operations API supports read-only GET summary');
+$check(str_contains($api, 'tl_auth_role_allowed'), 'operations API restricts GET summary');
+$check(str_contains($api, 'tl_stage891_process_owned_batch'), 'operations API uses owned batch processor');
+$check(!str_contains($api, 'tl_stage891_process_resilient_batch($input)'), 'operations API does not use unowned batch wrapper');
 $check(str_contains($api, 'tl_security_json_exception'), 'operations API uses safe JSON errors');
+$check(str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage891_process_handoff_owned'"), 'Stage 890 API routes single processing through owned lease');
+$check(str_contains($outboxApi, "'process_reward_handoff_batch' => 'tl_stage891_process_owned_batch'"), 'Stage 890 API routes batch processing through owned leases');
+$check(!str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage890_process_handoff'"), 'Stage 890 API does not expose old single processor');
+$check(!str_contains($outboxApi, "'process_reward_handoff_batch' => 'tl_stage890_process_batch'"), 'Stage 890 API does not expose old batch processor');
+
+$check(str_contains($actionResult, "'process_reward_handoff' => ['Process reward handoff', 'tl_stage891_process_handoff_owned']"), 'admin routes single processing through owned lease');
+$check(str_contains($actionResult, "'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage891_process_owned_batch']"), 'admin routes batch processing through owned leases');
 $check(str_contains($actionResult, 'stage891_recover_stale_handoffs'), 'admin action router wires stale recovery');
 $check(str_contains($actionResult, 'stage891_requeue_handoff'), 'admin action router wires operator requeue');
-$check(str_contains($actionResult, 'stage891_process_resilient_batch'), 'admin action router wires resilient batch');
+$check(str_contains($actionResult, "'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage891_process_owned_batch']"), 'resilient batch action uses owned processor');
 $check(str_contains($actionResult, 'stage891_run_handoff_acceptance'), 'admin action router wires acceptance');
 $check(str_contains($rewardBridge, 'tl_stage891_render_admin_panel'), 'Reward Bridge renders Stage 891 acceptance panel');
 $check(str_contains($rewardBridge, 'tl_stage891_render_terminal_failure_panel'), 'Reward Bridge renders terminal failure queue');
