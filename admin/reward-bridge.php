@@ -21,7 +21,7 @@ labs_page_start(['title' => 'Reward Bridge | Training Lab', 'section' => 'admin'
 <?php if (function_exists('tl_stage891_render_admin_panel')) tl_stage891_render_admin_panel(); ?>
 <?php if (function_exists('tl_stage891_render_terminal_failure_panel')) tl_stage891_render_terminal_failure_panel(); ?>
 <?php if (function_exists('tl_stage892_render_admin_panel')) tl_stage892_render_admin_panel(); ?>
-<?php if (function_exists('tl_stage893_render_admin_panel')) tl_stage893_render_admin_panel(); ?>
+<?php if (function_exists('tl_stage893_render_admin_panel_guarded')) tl_stage893_render_admin_panel_guarded(); ?>
 <?php if (function_exists('tl_stage880_render_award_handoff_queue')) tl_stage880_render_award_handoff_queue(max(0, (int)($_GET['user_id'] ?? 0))); ?>
 <?php if (function_exists('tl_stage800_render_reward_campaign_import')) tl_stage800_render_reward_campaign_import(); ?>
 <?php if (function_exists('tl_stage800_render_reward_inventory_board')) tl_stage800_render_reward_inventory_board(); ?>
