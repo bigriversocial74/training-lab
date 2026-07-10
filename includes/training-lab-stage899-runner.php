@@ -28,7 +28,7 @@ if (!function_exists('tl_stage899_candidates')) {
             $stmt->execute([$maxAttempts,(int)$config['max_item_value_cents']]);
             $ids = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
         } catch (Throwable $e) {
-            return [];
+            return ['items'=>[],'selected_count'=>0,'total_value_cents'=>0,'currency'=>'USD'];
         }
 
         $items = [];
@@ -98,6 +98,40 @@ if (!function_exists('tl_stage899_run_metrics')) {
     }
 }
 
+if (!function_exists('tl_stage899_rolling_health')) {
+    function tl_stage899_rolling_health(PDO $pdo): array
+    {
+        $config = tl_stage899_config();
+        $ackId = 0;
+        try {
+            $ack = $pdo->query("SELECT id FROM training_events WHERE event_type='stage899_limited_processing_suspension_acknowledged' ORDER BY id DESC LIMIT 1");
+            $ackId = $ack ? (int)$ack->fetchColumn() : 0;
+            $stmt = $pdo->prepare("SELECT public_id,event_type,metadata_json,created_at FROM training_events WHERE id>? AND event_type IN ('stage899_limited_processing_completed','stage899_limited_processing_suspended') ORDER BY id DESC LIMIT " . (int)$config['health_window']);
+            $stmt->execute([$ackId]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (Throwable $e) {
+            return ['healthy'=>false,'query_ready'=>false,'success_rate'=>0,'attempted'=>0,'completed'=>0,'suspended'=>0,'window'=>0,'reset_event_id'=>$ackId];
+        }
+        $runs = array_map(static function (array $row): array {
+            return [
+                'event_id'=>(string)($row['public_id'] ?? ''),
+                'event_type'=>(string)($row['event_type'] ?? ''),
+                'created_at'=>(string)($row['created_at'] ?? ''),
+                'run'=>tl_stage899_json($row['metadata_json'] ?? null),
+            ];
+        }, $rows);
+        $metrics = tl_stage899_run_metrics($runs);
+        $rateReady = $metrics['success_rate'] === null
+            || (int)$metrics['success_rate'] >= (int)$config['min_success_rate_percent'];
+        return $metrics + [
+            'healthy'=>$rateReady && (int)$metrics['suspended'] === 0,
+            'query_ready'=>true,
+            'minimum_success_rate'=>(int)$config['min_success_rate_percent'],
+            'reset_event_id'=>$ackId,
+        ];
+    }
+}
+
 if (!function_exists('tl_stage899_readiness')) {
     function tl_stage899_readiness(): array
     {
@@ -109,6 +143,7 @@ if (!function_exists('tl_stage899_readiness')) {
         $suspension = $pdo instanceof PDO ? tl_stage899_suspension_state($pdo) : ['suspended'=>false];
         $last = $pdo instanceof PDO ? tl_stage899_last_attempt($pdo) : ['found'=>false,'age_seconds'=>null];
         $queue = $pdo instanceof PDO ? tl_stage898_queue_metrics($pdo) : [];
+        $rolling = $pdo instanceof PDO ? tl_stage899_rolling_health($pdo) : ['healthy'=>false,'query_ready'=>false];
         $lock = tl_stage899_lock_status((string)$config['lock_file']);
         $intervalReady = empty($last['found']) || $last['age_seconds'] === null || (int)$last['age_seconds'] >= (int)$config['min_interval_seconds'];
         $stage897Disabled = function_exists('tl_stage897_config') ? empty(tl_stage897_config()['enabled']) : false;
@@ -124,6 +159,7 @@ if (!function_exists('tl_stage899_readiness')) {
             'normal_stage892_worker_disabled'=>!empty($stage896['scheduled_worker_disabled']),
             'no_active_stage896_pilot'=>(int)($stage896['active_pilot_count'] ?? 0) === 0,
             'limited_scheduler_not_suspended'=>empty($suspension['suspended']),
+            'rolling_success_threshold_met'=>!empty($rolling['healthy']),
             'no_quarantined_handoffs'=>(int)($queue['quarantined'] ?? 0) === 0,
             'lock_path_ready'=>!empty($lock['ready']),
             'minimum_interval_elapsed'=>$intervalReady,
@@ -134,6 +170,7 @@ if (!function_exists('tl_stage899_readiness')) {
             'score'=>(int)round((count(array_filter($checks)) / max(1, count($checks))) * 100),
             'checks'=>$checks,
             'graduation'=>$graduation,
+            'rolling_health'=>$rolling,
             'stage898_pause'=>$stage898Pause,
             'suspension'=>$suspension,
             'last_attempt'=>$last,
@@ -244,12 +281,11 @@ if (!function_exists('tl_stage899_run')) {
             $deadline = $started + (int)$config['max_runtime_seconds'];
             foreach ((array)$plan['items'] as $item) {
                 if (microtime(true) >= $deadline) {
-                    $metadata = [
+                    $metadata = tl_stage899_suspend($pdo, $actor, [
                         'run_id'=>$runId,'suspension_reason'=>'runtime_limit_reached_before_next_item','severity'=>'high','exit_code'=>3,
                         'selected_count'=>(int)$plan['selected_count'],'processed_count'=>count($results),'verified_count'=>$verifiedCount,
                         'total_value_cents'=>(int)$plan['total_value_cents'],'duration_ms'=>(int)round((microtime(true) - $started) * 1000),
-                    ];
-                    tl_stage899_suspend($pdo, $actor, $metadata);
+                    ]);
                     return $metadata + ['stage'=>'Stage 899 Canary Graduation & Limited Scheduled Processing v1','results'=>$results,'completed_at'=>gmdate('c')];
                 }
 
@@ -284,7 +320,7 @@ if (!function_exists('tl_stage899_run')) {
                         'microgifter_user_fingerprint'=>(string)$item['microgifter_user_fingerprint'],
                     ], (int)$item['reward_event_id']);
                     if (!$verified) {
-                        $metadata = [
+                        $metadata = tl_stage899_suspend($pdo, $actor, [
                             'run_id'=>$runId,'suspension_reason'=>'scheduled_item_not_verified','severity'=>'critical','exit_code'=>3,
                             'selected_count'=>(int)$plan['selected_count'],'processed_count'=>count($results),'verified_count'=>$verifiedCount,
                             'sequence'=>(int)$item['sequence'],'handoff_id'=>(int)$item['handoff_id'],'reward_event_id'=>(int)$item['reward_event_id'],
@@ -293,24 +329,22 @@ if (!function_exists('tl_stage899_run')) {
                             'handoff_reference_fingerprint'=>(string)$item['handoff_reference_fingerprint'],
                             'microgifter_user_fingerprint'=>(string)$item['microgifter_user_fingerprint'],
                             'duration_ms'=>(int)round((microtime(true) - $started) * 1000),
-                        ];
-                        tl_stage899_suspend($pdo, $actor, $metadata, (int)$item['reward_event_id']);
+                        ], (int)$item['reward_event_id']);
                         return $metadata + ['stage'=>'Stage 899 Canary Graduation & Limited Scheduled Processing v1','results'=>$results,'completed_at'=>gmdate('c')];
                     }
                     $verifiedCount++;
                 } catch (Throwable $e) {
-                    $metadata = [
+                    $results[] = ['sequence'=>(int)$item['sequence'],'handoff_id'=>(int)$item['handoff_id'],'status'=>'error','delivery_status'=>'unknown','pilot_status'=>'error','verified'=>false];
+                    $metadata = tl_stage899_suspend($pdo, $actor, [
                         'run_id'=>$runId,'suspension_reason'=>'scheduled_item_exception','severity'=>'critical','exit_code'=>1,
-                        'selected_count'=>(int)$plan['selected_count'],'processed_count'=>count($results) + 1,'verified_count'=>$verifiedCount,
+                        'selected_count'=>(int)$plan['selected_count'],'processed_count'=>count($results),'verified_count'=>$verifiedCount,
                         'sequence'=>(int)$item['sequence'],'handoff_id'=>(int)$item['handoff_id'],'reward_event_id'=>(int)$item['reward_event_id'],
                         'value_cents'=>(int)$item['value_cents'],'total_value_cents'=>(int)$plan['total_value_cents'],
                         'delivery_status'=>'unknown','pilot_status'=>'error',
                         'handoff_reference_fingerprint'=>(string)$item['handoff_reference_fingerprint'],
                         'microgifter_user_fingerprint'=>(string)$item['microgifter_user_fingerprint'],
                         'duration_ms'=>(int)round((microtime(true) - $started) * 1000),
-                    ];
-                    $results[] = ['sequence'=>(int)$item['sequence'],'handoff_id'=>(int)$item['handoff_id'],'status'=>'error','delivery_status'=>'unknown','pilot_status'=>'error','verified'=>false];
-                    tl_stage899_suspend($pdo, $actor, $metadata, (int)$item['reward_event_id']);
+                    ], (int)$item['reward_event_id']);
                     return $metadata + ['stage'=>'Stage 899 Canary Graduation & Limited Scheduled Processing v1','results'=>$results,'completed_at'=>gmdate('c')];
                 }
             }
@@ -332,8 +366,7 @@ if (!function_exists('tl_stage899_run')) {
                 'normal_worker_remained_disabled'=>true,
                 'stage898_canary_remained_disabled'=>true,
             ];
-            $recentBefore = tl_stage899_recent_runs($pdo, (int)$config['health_window']);
-            $rolling = tl_stage899_run_metrics($recentBefore);
+            $rolling = tl_stage899_rolling_health($pdo);
             tl_stage899_log($pdo, $actor, 'stage899_limited_processing_completed', [
                 'run_id'=>$runId,'status'=>'completed','exit_code'=>0,'selected_count'=>(int)$plan['selected_count'],
                 'processed_count'=>count($results),'verified_count'=>$verifiedCount,'total_value_cents'=>(int)$plan['total_value_cents'],
@@ -348,10 +381,11 @@ if (!function_exists('tl_stage899_run')) {
                 'duration_ms'=>(int)round((microtime(true) - $started) * 1000),
             ];
             try {
-                tl_stage899_suspend($pdo, $actor, $metadata);
+                $metadata = tl_stage899_suspend($pdo, $actor, $metadata);
             } catch (Throwable $ignored) {
+                $metadata['status'] = 'failed';
             }
-            return $metadata + ['stage'=>'Stage 899 Canary Graduation & Limited Scheduled Processing v1','status'=>'failed','error_code'=>'stage899_scheduler_exception','completed_at'=>gmdate('c')];
+            return $metadata + ['stage'=>'Stage 899 Canary Graduation & Limited Scheduled Processing v1','error_code'=>'stage899_scheduler_exception','completed_at'=>gmdate('c')];
         } finally {
             if (is_array($lock) && !empty($lock['acquired'])) tl_stage899_release_lock($lock['handle'] ?? null);
         }
@@ -390,6 +424,6 @@ if (!function_exists('tl_stage899_acknowledge_suspension')) {
             'exit_code'=>0,
             'queue_quarantined'=>0,
         ]);
-        return ['acknowledged'=>true,'run_id'=>(string)$suspension['run_id'],'ready_for_reassessment'=>true];
+        return ['acknowledged'=>true,'run_id'=>(string)$suspension['run_id'],'rolling_health_reset'=>true,'ready_for_reassessment'=>true];
     }
 }
