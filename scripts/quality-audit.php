@@ -21,6 +21,25 @@ $sections = [
             'safe_logout'=>$contains('logout.php', 'tl_security_guard_auth_action') && $contains('logout.php', 'REQUEST_METHOD'),
         ],
     ],
+    'stage886_identity' => [
+        'label'=>'Stage 886 shared identity',
+        'checks'=>[
+            'account_integration_service'=>$exists('includes/training-lab-stage886-account-integration.php'),
+            'hmac_sha256_verifier'=>$contains('includes/training-lab-stage886-account-integration.php', "hash_hmac('sha256'") && $contains('includes/training-lab-stage886-account-integration.php', 'hash_equals'),
+            'assertion_claim_validation'=>$contains('includes/training-lab-stage886-account-integration.php', 'assertion_issuer_invalid') && $contains('includes/training-lab-stage886-account-integration.php', 'assertion_audience_invalid') && $contains('includes/training-lab-stage886-account-integration.php', 'assertion_expired'),
+            'replay_protection'=>$contains('database/stage886_shared_account_integration_v1.sql', 'UNIQUE KEY uq_training_auth_nonces_nonce_hash') && $contains('includes/training-lab-stage886-account-integration.php', 'assertion_replayed'),
+            'persistent_account_links'=>$contains('database/stage886_shared_account_integration_v1.sql', 'CREATE TABLE IF NOT EXISTS training_account_links'),
+            'nonce_audit_table'=>$contains('database/stage886_shared_account_integration_v1.sql', 'CREATE TABLE IF NOT EXISTS training_auth_nonces'),
+            'safe_rollback'=>$contains('database/stage886_shared_account_integration_v1_rollback.sql', 'DROP TABLE IF EXISTS training_auth_nonces') && $contains('database/stage886_shared_account_integration_v1_rollback.sql', 'DROP TABLE IF EXISTS training_account_links'),
+            'trusted_session_rotation'=>$contains('includes/training-lab-stage886-account-integration.php', 'session_regenerate_id(true)') && $contains('includes/training-lab-stage886-session-policy.php', 'TL_ACCOUNT_BRIDGE_SESSION_TTL'),
+            'revocation_enforcement'=>$contains('includes/training-lab-stage886-account-integration.php', "link_status='active'") && $contains('includes/training-lab-stage886-account-integration.php', "['revoked','suspended']"),
+            'legacy_fallback_closed'=>$contains('includes/training-lab-auth-gate.php', "tl_stage886_enabled()) return null"),
+            'account_link_routes'=>$exists('account-link.php') && $exists('api/training/account-link.php'),
+            'admin_control_routes'=>$exists('admin/account-integration.php') && $exists('api/training/account-integration-status.php') && $exists('api/training/account-integration.php'),
+            'microgifter_emitter_contract'=>$exists('examples/microgifter-stage886-emitter.php'),
+            'stage886_documentation'=>$exists('docs/STAGE-886-SHARED-ACCOUNT-INTEGRATION-V1.md'),
+        ],
+    ],
     'api_runtime' => [
         'label'=>'API & runtime behavior',
         'checks'=>[
@@ -32,6 +51,7 @@ $sections = [
             'request_ids'=>$contains('includes/training-lab-security.php', 'X-Request-ID'),
             'payload_limit'=>$contains('includes/training-lab-security.php', 'payload_too_large'),
             'rate_limit'=>$contains('includes/training-lab-security.php', 'tl_security_rate_limit'),
+            'stage886_status_exposed'=>$contains('api/training/auth-status.php', "'stage886'=>[") && $contains('api/training/auth-status.php', 'tl_stage886_current_principal'),
         ],
     ],
     'data_integrity' => [
@@ -45,6 +65,8 @@ $sections = [
             'idempotent_rewards'=>$contains('includes/training-lab-actions.php', "status <> 'cancelled'"),
             'crypto_receipt_hash'=>$contains('includes/training-lab-actions.php', 'random_bytes(32)'),
             'bounded_validated_input'=>$contains('includes/training-lab-actions.php', 'tl_action_clean') && $contains('includes/training-lab-actions.php', 'tl_action_enum'),
+            'stage886_link_row_lock'=>$contains('includes/training-lab-stage886-account-integration.php', 'LIMIT 1 FOR UPDATE'),
+            'stage886_transaction'=>$contains('includes/training-lab-stage886-account-integration.php', 'beginTransaction') && $contains('includes/training-lab-stage886-account-integration.php', 'rollBack'),
         ],
     ],
     'architecture_maintainability' => [
@@ -55,6 +77,7 @@ $sections = [
             'shared_layout'=>$exists('includes/labs-layout.php'),
             'shared_public_template'=>$exists('includes/training-lab-public-template.php'),
             'single_action_service'=>$exists('includes/training-lab-actions.php'),
+            'stage886_service_boundary'=>$exists('includes/training-lab-stage886-account-integration.php') && $exists('includes/training-lab-stage886-session-policy.php'),
             'quality_script'=>$exists('scripts/quality-audit.php'),
             'audit_documentation'=>$exists('docs/CODE-AUDIT-2026-07-09.md'),
             'no_new_runtime_dependency'=>!$exists('composer.lock') || $exists('composer.json'),
@@ -71,6 +94,7 @@ $sections = [
             'keyboard_escape'=>$contains('assets/js/labs.js', "event.key === 'Escape'") && $contains('assets/js/public-template.js', "event.key === 'Escape'"),
             'focus_styles'=>$contains('assets/css/security-accessibility.css', ':focus-visible'),
             'reduced_motion'=>$contains('assets/css/security-accessibility.css', 'prefers-reduced-motion'),
+            'account_link_page'=>$exists('account-link.php') && $contains('account-link.php', 'Connect your Microgifter account'),
         ],
     ],
     'testing_ci' => [
@@ -80,6 +104,8 @@ $sections = [
             'security_runtime_test'=>$exists('tests/security-runtime-test.php'),
             'data_contract_test'=>$exists('tests/data-integrity-contract-test.php'),
             'route_contract_test'=>$exists('tests/http-route-contract-test.php'),
+            'runtime_acceptance_test'=>$exists('tests/production-runtime-acceptance-contract-test.php'),
+            'stage886_contract_test'=>$exists('tests/stage886-account-integration-contract-test.php') && $contains('run-quality-gate.sh', 'stage886-account-integration-contract-test.php'),
             'quality_gate_script'=>$exists('run-quality-gate.sh'),
             'quality_workflow'=>$exists('.github/workflows/quality-gate.yml'),
             'php_82_matrix'=>$contains('.github/workflows/quality-gate.yml', "'8.2'"),
@@ -90,11 +116,13 @@ $sections = [
         'label'=>'Deployment & operations',
         'checks'=>[
             'config_examples'=>$exists('config-example.php') && $exists('labs/config-example.php'),
+            'stage886_config_documented'=>$contains('config-example.php', 'account_integration') && $contains('labs/config-example.php', 'session_ttl_seconds'),
             'config_export_protection'=>$contains('.gitattributes', '/config.php export-ignore') && $contains('.gitattributes', '/labs/config.php export-ignore'),
             'archive_ignored'=>$contains('.gitignore', '*.zip'),
             'db_health_route'=>$exists('admin/db-health.php') && $exists('api/training/db-status.php'),
             'deployment_acceptance'=>$exists('admin/deployment-acceptance.php') && $exists('api/training/deployment-acceptance.php'),
             'live_smoke'=>$exists('admin/live-smoke.php') && $exists('api/training/live-smoke.php'),
+            'stage886_runtime_gate'=>$contains('includes/training-lab-production-runtime-acceptance.php', 'stage886_account_integration') && $contains('includes/training-lab-production-runtime-acceptance.php', 'stage886_sql_required'),
             'safe_error_logging'=>$contains('includes/training-lab-security.php', 'error_log'),
             'audit_report'=>$exists('docs/CODE-AUDIT-2026-07-09.md'),
         ],
@@ -115,7 +143,7 @@ unset($section);
 
 $result = [
     'audit'=>'Training Lab production-readiness quality gate',
-    'rubric_version'=>'2026-07-09.1',
+    'rubric_version'=>'2026-07-09.2-stage886',
     'all_sections_10_of_10'=>$allPerfect,
     'sections'=>$sections,
 ];
