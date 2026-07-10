@@ -8,7 +8,7 @@ try {
         $raw = tl_security_request_data(false);
         $action = preg_replace('/[^a-z0-9_\-]/i', '', (string)($raw['training_action'] ?? $raw['action'] ?? ''));
         $allowed = [
-            'enqueue_reward_handoff' => 'tl_stage890_enqueue_reward_event',
+            'enqueue_reward_handoff' => 'tl_stage893_enqueue_reward_event_guarded',
             'sync_reward_handoff_outbox' => 'tl_stage893_sync_outbox_guarded',
             'process_reward_handoff' => 'tl_stage893_process_handoff_guarded',
             'process_reward_handoff_batch' => 'tl_stage893_process_guarded_batch',
