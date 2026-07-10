@@ -50,7 +50,7 @@ $sections = [
     'Transaction idempotency' => [
         $has('includes/training-lab-campaign-enrollment.php', 'beginTransaction()'),
         $has('includes/training-lab-campaign-enrollment.php', 'LIMIT 1 FOR UPDATE'),
-        $has('includes/training-lab-campaign-enrollment.php', 'already_joined'=>true),
+        $has('includes/training-lab-campaign-enrollment.php', "'already_joined'=>true"),
         $has('includes/training-lab-campaign-enrollment.php', 'if ($pdo->inTransaction()) $pdo->rollBack();'),
         $has('includes/training-lab-campaign-enrollment.php', 'INSERT IGNORE INTO training_streaks'),
     ],
