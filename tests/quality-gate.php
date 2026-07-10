@@ -59,8 +59,9 @@ foreach ($iterator as $fileInfo) {
 $add('Architecture', 'No packaged archives tracked in active source', $archives === [], implode(', ', $archives));
 
 $security = $read('includes/training-lab-security.php');
+$authGate = $read('includes/training-lab-auth-gate.php');
 $add('Security', 'Central security runtime is present', $security !== '');
-$add('Security', 'Secure session cookie controls', $containsAll($security, [
+$add('Security', 'Secure session cookie controls', $containsAll($security . $authGate, [
     'session.use_strict_mode', 'session.use_only_cookies', 'httponly', 'samesite', 'session_regenerate_id'
 ]));
 $add('Security', 'CSRF token generation and verification', $containsAll($security, [
@@ -90,6 +91,7 @@ foreach ($writeRoutes as $route) {
     $content = $read($route);
     $protected = $content !== '' && (
         str_contains($content, 'tl_route_write_input') ||
+        str_contains($content, 'tl_security_guard_write') ||
         str_contains($content, 'training-lab-route-bootstrap.php')
     );
     $add('Security', 'Protected write route: ' . $route, $protected);
@@ -126,8 +128,8 @@ $actionBootstrap = $read('api/training/actions/_action-bootstrap.php');
 $appAction = $read('api/training/app-action.php');
 $proofWorkflow = $read('api/training/proof-review-workflow.php');
 $add('API Contracts', 'Shared action bootstrap returns structured JSON', $containsAll($actionBootstrap, ['tl_security_json_response', 'tl_security_json_exception', "'ok'=>true"]));
-$add('API Contracts', 'App action endpoint uses shared write guard', $containsAll($appAction, ['tl_route_write_input', 'tl_security_json_exception']));
-$add('API Contracts', 'Proof workflow uses shared write guard', $containsAll($proofWorkflow, ['tl_route_write_input', 'tl_security_json_exception']));
+$add('API Contracts', 'App action endpoint uses shared write guard', $containsAll($appAction, ['tl_security_guard_write', 'tl_security_json_exception']));
+$add('API Contracts', 'Proof workflow uses shared write guard', $containsAll($proofWorkflow, ['tl_security_guard_write', 'tl_security_json_exception']));
 $add('API Contracts', 'HTTP errors retain status and machine code', $containsAll($security, ['httpStatus()', 'errorCode()', 'http_response_code']));
 $add('API Contracts', 'JSON encoding failures are handled', str_contains($security, 'json_encode_failed'));
 
