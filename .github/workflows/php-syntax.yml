@@ -17,37 +17,33 @@ permissions:
   contents: read
 
 jobs:
-  section10-file-lint:
-    name: Lint ${{ matrix.file }}
+  runner-smoke:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        file:
-          - admin/analytics.php
-          - admin/reporting-center.php
-          - admin/reward-bridge.php
-          - admin/reward-operations.php
-          - admin/reward-rule-edit.php
-          - admin/reward-rule-save.php
-          - admin/reward-rule-status.php
-          - admin/reward-rules.php
-          - includes/labs-layout.php
-          - includes/training-lab-product-shell.php
-          - includes/training-lab-reward-management.php
-          - includes/training-lab-reward-management-queries.php
-          - scripts/reward-rules-analytics-operational-health-quality-audit.php
-          - tests/reward-rules-analytics-operational-health-contract-test.php
+    steps:
+      - name: Runner and bundled PHP
+        run: |
+          uname -a
+          command -v php || true
+          php -v || true
+
+  checkout-smoke:
+    runs-on: ubuntu-latest
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+      - name: Confirm checkout
+        run: test -f run-full-syntax-check.sh
+
+  php-setup-smoke:
+    runs-on: ubuntu-latest
+    steps:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           coverage: none
-      - name: Lint file
-        run: php -l "${{ matrix.file }}"
+      - name: Confirm PHP
+        run: php -v
 
   php-syntax:
     runs-on: ubuntu-latest
