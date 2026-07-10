@@ -9,7 +9,7 @@
  * /labs/config.php. Edit only that deployed private file.
  *
  * Do not commit live credentials, developer keys, identity shared secrets, or
- * the Stage 894 reward lookup shared secret.
+ * signed integration shared secrets.
  */
 return [
     'db' => [
@@ -56,8 +56,18 @@ return [
         'microgifter_reward_lookup_connect_timeout_seconds' => 3,
         'microgifter_reward_lookup_max_response_bytes' => 131072,
         'stage895_live_acceptance_enabled' => false,
+        'stage896_limited_pilot_enabled' => false,
+        'stage896_max_value_cents' => 2500,
+        'stage896_acceptance_max_age_seconds' => 86400,
+        'microgifter_pilot_issue_enabled' => false,
+        'microgifter_pilot_issue_url' => 'https://microgifter.com/api/integrations/training-lab-reward-pilot-issue.php',
+        'microgifter_pilot_issue_allowed_hosts' => ['microgifter.com', 'www.microgifter.com'],
+        'microgifter_pilot_issue_timeout_seconds' => 10,
+        'microgifter_pilot_issue_connect_timeout_seconds' => 3,
+        'microgifter_pilot_issue_max_response_bytes' => 131072,
         // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
         // 'microgifter_reward_lookup_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
+        // 'microgifter_pilot_issue_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
     ],
 ];
