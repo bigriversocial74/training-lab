@@ -32,7 +32,7 @@ try {
         'stage891_run_handoff_acceptance' => ['Run reward handoff acceptance', 'tl_stage891_run_acceptance'],
     ];
     $stage890Actions = [
-        'enqueue_reward_handoff' => ['Enqueue reward handoff', 'tl_stage890_enqueue_reward_event'],
+        'enqueue_reward_handoff' => ['Enqueue reward handoff', 'tl_stage893_enqueue_reward_event_guarded'],
         'sync_reward_handoff_outbox' => ['Sync reward handoff outbox', 'tl_stage893_sync_outbox_guarded'],
         'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_guarded'],
         'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage893_process_guarded_batch'],
