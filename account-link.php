@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/includes/training-lab-stage886-account-integration.php';
+require_once __DIR__ . '/includes/training-lab-stage886-session-policy.php';
 require_once __DIR__ . '/includes/labs-layout.php';
 
 $result = null;
@@ -12,7 +13,7 @@ if ($method === 'POST') {
         tl_security_rate_limit('stage886_account_link', 20, 300);
         $input = tl_security_request_data(false);
         $assertion = (string)($input['assertion'] ?? $input['token'] ?? '');
-        $result = tl_stage886_consume_assertion($assertion);
+        $result = tl_stage886_apply_session_policy(tl_stage886_consume_assertion($assertion));
         $next = tl_auth_safe_path((string)($input['next'] ?? '/account.php?linked=1'), '/account.php?linked=1');
         if (!headers_sent()) {
             header('Location: ' . (function_exists('labs_url') ? labs_url($next) : $next), true, 303);
