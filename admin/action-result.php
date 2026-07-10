@@ -33,7 +33,7 @@ try {
     ];
     $stage890Actions = [
         'enqueue_reward_handoff' => ['Enqueue reward handoff', 'tl_stage890_enqueue_reward_event'],
-        'sync_reward_handoff_outbox' => ['Sync reward handoff outbox', 'tl_stage890_sync_outbox'],
+        'sync_reward_handoff_outbox' => ['Sync reward handoff outbox', 'tl_stage893_sync_outbox_guarded'],
         'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_guarded'],
         'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage893_process_guarded_batch'],
         'cancel_reward_handoff' => ['Cancel reward handoff', 'tl_stage890_cancel_handoff'],
@@ -52,9 +52,9 @@ try {
     } else {
         $result = tl_training_handle_app_action($data);
     }
-    if (in_array($action, ['review_proof','stage885_review_proof'], true) && function_exists('tl_stage890_sync_outbox') && tl_stage890_table_ready()) {
+    if (in_array($action, ['review_proof','stage885_review_proof'], true) && function_exists('tl_stage893_sync_outbox_guarded') && tl_stage890_table_ready()) {
         try {
-            $result['stage890_outbox_sync'] = tl_stage890_sync_outbox($data + ['limit'=>25]);
+            $result['stage890_outbox_sync'] = tl_stage893_sync_outbox_guarded($data + ['limit'=>25]);
         } catch (Throwable $syncError) {
             $result['stage890_outbox_sync'] = ['ok'=>false, 'error'=>$syncError->getMessage()];
         }
