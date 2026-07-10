@@ -55,7 +55,7 @@ $check(str_contains($service, 'safe_to_observe'), 'acceptance separates safe obs
 $check(str_contains($service, 'ready_for_production_processing'), 'acceptance separates production readiness');
 $check(str_contains($service, 'processing_disabled_or_all_gates_open'), 'acceptance verifies production gate state');
 
-$check(str_contains($api, "tl_security_guard_write($action, $raw)"), 'operations API protects POST actions');
+$check(str_contains($api, 'tl_security_guard_write($action, $raw)'), 'operations API protects POST actions');
 $check(str_contains($api, "method === 'GET'"), 'operations API supports read-only GET summary');
 $check(str_contains($api, 'tl_security_json_exception'), 'operations API uses safe JSON errors');
 $check(str_contains($actionResult, 'stage891_recover_stale_handoffs'), 'admin action router wires stale recovery');
