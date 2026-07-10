@@ -22,7 +22,7 @@ $checks = [
     'normal_worker_must_stay_disabled'=>str_contains($runner, 'normal_scheduled_worker_disabled') && str_contains($monitor, 'normal_stage892_worker_remains_disabled'),
     'immediate_readback_required'=>str_contains($runner, "pilot_status'] ?? '') === 'verified'") && str_contains($runner, "verification']['confirmed_delivered"),
     'automatic_pause_latch'=>str_contains($runner, 'stage898_worker_canary_paused') && str_contains($runner, 'canary_delivery_not_verified') && str_contains($runner, 'canary_exception'),
-    'pause_ack_requires_resolution'=>str_contains($runner, 'ACKNOWLEDGE CANARY PAUSE') && str_contains($runner, 'stage898_active_pilot_unresolved'),
+    'pause_ack_requires_resolution'=>str_contains($config, 'ACKNOWLEDGE CANARY PAUSE') && str_contains($runner, 'stage898_active_pilot_unresolved'),
     'sanitized_evidence'=>str_contains($config, 'raw_recipient_secret_signature_nonce_payload_and_response_excluded') && str_contains($config, 'microgifter_user_fingerprint'),
     'monitoring_metrics'=>str_contains($monitor, 'success_rate') && str_contains($monitor, 'canary_stale') && str_contains($monitor, 'quarantined_handoffs'),
     'no_web_execution'=>!str_contains($admin, 'tl_stage898_run(') && !str_contains($api, 'tl_stage898_run('),
