@@ -101,6 +101,7 @@ if (!function_exists('labs_page_start')) {
   <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/labs.css'), ENT_QUOTES, 'UTF-8'); ?>">
   <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/security-accessibility.css'), ENT_QUOTES, 'UTF-8'); ?>">
   <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/product-shell.css'), ENT_QUOTES, 'UTF-8'); ?>">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/campaign-experience.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body class="<?php echo htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8'); ?>">
   <a class="labs-skip-link" href="#main-content">Skip to main content</a>
