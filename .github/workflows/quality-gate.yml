@@ -36,5 +36,23 @@ jobs:
           coverage: none
           extensions: mbstring, pdo, pdo_mysql
 
-      - name: Run syntax and repository quality gates
-        run: bash ./run-quality-gate.sh
+      - name: Recursive PHP syntax
+        run: bash ./run-full-syntax-check.sh
+
+      - name: Security runtime contracts
+        run: php ./tests/security-runtime-test.php
+
+      - name: Production runtime acceptance contracts
+        run: php ./tests/production-runtime-acceptance-contract-test.php
+
+      - name: Stage 886 shared account contracts
+        run: php ./tests/stage886-account-integration-contract-test.php
+
+      - name: Data-integrity contracts
+        run: php ./tests/data-integrity-contract-test.php
+
+      - name: HTTP route contracts
+        run: php ./tests/http-route-contract-test.php
+
+      - name: Section scoring
+        run: php ./scripts/quality-audit.php
