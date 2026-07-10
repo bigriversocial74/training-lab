@@ -8,6 +8,9 @@ bash ./run-full-syntax-check.sh
 echo "== Security runtime =="
 php ./tests/security-runtime-test.php
 
+echo "== Production runtime acceptance contracts =="
+php ./tests/production-runtime-acceptance-contract-test.php
+
 echo "== Data-integrity contracts =="
 php ./tests/data-integrity-contract-test.php
 
