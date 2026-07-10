@@ -201,34 +201,101 @@ if (!function_exists('tl_product_participant_home')) {
     }
 }
 
+if (!function_exists('tl_product_manager_home_scope')) {
+    function tl_product_manager_home_scope(int $ownerUserId): array
+    {
+        $empty = [
+            'counts' => ['campaigns' => 0, 'participants' => 0, 'pending_proofs' => 0, 'rewards' => 0, 'reviews' => 0, 'claimable' => 0, 'retryable' => 0],
+            'campaigns' => [],
+            'pending_proofs' => [],
+            'recent_reviews' => [],
+        ];
+        $pdo = function_exists('tl_db') ? tl_db() : null;
+        if (!$pdo instanceof PDO || !tl_table_exists('training_campaigns')) return $empty;
+
+        try {
+            $countSql = "SELECT
+                (SELECT COUNT(*) FROM training_campaigns c WHERE c.owner_user_id=?) AS campaigns,
+                (SELECT COUNT(*) FROM training_participants tp INNER JOIN training_campaigns c ON c.id=tp.campaign_id WHERE c.owner_user_id=? AND tp.status<>'removed') AS participants,
+                (SELECT COUNT(*) FROM training_proof_submissions p INNER JOIN training_campaigns c ON c.id=p.campaign_id WHERE c.owner_user_id=? AND p.status IN ('submitted','in_review')) AS pending_proofs,
+                (SELECT COUNT(*) FROM training_reward_events re INNER JOIN training_campaigns c ON c.id=re.campaign_id WHERE c.owner_user_id=? AND re.status<>'cancelled') AS rewards,
+                (SELECT COUNT(*) FROM training_reviews r INNER JOIN training_proof_submissions p ON p.id=r.proof_submission_id INNER JOIN training_campaigns c ON c.id=p.campaign_id WHERE c.owner_user_id=?) AS reviews,
+                (SELECT COUNT(*) FROM training_reward_events re INNER JOIN training_campaigns c ON c.id=re.campaign_id WHERE c.owner_user_id=? AND re.status='eligible') AS claimable,
+                (SELECT COUNT(*) FROM training_reward_events re INNER JOIN training_campaigns c ON c.id=re.campaign_id WHERE c.owner_user_id=? AND re.status='failed') AS retryable";
+            $countStmt = $pdo->prepare($countSql);
+            $countStmt->execute(array_fill(0, 7, $ownerUserId));
+            $counts = $countStmt->fetch(PDO::FETCH_ASSOC) ?: $empty['counts'];
+
+            $campaignStmt = $pdo->prepare("SELECT id,public_id,slug,title,status,visibility,target_action_count,updated_at FROM training_campaigns WHERE owner_user_id=? ORDER BY updated_at DESC,id DESC LIMIT 6");
+            $campaignStmt->execute([$ownerUserId]);
+            $campaigns = array_map(static function (array $row): array {
+                $row['ref'] = (string)($row['slug'] ?: $row['public_id']);
+                return $row;
+            }, $campaignStmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
+
+            $pendingStmt = $pdo->prepare("SELECT p.*,c.title AS campaign_title,c.slug AS campaign_slug,t.title AS task_title,COALESCE(tp.participant_label,CONCAT('User #',p.submitted_by_user_id)) AS participant_label FROM training_proof_submissions p INNER JOIN training_campaigns c ON c.id=p.campaign_id LEFT JOIN training_campaign_tasks t ON t.id=p.task_id LEFT JOIN training_participants tp ON tp.id=p.participant_id WHERE c.owner_user_id=? AND p.status IN ('submitted','in_review') ORDER BY p.submitted_at ASC LIMIT 8");
+            $pendingStmt->execute([$ownerUserId]);
+            $pending = $pendingStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+            $reviewStmt = $pdo->prepare("SELECT r.*,p.public_id AS proof_public_id,p.status AS proof_status,c.title AS campaign_title FROM training_reviews r INNER JOIN training_proof_submissions p ON p.id=r.proof_submission_id INNER JOIN training_campaigns c ON c.id=p.campaign_id WHERE c.owner_user_id=? ORDER BY r.created_at DESC LIMIT 8");
+            $reviewStmt->execute([$ownerUserId]);
+            $reviews = $reviewStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+            return [
+                'counts' => array_map('intval', array_merge($empty['counts'], $counts)),
+                'campaigns' => $campaigns,
+                'pending_proofs' => $pending,
+                'recent_reviews' => $reviews,
+            ];
+        } catch (Throwable $e) {
+            return $empty;
+        }
+    }
+}
+
 if (!function_exists('tl_product_admin_home')) {
     function tl_product_admin_home(array $user): array
     {
         $role = tl_product_role($user);
+        $canManage = tl_product_role_allows($role, 'manager');
+
+        if ($role === 'manager') {
+            $ownerUserId = function_exists('tl_security_numeric_user_id') ? tl_security_numeric_user_id($user) : max(1, (int)($user['numeric_user_id'] ?? 1));
+            $scope = tl_product_manager_home_scope($ownerUserId);
+            return $scope + [
+                'user' => $user,
+                'role' => $role,
+                'role_label' => tl_product_role_label($role),
+                'can_manage' => true,
+                'scope' => 'owned_campaigns',
+            ];
+        }
+
         $summary = tl_app_flow_summary();
         $counts = $summary['counts'] ?? [];
         $pending = tl_app_pending_proofs(8);
         $reviews = tl_app_recent_reviews(8);
-        $campaigns = array_slice(tl_app_campaign_options(), 0, 6);
-        $rewards = function_exists('tl_mg_stage160_bridge_summary') ? tl_mg_stage160_bridge_summary() : [];
+        $campaigns = $canManage ? array_slice(tl_app_campaign_options(), 0, 6) : [];
+        $rewards = $canManage && function_exists('tl_mg_stage160_bridge_summary') ? tl_mg_stage160_bridge_summary() : [];
 
         return [
             'user' => $user,
             'role' => $role,
             'role_label' => tl_product_role_label($role),
             'counts' => [
-                'campaigns' => (int)($counts['campaigns'] ?? 0),
-                'participants' => (int)($counts['participants'] ?? 0),
+                'campaigns' => $canManage ? (int)($counts['campaigns'] ?? 0) : 0,
+                'participants' => $canManage ? (int)($counts['participants'] ?? 0) : 0,
                 'pending_proofs' => (int)($counts['pending_proofs'] ?? count($pending)),
-                'rewards' => (int)($counts['reward_events'] ?? 0),
+                'rewards' => $canManage ? (int)($counts['reward_events'] ?? 0) : 0,
                 'reviews' => (int)($counts['reviews'] ?? 0),
-                'claimable' => (int)($rewards['counts']['claimable'] ?? 0),
-                'retryable' => (int)($rewards['counts']['retryable'] ?? 0),
+                'claimable' => $canManage ? (int)($rewards['counts']['claimable'] ?? 0) : 0,
+                'retryable' => $canManage ? (int)($rewards['counts']['retryable'] ?? 0) : 0,
             ],
             'campaigns' => $campaigns,
             'pending_proofs' => $pending,
             'recent_reviews' => $reviews,
-            'can_manage' => tl_product_role_allows($role, 'manager'),
+            'can_manage' => $canManage,
+            'scope' => $role === 'admin' ? 'platform' : 'review',
         ];
     }
 }
