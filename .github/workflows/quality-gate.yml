@@ -35,6 +35,12 @@ jobs:
       - name: Recursive PHP syntax
         run: bash ./run-full-syntax-check.sh
 
+      - name: Role-aware shell and participant home contract
+        run: php ./tests/role-aware-shell-participant-home-contract-test.php
+
+      - name: Role-aware shell and participant home scored audit
+        run: php ./scripts/role-aware-shell-participant-home-quality-audit.php
+
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
 
