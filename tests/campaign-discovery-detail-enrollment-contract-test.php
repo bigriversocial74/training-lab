@@ -56,7 +56,7 @@ $requires($enrollment, "visibility !== 'published'", 'New self-enrollment must r
 $requires($enrollment, "['scheduled','active']", 'Enrollment must require a joinable campaign status.');
 $requires($enrollment, 'tl_campaign_datetime', 'Enrollment writes must use campaign-timezone date checks.');
 $requires($enrollment, "SELECT COUNT(*) FROM training_participants WHERE campaign_id=? AND status<>'removed'", 'Capacity must be rechecked in the transaction.');
-$requires($enrollment, 'already_joined'=>true', 'Existing enrollment must return idempotently.');
+$requires($enrollment, "'already_joined'=>true", 'Existing enrollment must return idempotently.');
 $requires($enrollment, 'if ($pdo->inTransaction()) $pdo->rollBack();', 'Enrollment failures must roll back.');
 $forbids($enrollment, "\$_GET", 'Enrollment service must not trust query parameters.');
 $forbids($enrollment, "\$_POST", 'Enrollment service must not trust raw form data.');
