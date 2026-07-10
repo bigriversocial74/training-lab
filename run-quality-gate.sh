@@ -14,6 +14,9 @@ php ./tests/production-runtime-acceptance-contract-test.php
 echo "== Stage 886 account integration contracts =="
 php ./tests/stage886-account-integration-contract-test.php
 
+echo "== Stage 889 shared session hardening contracts =="
+php ./tests/stage889-shared-session-hardening-contract-test.php
+
 echo "== Data-integrity contracts =="
 php ./tests/data-integrity-contract-test.php
 

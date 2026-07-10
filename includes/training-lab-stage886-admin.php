@@ -20,21 +20,31 @@ if (!function_exists('tl_stage886_admin_summary')) {
             $recent = $stmt ? ($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []) : [];
         }
         $cfg = tl_stage886_config();
+        tl_security_session_start();
+        $currentUser = $_SESSION['training_lab_user'] ?? null;
         return [
-            'stage'=>'Stage 886 Shared Microgifter Account Integration v1',
+            'stage'=>'Stage 889 Shared Account Session Hardening v1',
             'configured'=>tl_stage886_ready(),
+            'shared_secret_configured'=>strlen((string)$cfg['secret']) >= 32,
             'schema_ready'=>tl_stage886_tables_ready(),
             'issuer'=>$cfg['issuer'],
             'audience'=>$cfg['audience'],
             'max_ttl_seconds'=>$cfg['max_ttl'],
             'clock_skew_seconds'=>$cfg['clock_skew'],
+            'session_ttl_seconds'=>$cfg['session_ttl'],
+            'session_idle_ttl_seconds'=>$cfg['session_idle_ttl'],
+            'current_session'=>tl_stage889_session_public_status(is_array($currentUser) ? $currentUser : null),
             'counts'=>$counts,
             'recent_links'=>$recent,
             'safe_boundaries'=>[
                 'no_password_copy'=>true,
                 'no_microgifter_auth_table_writes'=>true,
                 'signed_short_lived_assertions'=>true,
+                'assertion_and_session_lifetimes_separated'=>true,
+                'persistent_links_until_revoked_or_suspended'=>true,
                 'single_use_nonce_replay_protection'=>true,
+                'revocation_checked_on_authenticated_requests'=>true,
+                'legacy_raw_session_trust_disabled_when_configured'=>true,
                 'no_payment_or_wallet_mutation'=>true,
                 'no_claim_redeem_or_reward_issuing'=>true,
             ],

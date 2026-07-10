@@ -30,9 +30,44 @@ if (!function_exists('tl_stage886_config')) {
         $issuer = trim((string)(getenv('TL_IDENTITY_ISSUER') ?: ($cfg['identity_issuer'] ?? 'microgifter.com')));
         $audience = trim((string)(getenv('TL_IDENTITY_AUDIENCE') ?: ($cfg['identity_audience'] ?? 'training-lab')));
         $secret = (string)(getenv('TL_IDENTITY_SHARED_SECRET') ?: ($cfg['identity_shared_secret'] ?? ''));
-        $ttl = max(30, min(600, (int)(getenv('TL_IDENTITY_MAX_TTL') ?: ($cfg['identity_max_ttl_seconds'] ?? 180))));
-        $clockSkew = max(0, min(120, (int)(getenv('TL_IDENTITY_CLOCK_SKEW') ?: ($cfg['identity_clock_skew_seconds'] ?? 30))));
-        return ['issuer'=>$issuer,'audience'=>$audience,'secret'=>$secret,'max_ttl'=>$ttl,'clock_skew'=>$clockSkew];
+
+        $assertionTtlEnv = getenv('TL_IDENTITY_MAX_TTL');
+        $assertionTtl = $assertionTtlEnv !== false && $assertionTtlEnv !== ''
+            ? (int)$assertionTtlEnv
+            : (int)($cfg['identity_max_ttl_seconds'] ?? 180);
+        $assertionTtl = max(30, min(600, $assertionTtl));
+
+        $clockSkewEnv = getenv('TL_IDENTITY_CLOCK_SKEW');
+        $clockSkew = $clockSkewEnv !== false && $clockSkewEnv !== ''
+            ? (int)$clockSkewEnv
+            : (int)($cfg['identity_clock_skew_seconds'] ?? 30);
+        $clockSkew = max(0, min(120, $clockSkew));
+
+        $sessionTtlEnv = getenv('TL_IDENTITY_SESSION_TTL');
+        $sessionTtl = $sessionTtlEnv !== false && $sessionTtlEnv !== ''
+            ? (int)$sessionTtlEnv
+            : (int)($cfg['identity_session_ttl_seconds'] ?? 28800);
+        $sessionTtl = max(900, min(604800, $sessionTtl));
+
+        $sessionIdleTtlEnv = getenv('TL_IDENTITY_SESSION_IDLE_TTL');
+        $sessionIdleTtl = $sessionIdleTtlEnv !== false && $sessionIdleTtlEnv !== ''
+            ? (int)$sessionIdleTtlEnv
+            : (int)($cfg['identity_session_idle_ttl_seconds'] ?? 3600);
+        if ($sessionIdleTtl > 0) {
+            $sessionIdleTtl = max(300, min($sessionTtl, $sessionIdleTtl));
+        } else {
+            $sessionIdleTtl = 0;
+        }
+
+        return [
+            'issuer'=>$issuer,
+            'audience'=>$audience,
+            'secret'=>$secret,
+            'max_ttl'=>$assertionTtl,
+            'clock_skew'=>$clockSkew,
+            'session_ttl'=>$sessionTtl,
+            'session_idle_ttl'=>$sessionIdleTtl,
+        ];
     }
 }
 
