@@ -45,6 +45,9 @@ return [
         'reward_handoff_worker_max_runtime_seconds' => 45,
         'reward_handoff_worker_actor_user_id' => 1,
         'reward_handoff_worker_lock_file' => sys_get_temp_dir() . '/training-lab-stage892-reward-worker.lock',
+        'reward_delivery_reconciliation_enabled' => false,
+        'reward_delivery_reconciliation_batch_size' => 25,
+        'reward_delivery_reconciliation_min_age_seconds' => 300,
         // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
     ],

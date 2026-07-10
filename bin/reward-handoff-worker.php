@@ -7,11 +7,11 @@ if (PHP_SAPI !== 'cli') {
     exit(1);
 }
 
-require_once dirname(__DIR__) . '/includes/training-lab-stage892-scheduled-worker.php';
+require_once dirname(__DIR__) . '/includes/training-lab-stage893-worker-wrapper.php';
 
 $parsed = tl_stage892_parse_cli_arguments($argv);
 if (!empty($parsed['help'])) {
-    echo "Training Lab Stage 892 reward handoff worker\n\n";
+    echo "Training Lab Stage 892/893 reward handoff worker\n\n";
     echo "Usage:\n";
     echo "  php bin/reward-handoff-worker.php --observe [--limit=N]\n";
     echo "  php bin/reward-handoff-worker.php --recover [--limit=N]\n";
@@ -19,13 +19,13 @@ if (!empty($parsed['help'])) {
     echo "Modes:\n";
     echo "  --observe  Read-only acceptance/status run. This is the default.\n";
     echo "  --recover  Recover expired processing leases; never calls Microgifter.\n";
-    echo "  --process  Recover, sync, and process a bounded due batch. Requires every production gate.\n";
+    echo "  --process  Reconcile, recover, sync, and process a bounded due batch. Requires every production and reconciliation gate.\n";
     exit(0);
 }
 
 if (!empty($parsed['errors'])) {
     $payload = [
-        'stage'=>'Stage 892 Scheduled Reward Handoff Worker v1',
+        'stage'=>'Stage 892/893 Scheduled Reward Handoff Worker',
         'status'=>'invalid_arguments',
         'exit_code'=>64,
         'errors'=>array_values((array)$parsed['errors']),
@@ -40,6 +40,6 @@ $input = [
 ];
 if ($parsed['limit'] !== null) $input['limit'] = (int)$parsed['limit'];
 
-$result = tl_stage892_run($input);
+$result = tl_stage893_run_scheduled_worker($input);
 echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL;
 exit(max(0, min(255, (int)($result['exit_code'] ?? 1))));

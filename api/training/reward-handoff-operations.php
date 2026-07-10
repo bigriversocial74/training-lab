@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
-require_once __DIR__ . '/../../includes/training-lab-stage891-reward-handoff-recovery.php';
-require_once __DIR__ . '/../../includes/training-lab-stage891-owned-processor.php';
+require_once __DIR__ . '/../../includes/training-lab-stage893-legacy-action-guard.php';
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 try {
@@ -11,7 +10,7 @@ try {
             throw new TlHttpException('A trusted manager or administrator account is required.', 403, 'reward_handoff_operations_forbidden');
         }
         tl_security_headers(true);
-        tl_security_json_response(['ok'=>true,'data'=>tl_stage891_acceptance_summary()]);
+        tl_security_json_response(['ok'=>true,'data'=>tl_stage891_acceptance_summary(),'reconciliation'=>tl_stage893_summary_guarded()]);
         exit;
     }
     if ($method !== 'POST') {
@@ -25,15 +24,15 @@ try {
     if ($action === 'stage891_recover_stale_handoffs') {
         $result = tl_stage891_recover_stale_processing($input);
     } elseif ($action === 'stage891_requeue_handoff') {
-        $result = tl_stage891_requeue_handoff($input);
+        $result = tl_stage893_requeue_handoff_guarded($input);
     } elseif ($action === 'stage891_process_resilient_batch') {
-        $result = tl_stage891_process_owned_batch($input);
+        $result = tl_stage893_process_batch_production_guarded($input);
     } elseif ($action === 'stage891_run_handoff_acceptance') {
         $result = tl_stage891_run_acceptance($input);
     } else {
-        throw new TlHttpException('Unsupported Stage 891 action.', 422, 'unsupported_stage891_action');
+        throw new TlHttpException('Unsupported reward handoff operations action.', 422, 'unsupported_handoff_operations_action');
     }
-    tl_security_json_response(['ok'=>true,'action'=>$action,'data'=>$result]);
+    tl_security_json_response(['ok'=>true,'action'=>$action,'data'=>$result,'reconciliation'=>tl_stage893_summary_guarded()]);
 } catch (Throwable $e) {
     tl_security_json_exception($e);
 }
