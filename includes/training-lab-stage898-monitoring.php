@@ -36,8 +36,10 @@ if (!function_exists('tl_stage898_summary')) {
         $metrics = tl_stage898_health_metrics($runs);
         $queue = $pdo instanceof PDO ? tl_stage898_queue_metrics($pdo) : [];
         $last = $runs[0] ?? null;
-        $lastAt = $last ? strtotime((string)($last['created_at'] ?? '')) : false;
-        $lastAge = $lastAt ? max(0, time() - $lastAt) : null;
+        $lastAttempt = is_array($readiness['last_attempt'] ?? null) ? (array)$readiness['last_attempt'] : [];
+        $lastAge = array_key_exists('age_seconds', $lastAttempt) && $lastAttempt['age_seconds'] !== null
+            ? (int)$lastAttempt['age_seconds']
+            : null;
         $stale = !empty($config['enabled']) && $lastAge !== null && $lastAge > (int)$config['stale_after_seconds'];
         $alerts = [
             'pause_latched'=>!empty($readiness['pause']['paused']),
