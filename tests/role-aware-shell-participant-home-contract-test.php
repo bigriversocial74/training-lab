@@ -29,6 +29,7 @@ $portal = $read('app/participant-portal.php');
 $css = $read('assets/css/product-shell.css');
 $runner = $read('run-quality-gate.sh');
 $workflow = $read('.github/workflows/quality-gate.yml');
+$documentation = $read('docs/ROLE-AWARE-SHELL-PARTICIPANT-HOME-V1.md');
 
 $requires($layout, 'tl_product_require_page_access($page)', 'The shared layout must enforce page access before rendering.');
 $requires($layout, "labs_asset('css/product-shell.css')", 'The shared layout must load the product shell stylesheet.');
@@ -48,6 +49,14 @@ $requires($homeService, 'WHERE tp.user_id=?', 'Participant campaign reads must b
 $requires($homeService, '$pdo->prepare($sql)', 'Participant campaign reads must use prepared statements.');
 $requires($homeService, 'tl_product_task_status', 'Participant task status normalization is required.');
 $requires($homeService, 'tl_product_recent_activity', 'Participant recent activity must be derived from real records.');
+
+$requires($homeService, 'tl_product_manager_home_scope', 'Manager dashboard data must use a dedicated ownership-scoped service.');
+$requires($homeService, 'WHERE c.owner_user_id=?', 'Manager campaign reads must be scoped to the trusted owner user ID.');
+$requires($homeService, 'WHERE owner_user_id=?', 'Manager campaign list must be scoped by owner_user_id.');
+$requires($homeService, '$countStmt = $pdo->prepare($countSql)', 'Manager aggregate counts must use a prepared query.');
+$requires($homeService, "$role === 'manager'", 'Manager-only ownership scoping must be explicit.');
+$requires($homeService, "'scope' => 'owned_campaigns'", 'Manager results must declare owned-campaign scope.');
+$requires($documentation, 'Merchant managers see only campaigns where `training_campaigns.owner_user_id` matches their trusted account', 'Documentation must define merchant tenant scoping.');
 
 $requires($participantHome, 'tl_product_participant_home($user ?? []', 'Participant home must use the signed-in participant view model.');
 $requires($participantHome, 'Recommended next step', 'Participant home must surface one clear next action.');
