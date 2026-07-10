@@ -38,6 +38,9 @@ php ./tests/stage895-signed-integration-acceptance-contract-test.php
 echo "== Stage 896 limited reward pilot contracts =="
 php ./tests/stage896-limited-reward-pilot-contract-test.php
 
+echo "== Stage 896 scored audit =="
+php ./scripts/stage896-quality-audit.php
+
 echo "== Data-integrity contracts =="
 php ./tests/data-integrity-contract-test.php
 
