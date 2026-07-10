@@ -68,6 +68,9 @@ jobs:
       - name: Stage 896 limited reward pilot contract
         run: php ./tests/stage896-limited-reward-pilot-contract-test.php
 
+      - name: Stage 896 scored quality audit
+        run: php ./scripts/stage896-quality-audit.php
+
       - name: Data integrity contract
         run: php ./tests/data-integrity-contract-test.php
 
