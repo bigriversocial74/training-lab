@@ -44,8 +44,8 @@ $check(str_contains($service, "'all_closed'=>") && str_contains($service, 'stage
 $check(str_contains($service, 'CURLOPT_SSL_VERIFYPEER=>true') && str_contains($service, 'CURLOPT_SSL_VERIFYHOST=>2'), 'acceptance transport verifies TLS');
 $check(str_contains($service, 'CURLOPT_FOLLOWLOCATION=>false') && str_contains($service, 'CURLOPT_MAXREDIRS=>0'), 'acceptance transport rejects redirects');
 $check(str_contains($service, "['tamper_signature'=>true]") && str_contains($service, "'signature_invalid'"), 'tampered-signature probe is enforced');
-$check(str_contains($service, "time() - 1200") && str_contains($service, "'timestamp_expired'"), 'expired-timestamp probe is enforced');
-$check(substr_count($service, "'nonce'=>$replayNonce") >= 2 && str_contains($service, "'request_replayed'"), 'identical nonce replay is tested');
+$check(str_contains($service, 'time() - 1200') && str_contains($service, "'timestamp_expired'"), 'expired-timestamp probe is enforced');
+$check(substr_count($service, "'nonce'=>\$replayNonce") >= 2 && str_contains($service, "'request_replayed'"), 'identical nonce replay is tested');
 $check(str_contains($service, "'known_reward_found'") && str_contains($service, "'wrong_user'"), 'found and wrong-user probes are required');
 $check(str_contains($service, "'valid_not_found'") && str_contains($service, 'stage895-not-found-'), 'valid signed not-found probe uses a synthetic reference');
 $check(str_contains($service, 'stage895_signed_integration_acceptance') && str_contains($service, 'secrets_signatures_nonces_and_raw_payloads_excluded'), 'sanitized acceptance evidence is logged');
