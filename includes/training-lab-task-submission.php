@@ -119,7 +119,7 @@ if (!function_exists('tl_task_secure_submit')) {
             if (!$proofRequired) {
                 $verificationHash = hash('sha256', random_bytes(32) . '|' . $proofPublicId . '|' . $userId);
                 $receiptPublicId = tl_uuid();
-                $insertReceipt = $pdo->prepare('INSERT INTO training_action_receipts (public_id,campaign_id,participant_id,user_id,proof_submission_id,review_id,receipt_type,verification_hash,receipt_status,metadata_json) VALUES (?,?,?,?,?,NULL,?,?,?,?,?)');
+                $insertReceipt = $pdo->prepare('INSERT INTO training_action_receipts (public_id,campaign_id,participant_id,user_id,proof_submission_id,review_id,receipt_type,verification_hash,receipt_status,metadata_json) VALUES (?,?,?,?,?,NULL,?,?,?,?)');
                 $insertReceipt->execute([
                     $receiptPublicId,
                     (int)$campaign['id'],
