@@ -28,6 +28,7 @@ $sections = [
             'post_only_app_actions'=>$contains('api/training/app-action.php', 'tl_security_request_data(false)'),
             'protected_action_bootstrap'=>$contains('api/training/actions/_action-bootstrap.php', 'tl_route_write_input'),
             'protected_review_api'=>$contains('api/training/proof-review-workflow.php', "tl_security_guard_write('stage885_review_proof'"),
+            'protected_outbox_api'=>$contains('api/training/reward-handoff-outbox.php', 'tl_security_guard_write') && $contains('api/training/reward-handoff-outbox.php', 'tl_auth_role_allowed'),
             'safe_json_errors'=>$contains('includes/training-lab-security.php', 'tl_security_json_exception'),
             'request_ids'=>$contains('includes/training-lab-security.php', 'X-Request-ID'),
             'payload_limit'=>$contains('includes/training-lab-security.php', 'payload_too_large'),
@@ -45,6 +46,8 @@ $sections = [
             'idempotent_rewards'=>$contains('includes/training-lab-actions.php', "status <> 'cancelled'"),
             'crypto_receipt_hash'=>$contains('includes/training-lab-actions.php', 'random_bytes(32)'),
             'bounded_validated_input'=>$contains('includes/training-lab-actions.php', 'tl_action_clean') && $contains('includes/training-lab-actions.php', 'tl_action_enum'),
+            'durable_reward_outbox'=>$exists('database/stage890_reward_handoff_outbox_v1.sql') && $exists('includes/training-lab-stage890-reward-handoff-outbox.php'),
+            'outbox_idempotency_and_locking'=>$contains('database/stage890_reward_handoff_outbox_v1.sql', 'uq_training_reward_handoffs_idempotency') && $contains('includes/training-lab-stage890-reward-handoff-outbox.php', 'FOR UPDATE'),
         ],
     ],
     'architecture_maintainability' => [
@@ -55,6 +58,7 @@ $sections = [
             'shared_layout'=>$exists('includes/labs-layout.php'),
             'shared_public_template'=>$exists('includes/training-lab-public-template.php'),
             'single_action_service'=>$exists('includes/training-lab-actions.php'),
+            'isolated_handoff_service'=>$exists('includes/training-lab-stage890-reward-handoff-outbox.php'),
             'quality_script'=>$exists('scripts/quality-audit.php'),
             'audit_documentation'=>$exists('docs/CODE-AUDIT-2026-07-09.md'),
             'no_new_runtime_dependency'=>!$exists('composer.lock') || $exists('composer.json'),
@@ -81,6 +85,7 @@ $sections = [
             'data_contract_test'=>$exists('tests/data-integrity-contract-test.php'),
             'route_contract_test'=>$exists('tests/http-route-contract-test.php'),
             'stage889_session_contract'=>$exists('tests/stage889-shared-session-hardening-contract-test.php') && $contains('run-quality-gate.sh', 'stage889-shared-session-hardening-contract-test.php'),
+            'stage890_outbox_contract'=>$exists('tests/stage890-reward-handoff-outbox-contract-test.php') && $contains('run-quality-gate.sh', 'stage890-reward-handoff-outbox-contract-test.php'),
             'quality_gate_script'=>$exists('run-quality-gate.sh'),
             'quality_workflow'=>$exists('.github/workflows/quality-gate.yml'),
             'php_82_matrix'=>$contains('.github/workflows/quality-gate.yml', "'8.2'"),
@@ -96,6 +101,7 @@ $sections = [
             'db_health_route'=>$exists('admin/db-health.php') && $exists('api/training/db-status.php'),
             'deployment_acceptance'=>$exists('admin/deployment-acceptance.php') && $exists('api/training/deployment-acceptance.php'),
             'live_smoke'=>$exists('admin/live-smoke.php') && $exists('api/training/live-smoke.php'),
+            'outbox_migration_and_config'=>$exists('database/stage890_reward_handoff_outbox_v1.sql') && $contains('labs/config-example.php', 'reward_handoff_processing_enabled'),
             'safe_error_logging'=>$contains('includes/training-lab-security.php', 'error_log'),
             'audit_report'=>$exists('docs/CODE-AUDIT-2026-07-09.md'),
         ],
@@ -116,7 +122,7 @@ unset($section);
 
 $result = [
     'audit'=>'Training Lab production-readiness quality gate',
-    'rubric_version'=>'2026-07-10.1',
+    'rubric_version'=>'2026-07-10.2',
     'all_sections_10_of_10'=>$allPerfect,
     'sections'=>$sections,
 ];

@@ -34,7 +34,11 @@ return [
         'identity_clock_skew_seconds' => 30,
         'identity_session_ttl_seconds' => 28800,
         'identity_session_idle_ttl_seconds' => 3600,
-        // Prefer TL_DEVELOPER_KEY and TL_IDENTITY_SHARED_SECRET in the server environment.
+        'reward_handoff_processing_enabled' => false,
+        'reward_handoff_batch_size' => 10,
+        'reward_handoff_max_attempts' => 5,
+        'reward_handoff_retry_base_seconds' => 300,
+        // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
     ],
 ];
