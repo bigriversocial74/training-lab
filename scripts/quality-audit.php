@@ -23,6 +23,8 @@ $sections = [
             'signed_lookup_tls'=>$contains('includes/training-lab-stage894-signed-reward-lookup-client.php', 'CURLOPT_SSL_VERIFYPEER=>true') && $contains('includes/training-lab-stage894-signed-reward-lookup-client.php', 'CURLOPT_SSL_VERIFYHOST=>2'),
             'signed_lookup_redirect_block'=>$contains('includes/training-lab-stage894-signed-reward-lookup-client.php', 'CURLOPT_FOLLOWLOCATION=>false') && $contains('includes/training-lab-stage894-signed-reward-lookup-client.php', 'CURLOPT_MAXREDIRS=>0'),
             'signed_lookup_secret_exclusion'=>$contains('includes/training-lab-stage894-signed-reward-lookup-client.php', "'shared_secret_not_returned'=>true") && !$contains('includes/training-lab-stage894-signed-reward-lookup-client.php', "'secret'=>(string)"),
+            'stage895_acceptance_tls'=>$contains('includes/training-lab-stage895-integration-acceptance.php', 'CURLOPT_SSL_VERIFYPEER=>true') && $contains('includes/training-lab-stage895-integration-acceptance.php', 'CURLOPT_SSL_VERIFYHOST=>2'),
+            'stage895_acceptance_csrf'=>$contains('includes/training-lab-stage895-integration-acceptance.php', 'tl_security_csrf_field') && $contains('admin/integration-acceptance.php', 'tl_security_guard_write'),
         ],
     ],
     'api_runtime' => [
@@ -42,6 +44,8 @@ $sections = [
             'stage894_shared_bootstrap'=>$exists('includes/training-lab-stage894-reconciliation-bootstrap.php') && $contains('includes/training-lab-stage894-reconciliation-bootstrap.php', 'training-lab-stage894-signed-reward-lookup-client.php') && $contains('includes/training-lab-stage894-reconciliation-bootstrap.php', 'training-lab-stage893-processing-wrapper.php'),
             'stage894_active_routes'=>$contains('api/training/reward-delivery-reconciliation.php', 'training-lab-stage894-reconciliation-bootstrap.php') && $contains('api/training/reward-handoff-operations.php', 'training-lab-stage894-reconciliation-bootstrap.php') && $contains('api/training/reward-handoff-outbox.php', 'training-lab-stage894-reconciliation-bootstrap.php') && $contains('api/training/app-action.php', 'training-lab-stage894-reconciliation-bootstrap.php'),
             'stage894_sanitized_status'=>$contains('api/training/reward-delivery-reconciliation.php', 'tl_stage894_summary') && $contains('api/training/reward-handoff-operations.php', 'tl_stage894_summary') && $contains('api/training/reward-handoff-outbox.php', 'tl_stage894_summary'),
+            'protected_stage895_api'=>$exists('api/training/integration-acceptance.php') && $contains('api/training/integration-acceptance.php', 'tl_auth_role_allowed') && $contains('api/training/integration-acceptance.php', 'tl_security_guard_write'),
+            'stage895_acceptance_gate'=>$contains('includes/training-lab-stage895-integration-acceptance.php', 'stage895_not_ready') && $contains('includes/training-lab-stage895-integration-acceptance.php', "'all_closed'=>"),
             'safe_json_errors'=>$contains('includes/training-lab-security.php', 'tl_security_json_exception'),
             'request_ids'=>$contains('includes/training-lab-security.php', 'X-Request-ID'),
             'payload_limit'=>$contains('includes/training-lab-security.php', 'payload_too_large'),
@@ -77,6 +81,9 @@ $sections = [
             'legacy_direct_adapter_bypass'=>$contains('includes/training-lab-stage893-legacy-action-guard.php', 'legacy_direct_adapter_bypassed') && !$contains('api/training/app-action.php', 'tl_mg_stage160_retry_microgifter_issue($data)'),
             'signed_lookup_identity_contract'=>$contains('includes/training-lab-stage894-signed-reward-lookup-client.php', 'microgifter_user_required') && $contains('includes/training-lab-stage894-signed-reward-lookup-client.php', 'read_only'),
             'signed_lookup_nonce_and_hmac'=>$contains('includes/training-lab-stage894-signed-reward-lookup-client.php', 'random_bytes(24)') && $contains('includes/training-lab-stage894-signed-reward-lookup-client.php', "hash_hmac('sha256'"),
+            'stage895_replay_and_tamper'=>$contains('includes/training-lab-stage895-integration-acceptance.php', "'request_replayed'") && $contains('includes/training-lab-stage895-integration-acceptance.php', "['tamper_signature'=>true]"),
+            'stage895_evidence_sanitization'=>$contains('includes/training-lab-stage895-integration-acceptance.php', 'secrets_signatures_nonces_and_raw_payloads_excluded') && $contains('includes/training-lab-stage895-integration-acceptance.php', 'reward_reference_fingerprint'),
+            'stage895_no_mutation_adapter'=>!$contains('includes/training-lab-stage895-integration-acceptance.php', 'tl_stage890_call_adapter(') && !$contains('includes/training-lab-stage895-integration-acceptance.php', 'tl_mg_stage160_retry_microgifter_issue('),
         ],
     ],
     'architecture_maintainability' => [
@@ -93,6 +100,7 @@ $sections = [
             'isolated_scheduled_worker'=>$exists('includes/training-lab-stage892-scheduled-worker.php') && $exists('bin/reward-handoff-worker.php'),
             'isolated_reconciliation_service'=>$exists('includes/training-lab-stage893-external-delivery-reconciliation.php') && $exists('includes/training-lab-stage893-processing-wrapper.php') && $exists('includes/training-lab-stage893-worker-wrapper.php') && $exists('includes/training-lab-stage893-legacy-action-guard.php'),
             'isolated_signed_lookup_client'=>$exists('includes/training-lab-stage894-signed-reward-lookup-client.php') && $exists('includes/training-lab-stage894-reconciliation-bootstrap.php'),
+            'isolated_stage895_acceptance'=>$exists('includes/training-lab-stage895-integration-acceptance.php') && $exists('admin/integration-acceptance.php') && $exists('api/training/integration-acceptance.php'),
             'quality_script'=>$exists('scripts/quality-audit.php'),
             'audit_documentation'=>$exists('docs/CODE-AUDIT-2026-07-09.md'),
             'no_new_runtime_dependency'=>!$exists('composer.lock') || $exists('composer.json'),
@@ -124,6 +132,7 @@ $sections = [
             'stage892_worker_contract'=>$exists('tests/stage892-scheduled-worker-contract-test.php') && $contains('run-quality-gate.sh', 'stage892-scheduled-worker-contract-test.php'),
             'stage893_reconciliation_contract'=>$exists('tests/stage893-external-delivery-reconciliation-contract-test.php') && $contains('run-quality-gate.sh', 'stage893-external-delivery-reconciliation-contract-test.php'),
             'stage894_signed_lookup_contract'=>$exists('tests/stage894-signed-reward-lookup-client-contract-test.php') && $contains('run-quality-gate.sh', 'stage894-signed-reward-lookup-client-contract-test.php'),
+            'stage895_acceptance_contract'=>$exists('tests/stage895-signed-integration-acceptance-contract-test.php') && $contains('run-quality-gate.sh', 'stage895-signed-integration-acceptance-contract-test.php'),
             'quality_gate_script'=>$exists('run-quality-gate.sh'),
             'quality_workflow'=>$exists('.github/workflows/quality-gate.yml'),
             'php_82_matrix'=>$contains('.github/workflows/quality-gate.yml', "'8.2'"),
@@ -152,6 +161,9 @@ $sections = [
             'signed_lookup_operator_panel'=>$contains('admin/reward-bridge.php', 'tl_stage894_render_admin_panel') && $contains('api/training/reward-delivery-reconciliation.php', 'tl_stage894_summary'),
             'signed_lookup_worker_order'=>$contains('bin/reward-handoff-worker.php', 'training-lab-stage894-signed-reward-lookup-client.php') && strpos($read('bin/reward-handoff-worker.php'), 'training-lab-stage894-signed-reward-lookup-client.php') < strpos($read('bin/reward-handoff-worker.php'), 'training-lab-stage893-worker-wrapper.php'),
             'signed_lookup_documentation'=>$exists('docs/STAGE-894-SIGNED-REWARD-LOOKUP-CLIENT-V1.md'),
+            'stage895_disabled_config'=>$contains('config-example.php', "'stage895_live_acceptance_enabled' => false") && $contains('labs/config-example.php', "'stage895_live_acceptance_enabled' => false"),
+            'stage895_operator_routes'=>$exists('admin/integration-acceptance.php') && $exists('api/training/integration-acceptance.php') && $contains('admin/reward-bridge.php', 'tl_stage895_render_reward_bridge_panel'),
+            'stage895_documentation'=>$exists('docs/STAGE-895-SIGNED-INTEGRATION-ACCEPTANCE-V1.md'),
             'safe_error_logging'=>$contains('includes/training-lab-security.php', 'error_log'),
             'audit_report'=>$exists('docs/CODE-AUDIT-2026-07-09.md'),
         ],
@@ -172,7 +184,7 @@ unset($section);
 
 $result = [
     'audit'=>'Training Lab production-readiness quality gate',
-    'rubric_version'=>'2026-07-10.8',
+    'rubric_version'=>'2026-07-10.9',
     'all_sections_10_of_10'=>$allPerfect,
     'sections'=>$sections,
 ];
