@@ -47,6 +47,12 @@ php ./tests/stage897-controlled-batch-rollout-contract-test.php
 echo "== Stage 897 scored audit =="
 php ./scripts/stage897-quality-audit.php
 
+echo "== Stage 898 worker canary monitoring contracts =="
+php ./tests/stage898-worker-canary-monitoring-contract-test.php
+
+echo "== Stage 898 scored audit =="
+php ./scripts/stage898-quality-audit.php
+
 echo "== Data-integrity contracts =="
 php ./tests/data-integrity-contract-test.php
 
