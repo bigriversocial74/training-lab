@@ -71,6 +71,12 @@ jobs:
       - name: Stage 896 scored quality audit
         run: php ./scripts/stage896-quality-audit.php
 
+      - name: Stage 897 controlled batch rollout contract
+        run: php ./tests/stage897-controlled-batch-rollout-contract-test.php
+
+      - name: Stage 897 scored quality audit
+        run: php ./scripts/stage897-quality-audit.php
+
       - name: Data integrity contract
         run: php ./tests/data-integrity-contract-test.php
 
