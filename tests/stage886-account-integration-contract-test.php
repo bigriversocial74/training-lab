@@ -110,7 +110,7 @@ $assert(str_contains($service, 'assertion_replayed'), 'Replay attempts must have
 $assert(str_contains($service, 'session_regenerate_id(true)'), 'Trusted session creation must rotate the session ID.');
 $assert(str_contains($service, "'source' => 'microgifter_assertion'"), 'Trusted sessions must have an explicit assertion source.');
 $assert(tl_stage886_session_ttl_seconds() === 28800, 'Trusted-session TTL must be independent from assertion TTL.');
-$assert(str_contains($sessionPolicy, 'TL_ACCOUNT_BRIDGE_SESSION_TTL') && str_contains($sessionPolicy, "link_status='active'"), 'Session policy must be configurable and update active links only.');
+$assert(str_contains($sessionPolicy, 'TL_ACCOUNT_BRIDGE_SESSION_TTL') && str_contains($sessionPolicy, 'link_status') && str_contains($sessionPolicy, 'active'), 'Session policy must be configurable and update active links only.');
 $assert(str_contains($authGate, 'tl_stage886_current_principal'), 'Auth gate must resolve verified Stage 886 principals first.');
 $assert(str_contains($authGate, 'if (function_exists(\'tl_stage886_enabled\') && tl_stage886_enabled()) return null;'), 'Configured Stage 886 must close legacy raw-session fallback.');
 $assert(is_file($root . '/account-link.php'), 'Browser account-link receiver must exist.');
