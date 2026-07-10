@@ -65,6 +65,11 @@ return [
         'microgifter_pilot_issue_timeout_seconds' => 10,
         'microgifter_pilot_issue_connect_timeout_seconds' => 3,
         'microgifter_pilot_issue_max_response_bytes' => 131072,
+        'stage897_controlled_batch_enabled' => false,
+        'stage897_max_batch_size' => 3,
+        'stage897_max_total_value_cents' => 7500,
+        'stage897_verified_pilot_max_age_seconds' => 604800,
+        'stage897_max_runtime_seconds' => 60,
         // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
         // 'microgifter_reward_lookup_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',

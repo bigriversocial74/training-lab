@@ -41,6 +41,12 @@ php ./tests/stage896-limited-reward-pilot-contract-test.php
 echo "== Stage 896 scored audit =="
 php ./scripts/stage896-quality-audit.php
 
+echo "== Stage 897 controlled batch rollout contracts =="
+php ./tests/stage897-controlled-batch-rollout-contract-test.php
+
+echo "== Stage 897 scored audit =="
+php ./scripts/stage897-quality-audit.php
+
 echo "== Data-integrity contracts =="
 php ./tests/data-integrity-contract-test.php
 
