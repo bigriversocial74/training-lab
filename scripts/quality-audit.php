@@ -29,7 +29,8 @@ $sections = [
             'protected_action_bootstrap'=>$contains('api/training/actions/_action-bootstrap.php', 'tl_route_write_input'),
             'protected_review_api'=>$contains('api/training/proof-review-workflow.php', "tl_security_guard_write('stage885_review_proof'"),
             'protected_outbox_api'=>$contains('api/training/reward-handoff-outbox.php', 'tl_security_guard_write') && $contains('api/training/reward-handoff-outbox.php', 'tl_auth_role_allowed'),
-            'protected_recovery_api'=>$contains('api/training/reward-handoff-operations.php', 'tl_security_guard_write') && $contains('api/training/reward-handoff-operations.php', 'tl_security_json_exception'),
+            'protected_recovery_api'=>$contains('api/training/reward-handoff-operations.php', 'tl_security_guard_write') && $contains('api/training/reward-handoff-operations.php', 'tl_auth_role_allowed'),
+            'owned_processor_routes'=>$contains('api/training/reward-handoff-outbox.php', 'tl_stage891_process_handoff_owned') && $contains('api/training/reward-handoff-operations.php', 'tl_stage891_process_owned_batch'),
             'safe_json_errors'=>$contains('includes/training-lab-security.php', 'tl_security_json_exception'),
             'request_ids'=>$contains('includes/training-lab-security.php', 'X-Request-ID'),
             'payload_limit'=>$contains('includes/training-lab-security.php', 'payload_too_large'),
@@ -51,6 +52,7 @@ $sections = [
             'outbox_idempotency_and_locking'=>$contains('database/stage890_reward_handoff_outbox_v1.sql', 'uq_training_reward_handoffs_idempotency') && $contains('includes/training-lab-stage890-reward-handoff-outbox.php', 'FOR UPDATE'),
             'stale_worker_recovery'=>$contains('includes/training-lab-stage891-reward-handoff-recovery.php', 'worker_lease_expired_recovered') && $contains('includes/training-lab-stage891-reward-handoff-recovery.php', 'FOR UPDATE'),
             'operator_requeue_audit'=>$contains('includes/training-lab-stage891-reward-handoff-recovery.php', 'stage891_handoff_requeued') && $contains('includes/training-lab-stage891-reward-handoff-recovery.php', 'stage891_recovery_history'),
+            'owned_worker_finalization'=>$contains('includes/training-lab-stage891-owned-processor.php', "handoff_status='processing' AND locked_by=?") && $contains('includes/training-lab-stage891-owned-processor.php', 'adapter_result_unapplied'),
         ],
     ],
     'architecture_maintainability' => [
@@ -63,6 +65,7 @@ $sections = [
             'single_action_service'=>$exists('includes/training-lab-actions.php'),
             'isolated_handoff_service'=>$exists('includes/training-lab-stage890-reward-handoff-outbox.php'),
             'isolated_recovery_service'=>$exists('includes/training-lab-stage891-reward-handoff-recovery.php'),
+            'isolated_owned_processor'=>$exists('includes/training-lab-stage891-owned-processor.php'),
             'quality_script'=>$exists('scripts/quality-audit.php'),
             'audit_documentation'=>$exists('docs/CODE-AUDIT-2026-07-09.md'),
             'no_new_runtime_dependency'=>!$exists('composer.lock') || $exists('composer.json'),
@@ -109,6 +112,7 @@ $sections = [
             'outbox_migration_and_config'=>$exists('database/stage890_reward_handoff_outbox_v1.sql') && $contains('labs/config-example.php', 'reward_handoff_processing_enabled'),
             'lease_recovery_config'=>$contains('config-example.php', 'reward_handoff_lease_seconds') && $contains('labs/config-example.php', 'reward_handoff_recovery_batch_size'),
             'operations_acceptance_route'=>$exists('api/training/reward-handoff-operations.php') && $contains('admin/reward-bridge.php', 'tl_stage891_render_admin_panel'),
+            'terminal_failure_queue'=>$exists('includes/training-lab-stage891-terminal-failure-panel.php') && $contains('admin/reward-bridge.php', 'tl_stage891_render_terminal_failure_panel'),
             'safe_error_logging'=>$contains('includes/training-lab-security.php', 'error_log'),
             'audit_report'=>$exists('docs/CODE-AUDIT-2026-07-09.md'),
         ],
@@ -129,7 +133,7 @@ unset($section);
 
 $result = [
     'audit'=>'Training Lab production-readiness quality gate',
-    'rubric_version'=>'2026-07-10.3',
+    'rubric_version'=>'2026-07-10.4',
     'all_sections_10_of_10'=>$allPerfect,
     'sections'=>$sections,
 ];
