@@ -25,6 +25,9 @@ if (!function_exists('tl_auth_existing_microgifter_user')) {
     function tl_auth_existing_microgifter_user(): ?array
     {
         tl_auth_session_start();
+        // Once Stage 886 signed identity is configured, raw legacy session fields are
+        // no longer accepted as a trusted Microgifter identity source.
+        if (function_exists('tl_stage886_ready') && tl_stage886_ready()) return null;
         foreach (['microgifter_user_id','mg_user_id','auth_user_id','logged_in_user_id','user_id'] as $key) {
             if (empty($_SESSION[$key])) continue;
             $role = strtolower((string)($_SESSION['role'] ?? $_SESSION['user_role'] ?? 'participant'));
@@ -55,13 +58,13 @@ if (!function_exists('tl_auth_current_user')) {
         if (!is_array($local)) return null;
         $source = (string)($local['source'] ?? 'training_lab_demo_session');
         if ($source === 'microgifter_adapter') {
-            $expiresAt = (int)($local['identity_expires_at'] ?? $_SESSION['_tl_stage886_expires_at'] ?? 0);
-            if ($expiresAt <= time()) {
-                tl_auth_logout_session();
-                return null;
-            }
             if (function_exists('tl_stage886_validate_current_session')) {
                 return tl_stage886_validate_current_session($local);
+            }
+            $sessionExpiresAt = (int)($local['session_expires_at'] ?? $_SESSION['_tl_stage889_session_expires_at'] ?? 0);
+            if ($sessionExpiresAt <= time()) {
+                tl_auth_logout_session();
+                return null;
             }
             $local['role'] = in_array((string)($local['role'] ?? ''), ['participant','coach','reviewer','manager','admin'], true) ? (string)$local['role'] : 'participant';
             return $local;
