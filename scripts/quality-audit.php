@@ -80,6 +80,7 @@ $sections = [
             'security_runtime_test'=>$exists('tests/security-runtime-test.php'),
             'data_contract_test'=>$exists('tests/data-integrity-contract-test.php'),
             'route_contract_test'=>$exists('tests/http-route-contract-test.php'),
+            'stage889_session_contract'=>$exists('tests/stage889-shared-session-hardening-contract-test.php') && $contains('run-quality-gate.sh', 'stage889-shared-session-hardening-contract-test.php'),
             'quality_gate_script'=>$exists('run-quality-gate.sh'),
             'quality_workflow'=>$exists('.github/workflows/quality-gate.yml'),
             'php_82_matrix'=>$contains('.github/workflows/quality-gate.yml', "'8.2'"),
@@ -115,7 +116,7 @@ unset($section);
 
 $result = [
     'audit'=>'Training Lab production-readiness quality gate',
-    'rubric_version'=>'2026-07-09.1',
+    'rubric_version'=>'2026-07-10.1',
     'all_sections_10_of_10'=>$allPerfect,
     'sections'=>$sections,
 ];
