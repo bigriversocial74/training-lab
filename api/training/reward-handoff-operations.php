@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
-require_once __DIR__ . '/../../includes/training-lab-stage893-processing-wrapper.php';
+require_once __DIR__ . '/../../includes/training-lab-stage893-legacy-action-guard.php';
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 try {
@@ -26,7 +26,7 @@ try {
     } elseif ($action === 'stage891_requeue_handoff') {
         $result = tl_stage893_requeue_handoff_guarded($input);
     } elseif ($action === 'stage891_process_resilient_batch') {
-        $result = tl_stage893_process_guarded_batch($input);
+        $result = tl_stage893_process_batch_production_guarded($input);
     } elseif ($action === 'stage891_run_handoff_acceptance') {
         $result = tl_stage891_run_acceptance($input);
     } else {
