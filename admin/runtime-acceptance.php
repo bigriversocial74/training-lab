@@ -12,6 +12,7 @@ if (!$authorized) {
     echo '<section class="labs-page-title"><div><span class="labs-eyebrow">Protected diagnostics</span><h1>Production Runtime Acceptance v1</h1><p class="labs-copy">A trusted Microgifter manager or administrator session is required to view production diagnostics.</p></div></section>';
     echo '<section class="labs-card"><h2>Access required</h2><p class="labs-copy">Sign in through the connected Microgifter account bridge with manager or administrator authority, then reopen this page.</p><a class="labs-btn labs-btn-primary" href="' . tl_runtime_acceptance_e(labs_url('/signin.php?next=/admin/runtime-acceptance.php')) . '">Open Sign In</a></section>';
 } else {
+    echo '<section class="labs-card"><div class="labs-actions"><a class="labs-btn labs-btn-primary" href="' . tl_runtime_acceptance_e(labs_url('/admin/account-integration.php')) . '">Stage 886 Account Integration</a><a class="labs-btn" href="' . tl_runtime_acceptance_e(labs_url('/api/training/account-integration-status.php')) . '">Account Integration JSON</a></div></section>';
     tl_runtime_acceptance_render($runProbes);
 }
 labs_page_end(['section' => 'admin']);
