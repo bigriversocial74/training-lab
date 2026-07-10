@@ -11,6 +11,9 @@ php ./tests/security-runtime-test.php
 echo "== Production runtime acceptance contracts =="
 php ./tests/production-runtime-acceptance-contract-test.php
 
+echo "== Stage 886 shared account integration contracts =="
+php ./tests/stage886-account-integration-contract-test.php
+
 echo "== Data-integrity contracts =="
 php ./tests/data-integrity-contract-test.php
 
