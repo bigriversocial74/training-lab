@@ -10,7 +10,7 @@ try {
             throw new TlHttpException('A trusted manager or administrator account is required.', 403, 'reward_handoff_operations_forbidden');
         }
         tl_security_headers(true);
-        tl_security_json_response(['ok'=>true,'data'=>tl_stage891_acceptance_summary(),'reconciliation'=>tl_stage893_summary()]);
+        tl_security_json_response(['ok'=>true,'data'=>tl_stage891_acceptance_summary(),'reconciliation'=>tl_stage893_summary_guarded()]);
         exit;
     }
     if ($method !== 'POST') {
@@ -32,7 +32,7 @@ try {
     } else {
         throw new TlHttpException('Unsupported reward handoff operations action.', 422, 'unsupported_handoff_operations_action');
     }
-    tl_security_json_response(['ok'=>true,'action'=>$action,'data'=>$result,'reconciliation'=>tl_stage893_summary()]);
+    tl_security_json_response(['ok'=>true,'action'=>$action,'data'=>$result,'reconciliation'=>tl_stage893_summary_guarded()]);
 } catch (Throwable $e) {
     tl_security_json_exception($e);
 }
