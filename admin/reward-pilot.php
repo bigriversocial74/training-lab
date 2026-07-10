@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/labs-layout.php';
-require_once __DIR__ . '/../includes/training-lab-stage896-limited-reward-pilot.php';
+require_once __DIR__ . '/../includes/training-lab-stage896-pilot-bootstrap.php';
 
 $result = null;
 $error = '';
