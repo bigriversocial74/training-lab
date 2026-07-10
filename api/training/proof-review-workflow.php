@@ -7,8 +7,8 @@ if (!is_file($stage885Path)) {
     exit;
 }
 require_once $stage885Path;
-$stage893Path = __DIR__ . '/../../includes/training-lab-stage893-processing-wrapper.php';
-if (is_file($stage893Path)) require_once $stage893Path;
+$stage894Path = __DIR__ . '/../../includes/training-lab-stage894-reconciliation-bootstrap.php';
+if (is_file($stage894Path)) require_once $stage894Path;
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $proofRef = isset($_GET['proof']) ? preg_replace('/[^a-zA-Z0-9\-_]/', '', (string)$_GET['proof']) : null;
@@ -23,12 +23,13 @@ try {
             try { $data['stage890_outbox_sync'] = tl_stage893_sync_outbox_guarded($input + ['limit'=>25]); }
             catch (Throwable $syncError) { $data['stage890_outbox_sync'] = ['ok'=>false,'error'=>$syncError->getMessage()]; }
         }
+        if (function_exists('tl_stage894_summary')) $data['stage894_reward_lookup_client'] = tl_stage894_summary();
         tl_security_json_response(['ok'=>true,'data'=>$data]);
         exit;
     }
     if ($method !== 'GET') throw new TlHttpException('This endpoint supports GET and POST only.', 405, 'method_not_allowed');
     tl_security_headers(true);
-    tl_security_json_response(['ok'=>true,'data'=>tl_stage885_summary($proofRef)]);
+    tl_security_json_response(['ok'=>true,'data'=>tl_stage885_summary($proofRef),'reward_lookup_client'=>function_exists('tl_stage894_summary') ? tl_stage894_summary() : null]);
 } catch (Throwable $e) {
     tl_security_json_exception($e);
 }
