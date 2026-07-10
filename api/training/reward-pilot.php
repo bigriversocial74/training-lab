@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
-require_once __DIR__ . '/../../includes/training-lab-stage896-limited-reward-pilot.php';
+require_once __DIR__ . '/../../includes/training-lab-stage896-pilot-bootstrap.php';
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 try {
@@ -10,7 +10,7 @@ try {
         if (!tl_security_developer_key_valid() && !tl_auth_role_allowed($user, 'manager')) {
             throw new TlHttpException('A trusted manager or administrator account is required.', 403, 'stage896_forbidden');
         }
-        tl_security_json_response(['ok'=>true,'data'=>tl_stage896_summary()]);
+        tl_security_json_response(['ok'=>true,'data'=>tl_stage896_summary(),'issue_client'=>tl_stage896_issue_summary()]);
         exit;
     }
     if ($method !== 'POST') {
@@ -27,7 +27,7 @@ try {
     $result = $action === 'stage896_run_pilot'
         ? tl_stage896_run_pilot($input)
         : tl_stage896_verify_active_pilot($input);
-    tl_security_json_response(['ok'=>true,'action'=>$action,'data'=>$result,'summary'=>tl_stage896_summary()]);
+    tl_security_json_response(['ok'=>true,'action'=>$action,'data'=>$result,'summary'=>tl_stage896_summary(),'issue_client'=>tl_stage896_issue_summary()]);
 } catch (Throwable $e) {
     tl_security_json_exception($e);
 }
