@@ -23,7 +23,7 @@ $assert($module !== '', 'Production runtime acceptance module must exist.');
 $assert($adminRoute !== '', 'Protected admin runtime acceptance route must exist.');
 $assert($apiRoute !== '', 'Protected JSON runtime acceptance route must exist.');
 $assert(str_contains($module, 'tl_runtime_acceptance_summary'), 'Runtime summary function must be present.');
-$assert(str_contains($module, 'ready_for_live_probe') && str_contains($module, "'accepted'=>$accepted"), 'Acceptance must separate base readiness from final live-probe acceptance.');
+$assert(str_contains($module, 'ready_for_live_probe') && str_contains($module, "'accepted'=>\$accepted"), 'Acceptance must separate base readiness from final live-probe acceptance.');
 $assert(str_contains($module, 'CURLOPT_SSL_VERIFYPEER') && str_contains($module, 'CURLOPT_FOLLOWLOCATION=>false'), 'Live probes must verify TLS and reject redirects.');
 $assert(str_contains($module, 'same_origin_get_probes_only') && str_contains($module, 'no_microgifter_reward_issuing'), 'Read-only safety boundaries must be explicit.');
 $assert(!preg_match('/\b(INSERT|UPDATE|DELETE|REPLACE|TRUNCATE|DROP|ALTER)\s+/i', $module), 'Runtime acceptance module must not contain mutating SQL.');
