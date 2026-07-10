@@ -1,0 +1,26 @@
+<?php
+require_once __DIR__ . '/../includes/labs-layout.php';
+require_once __DIR__ . '/../includes/training-lab-reward-management.php';
+$page=['title'=>'Reward Rule Editor | Training Lab','section'=>'admin','active'=>'admin-reward-rules','required_role'=>'manager'];
+$user=tl_product_require_page_access($page);
+$campaignRef=tl_campaign_clean_ref((string)($_GET['campaign'] ?? ''));
+$ruleRef=tl_action_clean($_GET['rule'] ?? '',180);
+$state=tl_reward_management_rule($user ?? [],$campaignRef,$ruleRef);
+$campaign=$state['campaign'];
+$rule=$state['rule'];
+$settings=$rule ? (json_decode((string)($rule['settings_json'] ?? '{}'),true) ?: []) : [];
+labs_page_start($page);
+?>
+<section class="labs-product-hero"><article class="labs-product-hero-main"><span class="labs-product-kicker">Reward rule editor</span><h1><?php echo $rule ? 'Edit reward eligibility.' : 'Create reward eligibility.'; ?></h1><p>Configure the Training Lab milestone. Reward issuing and delivery remain controlled by the existing Microgifter bridge.</p></article><aside class="labs-product-next"><div><span>Campaign</span><h2><?php echo labs_e((string)$campaign['title']); ?></h2><p><?php echo $rule ? 'Editing ' . labs_e((string)$rule['reward_label']) : 'New draft rule'; ?></p></div><a class="labs-btn" href="<?php echo htmlspecialchars(labs_url('/admin/reward-rules.php?campaign=' . rawurlencode((string)($campaign['slug'] ?: $campaign['public_id']))),ENT_QUOTES,'UTF-8'); ?>">Back to Rules</a></aside></section>
+<form class="labs-product-card labs-reward-editor" method="post" action="<?php echo htmlspecialchars(labs_url('/admin/reward-rule-save.php'),ENT_QUOTES,'UTF-8'); ?>">
+<?php echo tl_security_csrf_field(); ?><input type="hidden" name="campaign_id" value="<?php echo labs_e((string)($campaign['slug'] ?: $campaign['public_id'])); ?>"><?php if($rule): ?><input type="hidden" name="rule_id" value="<?php echo labs_e((string)$rule['public_id']); ?>"><?php endif; ?>
+<div class="labs-product-card-head"><div><span class="labs-product-kicker">Rule details</span><h2>What does the participant earn?</h2><p>Use participant-facing language and a measurable trigger.</p></div><?php if($rule): ?><span class="labs-product-status is-<?php echo (string)$rule['status']==='active'?'success':'neutral'; ?>"><?php echo labs_e(ucfirst((string)$rule['status'])); ?></span><?php endif; ?></div>
+<div class="labs-form-grid"><label>Internal rule name<input name="rule_name" maxlength="180" required value="<?php echo labs_e((string)($rule['rule_name'] ?? '')); ?>" placeholder="Complete onboarding reward"></label><label>Participant reward label<input name="reward_label" maxlength="255" required value="<?php echo labs_e((string)($rule['reward_label'] ?? '')); ?>" placeholder="Onboarding Complete"></label></div>
+<label>Description<textarea name="description" rows="4" maxlength="1000" placeholder="Explain what this reward recognizes."><?php echo labs_e((string)($settings['description'] ?? '')); ?></textarea></label>
+<div class="labs-form-grid"><label>Trigger<select name="trigger_type" required><?php foreach(['action_count'=>'Verified task count','sequence_completed'=>'Campaign completion','streak_days'=>'Learning streak','manual'=>'Manual eligibility'] as $value=>$label): ?><option value="<?php echo $value; ?>"<?php echo (string)($rule['trigger_type'] ?? 'sequence_completed')===$value?' selected':''; ?>><?php echo $label; ?></option><?php endforeach; ?></select></label><label>Threshold<input type="number" name="threshold_count" min="1" max="100000" value="<?php echo (int)($rule['threshold_count'] ?? 1); ?>" required></label></div>
+<div class="labs-form-grid"><label>Reward type<select name="reward_type" required><?php foreach(['badge'=>'Badge','microgift'=>'Microgift offer','entitlement'=>'Entitlement','wallet_credit_preview'=>'Wallet credit preview','custom'=>'Custom'] as $value=>$label): ?><option value="<?php echo $value; ?>"<?php echo (string)($rule['reward_type'] ?? 'badge')===$value?' selected':''; ?>><?php echo $label; ?></option><?php endforeach; ?></select></label><label>Value in cents<input type="number" name="reward_value_cents" min="0" max="100000000" value="<?php echo (int)($rule['reward_value_cents'] ?? 0); ?>"></label><label>Currency<input name="currency" maxlength="3" pattern="[A-Za-z]{3}" value="<?php echo labs_e((string)($rule['currency'] ?? 'USD')); ?>" required></label></div>
+<div class="labs-reward-preview"><span class="labs-product-kicker">Participant preview</span><h3><?php echo labs_e((string)($rule['reward_label'] ?? 'Your reward')); ?></h3><p>Eligibility is created only after the selected verified milestone is reached.</p><small>Delivery status will appear in the participant Rewards area after the existing bridge processes the reward.</small></div>
+<div class="labs-actions"><button class="labs-btn labs-btn-primary" type="submit"><?php echo $rule?'Save Changes':'Create Draft Rule'; ?></button><a class="labs-btn" href="<?php echo htmlspecialchars(labs_url('/admin/reward-rules.php?campaign=' . rawurlencode((string)($campaign['slug'] ?: $campaign['public_id']))),ENT_QUOTES,'UTF-8'); ?>">Cancel</a></div>
+</form>
+<section class="labs-safe-note">This editor never accepts a participant ID, wallet ID, claim code, payment reference, or Microgifter credential.</section>
+<?php labs_page_end(['section'=>'admin']); ?>
