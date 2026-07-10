@@ -24,7 +24,7 @@ try {
     if ($action === 'stage891_recover_stale_handoffs') {
         $result = tl_stage891_recover_stale_processing($input);
     } elseif ($action === 'stage891_requeue_handoff') {
-        $result = tl_stage891_requeue_handoff($input);
+        $result = tl_stage893_requeue_handoff_guarded($input);
     } elseif ($action === 'stage891_process_resilient_batch') {
         $result = tl_stage893_process_guarded_batch($input);
     } elseif ($action === 'stage891_run_handoff_acceptance') {
