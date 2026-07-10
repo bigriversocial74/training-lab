@@ -9,6 +9,10 @@ declare(strict_types=1);
  * passwords, developer keys, or identity assertions.
  */
 
+if (!defined('TL_STAGE894_LOOKUP_ERROR_MICROGIFTER_USER_REQUIRED')) {
+    define('TL_STAGE894_LOOKUP_ERROR_MICROGIFTER_USER_REQUIRED', 'microgifter_user_required');
+}
+
 if (!function_exists('tl_stage894_bool')) {
     function tl_stage894_bool($value, bool $default = false): bool
     {
