@@ -6,6 +6,8 @@ $stage885Path = __DIR__ . '/../includes/training-lab-stage885-proof-review-hando
 if (is_file($stage885Path)) require_once $stage885Path;
 $stage890Path = __DIR__ . '/../includes/training-lab-stage890-reward-handoff-outbox.php';
 if (is_file($stage890Path)) require_once $stage890Path;
+$stage891Path = __DIR__ . '/../includes/training-lab-stage891-reward-handoff-recovery.php';
+if (is_file($stage891Path)) require_once $stage891Path;
 
 $result = null;
 $error = null;
@@ -17,6 +19,12 @@ try {
     if ($action === '') throw new TlHttpException('Training action is required.', 422, 'action_required');
     $user = tl_security_guard_write($action, $raw);
     $data = tl_security_apply_actor($raw, $user);
+    $stage891Actions = [
+        'stage891_recover_stale_handoffs' => ['Recover stale reward handoffs', 'tl_stage891_recover_stale_processing'],
+        'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage891_requeue_handoff'],
+        'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage891_process_resilient_batch'],
+        'stage891_run_handoff_acceptance' => ['Run reward handoff acceptance', 'tl_stage891_run_acceptance'],
+    ];
     $stage890Actions = [
         'enqueue_reward_handoff' => ['Enqueue reward handoff', 'tl_stage890_enqueue_reward_event'],
         'sync_reward_handoff_outbox' => ['Sync reward handoff outbox', 'tl_stage890_sync_outbox'],
@@ -24,7 +32,10 @@ try {
         'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage890_process_batch'],
         'cancel_reward_handoff' => ['Cancel reward handoff', 'tl_stage890_cancel_handoff'],
     ];
-    if (isset($stage890Actions[$action]) && function_exists($stage890Actions[$action][1])) {
+    if (isset($stage891Actions[$action]) && function_exists($stage891Actions[$action][1])) {
+        $fn = $stage891Actions[$action][1];
+        $result = ['action'=>$action, 'label'=>$stage891Actions[$action][0], 'result'=>$fn($data)];
+    } elseif (isset($stage890Actions[$action]) && function_exists($stage890Actions[$action][1])) {
         $fn = $stage890Actions[$action][1];
         $result = ['action'=>$action, 'label'=>$stage890Actions[$action][0], 'result'=>$fn($data)];
     } elseif ($action === 'stage885_review_proof' && function_exists('tl_stage885_submit_review_decision')) {
@@ -60,6 +71,10 @@ $nextMap = [
     'process_reward_handoff'=>['/admin/reward-bridge.php','Return to Reward Bridge'],
     'process_reward_handoff_batch'=>['/admin/reward-bridge.php','Return to Reward Bridge'],
     'cancel_reward_handoff'=>['/admin/reward-bridge.php','Return to Reward Bridge'],
+    'stage891_recover_stale_handoffs'=>['/admin/reward-bridge.php','Return to Reward Bridge'],
+    'stage891_requeue_handoff'=>['/admin/reward-bridge.php','Return to Reward Bridge'],
+    'stage891_process_resilient_batch'=>['/admin/reward-bridge.php','Return to Reward Bridge'],
+    'stage891_run_handoff_acceptance'=>['/admin/reward-bridge.php','Return to Reward Bridge'],
     'run_core_workflow_qa'=>['/admin/backend-readiness.php','View Readiness'],
     'create_workflow_snapshot'=>['/app/flow-board.php','View Flow Board'],
     'create_account_link_snapshot'=>['/account.php','View Account'],
