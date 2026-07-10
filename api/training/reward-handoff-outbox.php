@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-stage890-reward-handoff-outbox.php';
+require_once __DIR__ . '/../../includes/training-lab-stage891-owned-processor.php';
 
 try {
     $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
@@ -10,8 +11,8 @@ try {
         $allowed = [
             'enqueue_reward_handoff' => 'tl_stage890_enqueue_reward_event',
             'sync_reward_handoff_outbox' => 'tl_stage890_sync_outbox',
-            'process_reward_handoff' => 'tl_stage890_process_handoff',
-            'process_reward_handoff_batch' => 'tl_stage890_process_batch',
+            'process_reward_handoff' => 'tl_stage891_process_handoff_owned',
+            'process_reward_handoff_batch' => 'tl_stage891_process_owned_batch',
             'cancel_reward_handoff' => 'tl_stage890_cancel_handoff',
         ];
         if (!isset($allowed[$action])) throw new TlHttpException('Unsupported Stage 890 action.', 422, 'stage890_action_invalid');
@@ -30,7 +31,7 @@ try {
     if (!tl_security_developer_key_valid() && !tl_auth_role_allowed($user, 'manager')) {
         throw new TlHttpException('A trusted manager or administrator account is required.', 403, 'reward_handoff_outbox_forbidden');
     }
-    tl_security_json_response(['ok'=>true,'outbox'=>tl_stage890_summary()]);
+    tl_security_json_response(['ok'=>true,'outbox'=>tl_stage890_summary(),'acceptance'=>tl_stage891_acceptance_summary()]);
 } catch (Throwable $e) {
     tl_security_json_exception($e);
 }

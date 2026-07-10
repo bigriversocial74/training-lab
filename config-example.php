@@ -38,6 +38,8 @@ return [
         'reward_handoff_batch_size' => 10,
         'reward_handoff_max_attempts' => 5,
         'reward_handoff_retry_base_seconds' => 300,
+        'reward_handoff_lease_seconds' => 300,
+        'reward_handoff_recovery_batch_size' => 25,
         // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
     ],
