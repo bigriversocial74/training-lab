@@ -11,6 +11,7 @@ require_once __DIR__ . '/../includes/training-lab-stage895-integration-acceptanc
 require_once __DIR__ . '/../includes/training-lab-stage896-limited-reward-pilot.php';
 require_once __DIR__ . '/../includes/training-lab-stage897-controlled-batch-rollout.php';
 require_once __DIR__ . '/../includes/training-lab-stage898-worker-canary-monitoring.php';
+require_once __DIR__ . '/../includes/training-lab-stage899-limited-scheduled-processing.php';
 $bridge = tl_mg_stage160_bridge_summary();
 $counts = $bridge['counts'] ?? [];
 $rewards = $bridge['admin_rewards'] ?? [];
@@ -30,6 +31,7 @@ labs_page_start(['title' => 'Reward Bridge | Training Lab', 'section' => 'admin'
 <?php if (function_exists('tl_stage896_render_reward_bridge_panel')) tl_stage896_render_reward_bridge_panel(); ?>
 <?php if (function_exists('tl_stage897_render_reward_bridge_panel')) tl_stage897_render_reward_bridge_panel(); ?>
 <?php if (function_exists('tl_stage898_render_reward_bridge_panel')) tl_stage898_render_reward_bridge_panel(); ?>
+<?php if (function_exists('tl_stage899_render_reward_bridge_panel')) tl_stage899_render_reward_bridge_panel(); ?>
 <?php if (function_exists('tl_stage893_render_admin_panel_guarded')) tl_stage893_render_admin_panel_guarded(); ?>
 <?php if (function_exists('tl_stage880_render_award_handoff_queue')) tl_stage880_render_award_handoff_queue(max(0, (int)($_GET['user_id'] ?? 0))); ?>
 <?php if (function_exists('tl_stage800_render_reward_campaign_import')) tl_stage800_render_reward_campaign_import(); ?>
