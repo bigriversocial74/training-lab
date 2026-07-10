@@ -53,8 +53,21 @@ if (!function_exists('tl_auth_current_user')) {
         if ($existing) return $existing;
         $local = $_SESSION['training_lab_user'] ?? null;
         if (!is_array($local)) return null;
+        $source = (string)($local['source'] ?? 'training_lab_demo_session');
+        if ($source === 'microgifter_adapter') {
+            $expiresAt = (int)($local['identity_expires_at'] ?? $_SESSION['_tl_stage886_expires_at'] ?? 0);
+            if ($expiresAt <= time()) {
+                tl_auth_logout_session();
+                return null;
+            }
+            if (function_exists('tl_stage886_validate_current_session')) {
+                return tl_stage886_validate_current_session($local);
+            }
+            $local['role'] = in_array((string)($local['role'] ?? ''), ['participant','coach','reviewer','manager','admin'], true) ? (string)$local['role'] : 'participant';
+            return $local;
+        }
         $local['role'] = 'participant';
-        $local['source'] = (string)($local['source'] ?? 'training_lab_demo_session');
+        $local['source'] = $source;
         return $local;
     }
 }

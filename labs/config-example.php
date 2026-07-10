@@ -8,7 +8,7 @@
  * moving the CONTENTS of the first /labs/ folder into web root, it lands at
  * /labs/config.php. Edit only that deployed private file.
  *
- * Do not commit live credentials or a production developer key.
+ * Do not commit live credentials, developer keys, or identity shared secrets.
  */
 return [
     'db' => [
@@ -28,6 +28,11 @@ return [
         'payments_enabled' => false,
         'claim_redeem_enabled' => false,
         'use_existing_microgifter_auth' => true,
-        // Prefer TL_DEVELOPER_KEY in the server environment. Never commit it here.
+        'identity_issuer' => 'microgifter.com',
+        'identity_audience' => 'training-lab',
+        'identity_max_ttl_seconds' => 180,
+        'identity_clock_skew_seconds' => 30,
+        // Prefer TL_DEVELOPER_KEY and TL_IDENTITY_SHARED_SECRET in the server environment.
+        // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
     ],
 ];
