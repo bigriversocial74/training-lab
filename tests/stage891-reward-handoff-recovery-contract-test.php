@@ -14,6 +14,7 @@ $service = $read('includes/training-lab-stage891-reward-handoff-recovery.php');
 $ownedProcessor = $read('includes/training-lab-stage891-owned-processor.php');
 $guardedProcessor = $read('includes/training-lab-stage893-external-delivery-reconciliation.php');
 $guardedBatch = $read('includes/training-lab-stage893-processing-wrapper.php');
+$productionGuard = $read('includes/training-lab-stage893-legacy-action-guard.php');
 $panel = $read('includes/training-lab-stage891-terminal-failure-panel.php');
 $api = $read('api/training/reward-handoff-operations.php');
 $outboxApi = $read('api/training/reward-handoff-outbox.php');
@@ -60,6 +61,8 @@ $check(str_contains($ownedProcessor, 'stage891_worker_lease_lost'), 'lost lease 
 $check(str_contains($ownedProcessor, 'tl_stage891_process_owned_batch'), 'owned batch processor exists');
 $check(str_contains($guardedProcessor, 'tl_stage891_process_handoff_owned($input)'), 'Stage 893 single guard preserves Stage 891 owned processor');
 $check(str_contains($guardedBatch, 'tl_stage893_process_handoff_guarded'), 'Stage 893 batch preserves guarded owned processing');
+$check(str_contains($productionGuard, 'tl_stage893_process_handoff_guarded($input)'), 'production single guard preserves quarantine processor');
+$check(str_contains($productionGuard, 'tl_stage893_process_guarded_batch($input)'), 'production batch guard preserves quarantine-aware batch');
 
 $check(str_contains($service, 'orphan_handoffs'), 'acceptance checks orphan handoffs');
 $check(str_contains($service, 'delivered_reward_mismatch'), 'acceptance checks delivered reward consistency');
@@ -71,19 +74,19 @@ $check(str_contains($service, 'processing_disabled_or_all_gates_open'), 'accepta
 
 $check(str_contains($api, 'tl_security_guard_write($action, $raw)'), 'operations API protects POST actions');
 $check(str_contains($api, 'tl_auth_role_allowed'), 'operations API restricts GET summary');
-$check(str_contains($api, 'tl_stage893_process_guarded_batch'), 'operations API routes batch through reconciliation guard');
+$check(str_contains($api, 'tl_stage893_process_batch_production_guarded'), 'operations API routes batch through reconciliation-enabled production guard');
 $check(!str_contains($api, 'tl_stage891_process_resilient_batch($input)'), 'operations API does not use unowned batch wrapper');
 $check(str_contains($api, 'tl_security_json_exception'), 'operations API uses safe JSON errors');
-$check(str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage893_process_handoff_guarded'"), 'Stage 890 API routes single processing through guarded owned lease');
-$check(str_contains($outboxApi, "'process_reward_handoff_batch' => 'tl_stage893_process_guarded_batch'"), 'Stage 890 API routes batch processing through guarded owned leases');
+$check(str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage893_process_handoff_production_guarded'"), 'Stage 890 API routes single processing through production and owned lease guards');
+$check(str_contains($outboxApi, "'process_reward_handoff_batch' => 'tl_stage893_process_batch_production_guarded'"), 'Stage 890 API routes batch processing through production and owned lease guards');
 $check(!str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage890_process_handoff'"), 'Stage 890 API does not expose old single processor');
 $check(!str_contains($outboxApi, "'process_reward_handoff_batch' => 'tl_stage890_process_batch'"), 'Stage 890 API does not expose old batch processor');
 
-$check(str_contains($actionResult, "'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_guarded']"), 'admin routes single processing through guarded owned lease');
-$check(str_contains($actionResult, "'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage893_process_guarded_batch']"), 'admin routes batch processing through guarded owned leases');
+$check(str_contains($actionResult, "'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_production_guarded']"), 'admin routes single processing through production and owned lease guards');
+$check(str_contains($actionResult, "'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage893_process_batch_production_guarded']"), 'admin routes batch processing through production and owned lease guards');
 $check(str_contains($actionResult, 'stage891_recover_stale_handoffs'), 'admin action router wires stale recovery');
 $check(str_contains($actionResult, "'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage893_requeue_handoff_guarded']"), 'admin action router preserves Stage 891 requeue behind quarantine guard');
-$check(str_contains($actionResult, "'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage893_process_guarded_batch']"), 'resilient batch action uses guarded owned processor');
+$check(str_contains($actionResult, "'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage893_process_batch_production_guarded']"), 'resilient batch action uses production guarded owned processor');
 $check(str_contains($actionResult, 'stage891_run_handoff_acceptance'), 'admin action router wires acceptance');
 $check(str_contains($rewardBridge, 'tl_stage891_render_admin_panel'), 'Reward Bridge renders Stage 891 acceptance panel');
 $check(str_contains($rewardBridge, 'tl_stage891_render_terminal_failure_panel'), 'Reward Bridge renders terminal failure queue');
