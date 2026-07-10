@@ -20,6 +20,14 @@ if (!function_exists('tl_campaign_secure_enroll')) {
             $campaign = $campaignStmt->fetch(PDO::FETCH_ASSOC);
             if (!$campaign) throw new TlHttpException('Campaign not found.', 404, 'campaign_not_found');
 
+            $timezone = trim((string)($campaign['timezone'] ?? 'America/Phoenix')) ?: 'America/Phoenix';
+            try { $now = new DateTimeImmutable('now', new DateTimeZone($timezone)); }
+            catch (Throwable $e) { $now = new DateTimeImmutable('now', new DateTimeZone('America/Phoenix')); }
+            $endsAt = tl_campaign_datetime($campaign['ends_at'] ?? null, $timezone);
+            $ended = $endsAt instanceof DateTimeImmutable && $endsAt < $now;
+            $campaignStatus = (string)($campaign['status'] ?? 'draft');
+            $campaignOpen = in_array($campaignStatus, ['scheduled','active'], true) && !$ended;
+
             $existingStmt = $pdo->prepare('SELECT * FROM training_participants WHERE campaign_id = ? AND user_id = ? LIMIT 1 FOR UPDATE');
             $existingStmt->execute([(int)$campaign['id'], $userId]);
             $existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
@@ -27,6 +35,7 @@ if (!function_exists('tl_campaign_secure_enroll')) {
                 $status = (string)($existing['status'] ?? 'active');
                 if ($status === 'removed') throw new TlHttpException('Your access to this campaign has been removed.', 403, 'campaign_access_removed');
                 if ($status === 'invited') {
+                    if (!$campaignOpen) throw new TlHttpException('This campaign invitation is no longer active.', 409, 'campaign_invitation_closed');
                     $activate = $pdo->prepare("UPDATE training_participants SET status='active', participant_label=?, joined_at=COALESCE(joined_at,CURRENT_TIMESTAMP), updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='invited'");
                     $activate->execute([$participantLabel, (int)$existing['id']]);
                     tl_log_event($pdo, $userId, 'participant', (int)$existing['id'], 'campaign_invitation_accepted', ['campaign_id'=>(int)$campaign['id']]);
@@ -43,12 +52,8 @@ if (!function_exists('tl_campaign_secure_enroll')) {
             }
 
             $visibility = (string)($campaign['visibility'] ?? 'draft');
-            $status = (string)($campaign['status'] ?? 'draft');
-            if ($visibility !== 'published' || !in_array($status, ['scheduled','active'], true)) {
-                throw new TlHttpException('This campaign is not accepting enrollment.', 409, 'campaign_not_joinable');
-            }
-            if (!empty($campaign['ends_at']) && (strtotime((string)$campaign['ends_at']) ?: 0) < time()) {
-                throw new TlHttpException('Enrollment has closed for this campaign.', 409, 'campaign_ended');
+            if ($visibility !== 'published' || !$campaignOpen) {
+                throw new TlHttpException($ended ? 'Enrollment has closed for this campaign.' : 'This campaign is not accepting enrollment.', 409, $ended ? 'campaign_ended' : 'campaign_not_joinable');
             }
 
             $settings = tl_campaign_settings($campaign['settings_json'] ?? null);
