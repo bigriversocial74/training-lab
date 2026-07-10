@@ -89,10 +89,10 @@ $authGate = file_get_contents($root . '/includes/training-lab-auth-gate.php') ?:
 $admin = file_get_contents($root . '/includes/training-lab-stage886-admin.php') ?: '';
 $configExample = file_get_contents($root . '/labs/config-example.php') ?: '';
 $assert(str_contains($service, 'expires_at=NULL'), 'Successful handoff must clear legacy assertion-based link expiration.');
-$assert(!str_contains($service, "strtotime((string)$link['expires_at'])"), 'Session validation must not expire persistent links using assertion timestamps.');
+$assert(!str_contains($service, "strtotime((string)\$link['expires_at'])"), 'Session validation must not expire persistent links using assertion timestamps.');
 $assert(str_contains($service, "link_status'] !== 'active'"), 'Every signed session validation must reject inactive links.');
 $assert(str_contains($authGate, 'tl_auth_signed_identity_configured'), 'Signed configuration must disable raw legacy session trust.');
-$assert(str_contains($authGate, "training-lab-stage886-account-integration.php"), 'Signed session validation must lazy-load across all authenticated pages.');
+$assert(str_contains($authGate, 'training-lab-stage886-account-integration.php'), 'Signed session validation must lazy-load across all authenticated pages.');
 $assert(str_contains($admin, 'session_ttl_seconds') && str_contains($admin, 'current_session'), 'Diagnostics must expose the independent session policy.');
 $assert(str_contains($configExample, 'identity_session_ttl_seconds') && str_contains($configExample, 'identity_session_idle_ttl_seconds'), 'Deployment config must document both session controls.');
 
