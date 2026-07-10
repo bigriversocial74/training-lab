@@ -3,12 +3,14 @@ require_once __DIR__ . '/../includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/../includes/labs-layout.php';
 require_once __DIR__ . '/../includes/training-lab-app-service.php';
 require_once __DIR__ . '/../includes/training-lab-campaign-enrollment.php';
+require_once __DIR__ . '/../includes/training-lab-task-submission.php';
 
 $result = null;
 $error = null;
 $requestId = tl_security_request_id();
 $action = '';
 $campaignRef = '';
+$taskRef = '';
 try {
     $raw = tl_security_request_data(false);
     $action = preg_replace('/[^a-z0-9_\-]/i', '', (string)($raw['training_action'] ?? $raw['action'] ?? ''));
@@ -23,6 +25,15 @@ try {
             'label'=>!empty($enrollment['invitation_accepted']) ? 'Invitation accepted' : (!empty($enrollment['already_joined']) ? 'Campaign already joined' : 'Campaign joined'),
             'result'=>$enrollment,
         ];
+    } elseif (in_array($action, ['complete_task','submit_proof'], true)) {
+        $campaignRef = tl_campaign_clean_ref((string)($data['campaign_id'] ?? $data['campaign'] ?? ''));
+        $taskRef = tl_task_clean_ref((string)($data['task_id'] ?? $data['task'] ?? ''));
+        $submission = tl_task_secure_submit($user, $data);
+        $result = [
+            'action'=>$action,
+            'label'=>!empty($submission['is_revision']) ? 'Updated proof submitted' : ((string)($submission['status'] ?? '') === 'submitted' ? 'Proof submitted' : 'Task completed'),
+            'result'=>$submission,
+        ];
     } else {
         $result = tl_training_handle_app_action($data);
     }
@@ -32,10 +43,15 @@ try {
     $requestId = (string)$payload['request_id'];
 }
 
+$taskQuery = [];
+if ($campaignRef !== '') $taskQuery['campaign'] = $campaignRef;
+if ($taskRef !== '') $taskQuery['task'] = $taskRef;
+$taskDestination = '/app/task-runner.php' . ($taskQuery ? '?' . http_build_query($taskQuery) : '');
 $nextMap = [
     'create_campaign_blueprint'=>['/app/index.php','Open My Training'],
     'join_campaign'=>[$campaignRef !== '' ? '/app/campaign-detail.php?id=' . rawurlencode($campaignRef) : '/app/campaigns.php?view=mine','View Campaign'],
-    'complete_task'=>['/app/index.php','Return to My Training'],
+    'complete_task'=>[$taskDestination,'Return to Task'],
+    'submit_proof'=>[$taskDestination,'Return to Task'],
     'review_proof'=>['/admin/reward-bridge.php','Check Reward Bridge'],
     'claim_training_reward'=>['/app/rewards.php','Return to Rewards'],
     'retry_microgifter_reward_issue'=>['/admin/reward-bridge.php','Return to Reward Bridge'],
