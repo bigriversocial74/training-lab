@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-app-service.php';
 require_once __DIR__ . '/../../includes/training-lab-campaign-enrollment.php';
+require_once __DIR__ . '/../../includes/training-lab-task-submission.php';
 require_once __DIR__ . '/../../includes/training-lab-stage894-reconciliation-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-stage893-legacy-action-guard.php';
 
@@ -17,6 +18,12 @@ try {
             'action'=>'join_campaign',
             'label'=>'Join Training Lab campaign',
             'result'=>tl_campaign_secure_enroll($user, $campaignRef),
+        ];
+    } elseif (in_array($action, ['complete_task','submit_proof'], true)) {
+        $result = [
+            'action'=>$action,
+            'label'=>$action === 'submit_proof' ? 'Submit task proof' : 'Complete training task',
+            'result'=>tl_task_secure_submit($user, $data),
         ];
     } elseif (in_array($action, ['claim_training_reward','retry_microgifter_reward_issue'], true)) {
         $result = [
