@@ -22,8 +22,8 @@ try {
     $user = tl_security_guard_write($action, $raw);
     $data = tl_security_apply_actor($raw, $user);
     $stage893Actions = [
-        'stage893_reconcile_delivery' => ['Reconcile external reward delivery', 'tl_stage893_reconcile_handoff'],
-        'stage893_reconcile_delivery_batch' => ['Reconcile external reward delivery batch', 'tl_stage893_reconcile_batch'],
+        'stage893_reconcile_delivery' => ['Reconcile external reward delivery', 'tl_stage893_reconcile_handoff_guarded'],
+        'stage893_reconcile_delivery_batch' => ['Reconcile external reward delivery batch', 'tl_stage893_reconcile_batch_guarded'],
     ];
     $stage891Actions = [
         'stage891_recover_stale_handoffs' => ['Recover stale reward handoffs', 'tl_stage891_recover_stale_processing'],
