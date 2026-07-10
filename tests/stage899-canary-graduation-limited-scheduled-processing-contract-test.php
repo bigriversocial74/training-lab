@@ -23,7 +23,7 @@ $checks = [
     'immediate_readback_required'=>str_contains($runner, "pilot_status'] ?? '') === 'verified'") && str_contains($runner, "verification']['confirmed_delivered"),
     'stop_and_suspend_on_uncertainty'=>str_contains($runner, 'scheduled_item_not_verified') && str_contains($runner, 'scheduled_item_exception') && str_contains($runner, 'runtime_limit_reached_before_next_item'),
     'escalation_event'=>str_contains($runner, 'stage899_limited_processing_escalated') && str_contains($runner, "'severity'=>'critical'"),
-    'suspension_clearance_guarded'=>str_contains($runner, 'ACKNOWLEDGE LIMITED PROCESSING SUSPENSION') && str_contains($runner, 'stage899_quarantine_unresolved') && str_contains($runner, 'stage899_canary_pause_unresolved'),
+    'suspension_clearance_guarded'=>str_contains($config, 'ACKNOWLEDGE LIMITED PROCESSING SUSPENSION') && str_contains($runner, 'stage899_quarantine_unresolved') && str_contains($runner, 'stage899_canary_pause_unresolved'),
     'rolling_health_monitoring'=>str_contains($monitor, 'rolling_success_below_threshold') && str_contains($monitor, 'minimum_success_rate_percent') && str_contains($monitor, 'scheduler_stale'),
     'sanitized_evidence'=>str_contains($config, 'raw_recipient_secret_signature_nonce_payload_and_response_excluded') && str_contains($config, 'microgifter_user_fingerprint'),
     'no_web_execution'=>!str_contains($admin, 'tl_stage899_run(') && !str_contains($api, 'tl_stage899_run('),
