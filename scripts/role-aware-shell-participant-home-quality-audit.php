@@ -24,6 +24,15 @@ $sections = [
         $has('includes/training-lab-participant-home.php', '$pdo->prepare($sql)'),
         $lacks('app/index.php', "\$_GET['user_id']"),
     ],
+    'Merchant tenant scope' => [
+        $has('includes/training-lab-participant-home.php', 'tl_product_manager_home_scope'),
+        $has('includes/training-lab-participant-home.php', 'WHERE c.owner_user_id=?'),
+        $has('includes/training-lab-participant-home.php', 'WHERE owner_user_id=?'),
+        $has('includes/training-lab-participant-home.php', '$countStmt = $pdo->prepare($countSql)'),
+        $has('includes/training-lab-participant-home.php', "$role === 'manager'"),
+        $has('includes/training-lab-participant-home.php', "'scope' => 'owned_campaigns'"),
+        $has('docs/ROLE-AWARE-SHELL-PARTICIPANT-HOME-V1.md', 'Merchant managers see only campaigns where `training_campaigns.owner_user_id` matches their trusted account'),
+    ],
     'Participant home' => [
         $has('app/index.php', 'Recommended next step'),
         $has('app/index.php', 'Current campaign'),
