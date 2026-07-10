@@ -58,6 +58,12 @@ jobs:
       - name: Role-aware shell and participant home scored audit
         run: php ./scripts/role-aware-shell-participant-home-quality-audit.php
 
+      - name: Campaign discovery detail and enrollment contract
+        run: php ./tests/campaign-discovery-detail-enrollment-contract-test.php
+
+      - name: Campaign discovery detail and enrollment scored audit
+        run: php ./scripts/campaign-discovery-detail-enrollment-quality-audit.php
+
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
 
