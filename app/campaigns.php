@@ -36,8 +36,7 @@ labs_page_start($page);
   </nav>
   <form class="labs-campaign-search" method="get" action="<?php echo htmlspecialchars(labs_url('/app/campaigns.php'), ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" name="view" value="<?php echo labs_e($filter); ?>">
-    <label class="labs-visually-hidden" for="campaign-search">Search campaigns</label>
-    <input id="campaign-search" type="search" name="q" value="<?php echo labs_e($query); ?>" placeholder="Search campaigns">
+    <input id="campaign-search" type="search" name="q" value="<?php echo labs_e($query); ?>" placeholder="Search campaigns" aria-label="Search campaigns">
     <button class="labs-btn" type="submit">Search</button>
   </form>
 </section>
@@ -61,12 +60,12 @@ labs_page_start($page);
         <div class="labs-campaign-card-actions">
           <a class="labs-btn" href="<?php echo htmlspecialchars(labs_url((string)$campaign['detail_href']), ENT_QUOTES, 'UTF-8'); ?>">View Details</a>
           <?php if (!empty($state['enrolled'])): ?>
-            <a class="labs-btn labs-btn-primary" href="<?php echo htmlspecialchars(labs_url((string)$campaign['continue_href']), ENT_QUOTES, 'UTF-8'); ?>"><?php echo $state['key'] === 'completed' ? 'View Progress' : 'Continue'; ?></a>
+            <a class="labs-btn labs-btn-primary" href="<?php echo htmlspecialchars(labs_url(in_array((string)$state['key'], ['completed','ended_enrolled'], true) ? '/app/progress-map.php?campaign=' . rawurlencode((string)$campaign['ref']) : (string)$campaign['continue_href']), ENT_QUOTES, 'UTF-8'); ?>"><?php echo in_array((string)$state['key'], ['completed','ended_enrolled'], true) ? 'View Progress' : 'Continue'; ?></a>
           <?php elseif (!empty($state['can_join'])): ?>
             <form method="post" action="<?php echo htmlspecialchars(labs_url('/app/campaign-enroll.php'), ENT_QUOTES, 'UTF-8'); ?>">
               <?php echo tl_security_csrf_field(); ?>
               <input type="hidden" name="campaign_id" value="<?php echo labs_e((string)$campaign['ref']); ?>">
-              <button class="labs-btn labs-btn-primary" type="submit">Join</button>
+              <button class="labs-btn labs-btn-primary" type="submit"><?php echo $state['key'] === 'invited' ? 'Accept Invitation' : 'Join'; ?></button>
             </form>
           <?php endif; ?>
         </div>
@@ -78,7 +77,7 @@ labs_page_start($page);
     <section class="labs-product-empty labs-campaign-empty">
       <span class="labs-product-kicker"><?php echo labs_e($labels[$filter]); ?></span>
       <h2><?php echo $query !== '' ? 'No campaigns match your search.' : 'No campaigns in this view yet.'; ?></h2>
-      <p><?php echo $filter === 'available' ? 'New published campaigns will appear here when enrollment opens.' : ($filter === 'mine' ? 'Join an available campaign to begin training.' : 'Completed campaigns will appear here after your training is verified.'); ?></p>
+      <p><?php echo $filter === 'available' ? 'New published campaigns and invitations will appear here.' : ($filter === 'mine' ? 'Join an available campaign to begin training.' : 'Completed campaigns will appear here after your training is verified.'); ?></p>
       <?php if ($query !== ''): ?><a class="labs-btn" href="<?php echo htmlspecialchars(labs_url('/app/campaigns.php?view=' . rawurlencode($filter)), ENT_QUOTES, 'UTF-8'); ?>">Clear Search</a><?php endif; ?>
     </section>
   <?php endif; ?>
