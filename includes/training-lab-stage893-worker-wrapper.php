@@ -88,7 +88,7 @@ if (!function_exists('tl_stage893_run_process_worker')) {
                 'actor_user_id'=>$actor,
                 'limit'=>(int)tl_stage891_config()['recovery_batch_size'],
             ]);
-            $reconciliation = tl_stage893_reconcile_batch([
+            $reconciliation = tl_stage893_reconcile_batch_guarded([
                 'actor_user_id'=>$actor,
                 'automatic'=>true,
                 'limit'=>max($limit, min(100, (int)$reconciliationConfig['batch_size'])),
@@ -141,6 +141,8 @@ if (!function_exists('tl_stage893_run_process_worker')) {
                     'ready_for_production_processing'=>!empty($acceptance['ready_for_production_processing']),
                 ],
                 'safe_boundaries'=>[
+                    'active_worker_leases_excluded_from_reconciliation'=>true,
+                    'completed_deliveries_excluded_from_reconciliation'=>true,
                     'quarantined_deliveries_excluded_from_sync'=>true,
                     'quarantined_deliveries_excluded_from_processing'=>true,
                     'lost_lease_success_is_quarantined'=>true,
