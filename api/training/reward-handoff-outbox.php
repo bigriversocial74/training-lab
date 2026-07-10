@@ -9,7 +9,7 @@ try {
         $action = preg_replace('/[^a-z0-9_\-]/i', '', (string)($raw['training_action'] ?? $raw['action'] ?? ''));
         $allowed = [
             'enqueue_reward_handoff' => 'tl_stage890_enqueue_reward_event',
-            'sync_reward_handoff_outbox' => 'tl_stage890_sync_outbox',
+            'sync_reward_handoff_outbox' => 'tl_stage893_sync_outbox_guarded',
             'process_reward_handoff' => 'tl_stage893_process_handoff_guarded',
             'process_reward_handoff_batch' => 'tl_stage893_process_guarded_batch',
             'cancel_reward_handoff' => 'tl_stage890_cancel_handoff',
