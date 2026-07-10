@@ -23,6 +23,9 @@ php ./tests/stage890-reward-handoff-outbox-contract-test.php
 echo "== Stage 891 reward handoff recovery contracts =="
 php ./tests/stage891-reward-handoff-recovery-contract-test.php
 
+echo "== Stage 892 scheduled worker contracts =="
+php ./tests/stage892-scheduled-worker-contract-test.php
+
 echo "== Data-integrity contracts =="
 php ./tests/data-integrity-contract-test.php
 

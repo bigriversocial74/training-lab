@@ -40,6 +40,11 @@ return [
         'reward_handoff_retry_base_seconds' => 300,
         'reward_handoff_lease_seconds' => 300,
         'reward_handoff_recovery_batch_size' => 25,
+        'reward_handoff_worker_enabled' => false,
+        'reward_handoff_worker_batch_size' => 10,
+        'reward_handoff_worker_max_runtime_seconds' => 45,
+        'reward_handoff_worker_actor_user_id' => 1,
+        'reward_handoff_worker_lock_file' => sys_get_temp_dir() . '/training-lab-stage892-reward-worker.lock',
         // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
     ],
