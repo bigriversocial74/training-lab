@@ -6,6 +6,8 @@ $componentPath = __DIR__ . '/labs-components.php';
 if (is_file($componentPath)) require_once $componentPath;
 $designPath = __DIR__ . '/training-lab-design-assets.php';
 if (is_file($designPath)) require_once $designPath;
+$productShellPath = __DIR__ . '/training-lab-product-shell.php';
+if (is_file($productShellPath)) require_once $productShellPath;
 
 if (!function_exists('labs_base_path')) {
     function labs_base_path(): string
@@ -52,61 +54,18 @@ if (!function_exists('labs_nav_link')) {
 }
 
 if (!function_exists('labs_core_app_nav')) {
-    function labs_core_app_nav(): array
+    function labs_core_app_nav(?array $user = null): array
     {
-        return [
-            'Start' => [
-                'app-dashboard' => ['/app/index.php', 'Dashboard'],
-                'account' => ['/account.php', 'Account'],
-                'app-workspace' => ['/app/workspace.php', 'Workspace'],
-                'app-launchpad' => ['/app/launchpad.php', 'Launchpad'],
-            ],
-            'Build & Run' => [
-                'app-campaign-builder' => ['/app/campaign-builder.php', 'Campaign Builder'],
-                'app-campaigns' => ['/app/campaigns.php', 'Campaigns'],
-                'app-participant-portal' => ['/app/participant-portal.php', 'Mission Control'],
-                'app-task-runner' => ['/app/task-runner.php', 'Task Runner'],
-                'app-tasks' => ['/app/proof-upload.php', 'Proof Upload'],
-            ],
-            'Progress' => [
-                'app-flow-board' => ['/app/flow-board.php', 'Flow Board'],
-                'app-progress-map' => ['/app/progress-map.php', 'Progress Map'],
-                'app-rewards' => ['/app/rewards.php', 'Rewards'],
-                'app-resource-hub' => ['/app/resource-hub.php', 'Resource Hub'],
-            ],
-        ];
+        $role = function_exists('tl_product_role') ? tl_product_role($user) : 'participant';
+        return function_exists('tl_product_app_nav') ? tl_product_app_nav($role) : [];
     }
 }
 
 if (!function_exists('labs_core_admin_nav')) {
-    function labs_core_admin_nav(): array
+    function labs_core_admin_nav(?array $user = null): array
     {
-        return [
-            'Command' => [
-                'admin-overview' => ['/admin/index.php', 'Overview'],
-                'admin-command-center' => ['/admin/command-center.php', 'Command Center'],
-                'admin-flow-control' => ['/admin/flow-control.php', 'Flow Control'],
-                'admin-backend-readiness' => ['/admin/backend-readiness.php', 'Backend Readiness'],
-                'admin-reward-bridge' => ['/admin/reward-bridge.php', 'Reward Bridge'],
-            ],
-            'Operations' => [
-                'admin-campaigns' => ['/admin/campaigns.php', 'Campaigns'],
-                'admin-campaign-inspector' => ['/admin/campaign-inspector.php', 'Campaign Inspector'],
-                'admin-cohort-manager' => ['/admin/cohort-manager.php', 'Cohort Manager'],
-                'admin-review' => ['/admin/review-queue.php', 'Review Queue'],
-                'admin-review-workbench' => ['/admin/review-workbench.php', 'Stage 885 Review Workflow'],
-            ],
-            'Access & QA' => [
-                'admin-permissions' => ['/admin/permissions.php', 'Roles & Permissions'],
-                'admin-reporting-center' => ['/admin/reporting-center.php', 'Reporting Center'],
-                'admin-event-timeline' => ['/admin/event-timeline.php', 'Event Timeline'],
-                'admin-db-health' => ['/admin/db-health.php', 'DB Health'],
-                'admin-deployment-acceptance' => ['/admin/deployment-acceptance.php', 'Deployment QA'],
-                'admin-live-smoke' => ['/admin/live-smoke.php', 'Live Smoke'],
-                'admin-adapter-readiness' => ['/admin/adapter-readiness.php', 'Adapter Readiness'],
-                'admin-route-check' => ['/admin/route-check.php', 'Route Check'],
-            ],
-        ];
+        $role = function_exists('tl_product_role') ? tl_product_role($user) : 'reviewer';
+        return function_exists('tl_product_admin_nav') ? tl_product_admin_nav($role) : [];
     }
 }
 
@@ -125,7 +84,12 @@ if (!function_exists('labs_page_start')) {
         $title = $page['title'] ?? 'Training Lab by Microgifter';
         $section = $page['section'] ?? 'public';
         $active = $page['active'] ?? '';
-        $bodyClass = 'labs-shell labs-section-' . preg_replace('/[^a-z0-9\-]/i', '', $section);
+        $labsUser = function_exists('tl_product_require_page_access')
+            ? tl_product_require_page_access($page)
+            : (function_exists('tl_auth_current_user') ? tl_auth_current_user() : null);
+        $role = function_exists('tl_product_role') ? tl_product_role($labsUser) : ($labsUser['role'] ?? 'guest');
+        $bodyClass = 'labs-shell labs-section-' . preg_replace('/[^a-z0-9\-]/i', '', $section) . ' labs-role-' . preg_replace('/[^a-z0-9\-]/i', '', (string)$role);
+        $topNav = function_exists('tl_product_top_nav') ? tl_product_top_nav($labsUser) : [];
         ?>
 <!doctype html>
 <html lang="en">
@@ -136,52 +100,50 @@ if (!function_exists('labs_page_start')) {
   <title><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></title>
   <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/labs.css'), ENT_QUOTES, 'UTF-8'); ?>">
   <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/security-accessibility.css'), ENT_QUOTES, 'UTF-8'); ?>">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/product-shell.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body class="<?php echo htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8'); ?>">
   <a class="labs-skip-link" href="#main-content">Skip to main content</a>
   <div class="labs-page">
     <header class="labs-topbar">
-      <a class="labs-brand" href="<?php echo htmlspecialchars(labs_url('/'), ENT_QUOTES, 'UTF-8'); ?>">
-        <span class="labs-brand-mark">TL</span>
-        <span><strong>Training Lab</strong><small>standalone script</small></span>
+      <a class="labs-brand" href="<?php echo htmlspecialchars(labs_url($labsUser ? '/app/index.php' : '/'), ENT_QUOTES, 'UTF-8'); ?>">
+        <span class="labs-brand-mark" aria-hidden="true">TL</span>
+        <span><strong>Training Lab</strong><small>Proof-based training</small></span>
       </a>
       <button class="labs-menu-toggle" type="button" aria-label="Open menu" aria-controls="labs-primary-nav" aria-expanded="false" data-labs-menu-open><span></span><span></span><span></span></button>
       <nav class="labs-public-nav" id="labs-primary-nav" aria-label="Main navigation">
         <button class="labs-nav-close" type="button" aria-label="Close menu" data-labs-menu-close>&times;</button>
-        <?php $labsUser = function_exists('tl_auth_current_user') ? tl_auth_current_user() : null; ?>
-        <?php labs_nav_link($active, 'home', labs_url('/'), 'Home'); ?>
-        <?php labs_nav_link($active, 'app-dashboard', labs_url('/app/index.php'), 'App'); ?>
-        <?php labs_nav_link($active, 'app-flow-board', labs_url('/app/flow-board.php'), 'Flow'); ?>
-        <?php labs_nav_link($active, 'app-task-runner', labs_url('/app/task-runner.php'), 'Run'); ?>
-        <?php labs_nav_link($active, 'app-rewards', labs_url('/app/rewards.php'), 'Rewards'); ?>
-        <?php labs_nav_link($active, 'admin-command-center', labs_url('/admin/command-center.php'), 'Admin'); ?>
-        <?php labs_nav_link($active, 'admin-backend-readiness', labs_url('/admin/backend-readiness.php'), 'Backend'); ?>
+        <?php foreach ($topNav as $key => [$href, $label]): ?>
+          <?php labs_nav_link($active, (string)$key, labs_url((string)$href), (string)$label, $key === 'signup' ? 'labs-nav-cta' : ''); ?>
+        <?php endforeach; ?>
         <?php if ($labsUser): ?>
-          <a class="labs-account-chip<?php echo labs_is_active($active, 'account'); ?>" href="<?php echo htmlspecialchars(labs_url('/account.php'), ENT_QUOTES, 'UTF-8'); ?>"<?php echo $active === 'account' ? ' aria-current="page"' : ''; ?>><span><?php echo labs_e((string)($labsUser['name'] ?? 'Account')); ?></span><small><?php echo labs_e((string)($labsUser['role'] ?? 'participant')); ?></small></a>
-        <?php else: ?>
-          <?php labs_nav_link($active, 'signin', labs_url('/signin.php'), 'Login'); ?>
-          <?php labs_nav_link($active, 'signup', labs_url('/signup.php'), 'Start Training', 'labs-nav-cta'); ?>
+          <a class="labs-account-chip<?php echo labs_is_active($active, 'account'); ?>" href="<?php echo htmlspecialchars(labs_url('/account.php'), ENT_QUOTES, 'UTF-8'); ?>"<?php echo $active === 'account' ? ' aria-current="page"' : ''; ?>>
+            <span><?php echo labs_e((string)($labsUser['name'] ?? 'Account')); ?></span>
+            <small><?php echo labs_e((string)($labsUser['role_label'] ?? (function_exists('tl_product_role_label') ? tl_product_role_label((string)$role) : ucfirst((string)$role)))); ?></small>
+          </a>
         <?php endif; ?>
       </nav>
       <div class="labs-nav-overlay" data-labs-menu-close></div>
     </header>
 <?php
-        if ($section === 'app' || $section === 'admin') labs_workspace_start($section, $active);
+        if ($section === 'app' || $section === 'admin') labs_workspace_start($section, $active, $labsUser);
         else echo '<main id="main-content" class="labs-main" tabindex="-1">';
     }
 }
 
 if (!function_exists('labs_workspace_start')) {
-    function labs_workspace_start(string $section, string $active): void
+    function labs_workspace_start(string $section, string $active, ?array $user = null): void
     {
         $isAdmin = $section === 'admin';
-        $groups = $isAdmin ? labs_core_admin_nav() : labs_core_app_nav();
+        $groups = $isAdmin ? labs_core_admin_nav($user) : labs_core_app_nav($user);
+        $role = function_exists('tl_product_role') ? tl_product_role($user) : 'participant';
+        $roleLabel = function_exists('tl_product_role_label') ? tl_product_role_label($role) : ucfirst($role);
         ?>
     <div class="labs-workspace">
-      <button class="labs-workspace-toggle" type="button" aria-controls="labs-workspace-nav" aria-expanded="false" data-labs-workspace-open><?php echo $isAdmin ? 'Admin Menu' : 'App Menu'; ?></button>
+      <button class="labs-workspace-toggle" type="button" aria-controls="labs-workspace-nav" aria-expanded="false" data-labs-workspace-open><?php echo $isAdmin ? 'Manage Menu' : 'Training Menu'; ?></button>
       <aside class="labs-sidebar" id="labs-workspace-nav">
         <div class="labs-sidebar-head">
-          <div><div class="labs-sidebar-label"><?php echo $isAdmin ? 'Training Lab Admin' : 'Training Lab App'; ?></div><strong><?php echo $isAdmin ? 'Core backend' : 'Core workflow'; ?></strong></div>
+          <div><div class="labs-sidebar-label"><?php echo $isAdmin ? 'Training Management' : 'My Training'; ?></div><strong><?php echo labs_e($roleLabel); ?></strong></div>
           <button class="labs-sidebar-close" type="button" aria-label="Close workspace menu" data-labs-workspace-close>&times;</button>
         </div>
         <nav aria-label="Workspace navigation">
@@ -192,7 +154,11 @@ if (!function_exists('labs_workspace_start')) {
             <?php endforeach; ?>
           <?php endforeach; ?>
         </nav>
-        <div class="labs-sidebar-note">Focused core menus. Account sync, roles, workflow, review, and diagnostics stay active.</div>
+        <div class="labs-sidebar-profile">
+          <span><?php echo labs_e((string)($user['name'] ?? 'Training account')); ?></span>
+          <small><?php echo labs_e($roleLabel); ?> access</small>
+          <a href="<?php echo htmlspecialchars(labs_url('/account.php'), ENT_QUOTES, 'UTF-8'); ?>">View account</a>
+        </div>
       </aside>
       <div class="labs-workspace-overlay" data-labs-workspace-close></div>
       <main id="main-content" class="labs-main labs-workspace-main" tabindex="-1">
@@ -206,7 +172,7 @@ if (!function_exists('labs_page_end')) {
         $section = $page['section'] ?? 'public';
         if ($section === 'app' || $section === 'admin') echo "      </main>\n    </div>\n"; else echo "    </main>\n";
         ?>
-    <footer class="labs-footer"><span>Training Lab by Microgifter</span><nav><a href="<?php echo htmlspecialchars(labs_url('/about.php'), ENT_QUOTES, 'UTF-8'); ?>">About</a><a href="<?php echo htmlspecialchars(labs_url('/how-it-works.php'), ENT_QUOTES, 'UTF-8'); ?>">How It Works</a><a href="<?php echo htmlspecialchars(labs_url('/contact.php'), ENT_QUOTES, 'UTF-8'); ?>">Contact</a></nav><span>Standalone safe mode</span></footer>
+    <footer class="labs-footer"><span>Training Lab by Microgifter</span><nav><a href="<?php echo htmlspecialchars(labs_url('/about.php'), ENT_QUOTES, 'UTF-8'); ?>">About</a><a href="<?php echo htmlspecialchars(labs_url('/how-it-works.php'), ENT_QUOTES, 'UTF-8'); ?>">How It Works</a><a href="<?php echo htmlspecialchars(labs_url('/contact.php'), ENT_QUOTES, 'UTF-8'); ?>">Contact</a></nav><span>Campaign → Proof → Reward</span></footer>
   </div>
   <script src="<?php echo htmlspecialchars(labs_asset('js/labs.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 </body>
