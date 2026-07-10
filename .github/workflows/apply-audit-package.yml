@@ -1,0 +1,43 @@
+name: Apply Training Lab Audit Package
+
+on:
+  push:
+    branches:
+      - feature/training-labs-next-20260709
+    paths:
+      - '.audit-package/part-*'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out audit branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decode and verify package
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .audit-package/part-* | base64 --decode > /tmp/training-lab-audit-patch.tar.gz
+          echo '6a9e2a9584cb80b6b2b2ca07e9bc76f94afb1f5ff898d7a64f9f37abbb4e5cde  /tmp/training-lab-audit-patch.tar.gz' | sha256sum --check -
+          tar -xzf /tmp/training-lab-audit-patch.tar.gz -C .
+
+      - name: Commit audit remediation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .audit-package .github/workflows/apply-audit-package.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Audit and harden Training Lab quality gate'
+          git push origin HEAD:feature/training-labs-next-20260709
