@@ -140,8 +140,8 @@ if (!function_exists('tl_product_app_nav')) {
             ],
         ];
         if (tl_product_role_allows($role, 'reviewer')) {
-            $groups['Manage'] = [
-                'admin-overview' => ['/admin/index.php', 'Manage Training'],
+            $groups[tl_product_role_allows($role, 'manager') ? 'Manage' : 'Review'] = [
+                'admin-overview' => ['/admin/index.php', tl_product_role_allows($role, 'manager') ? 'Manage Training' : 'Review Overview'],
                 'admin-review-workbench' => ['/admin/review-workbench.php', 'Review Proof'],
             ];
         }
@@ -215,7 +215,6 @@ if (!function_exists('tl_product_top_nav')) {
         if (tl_product_role_allows($role, 'reviewer')) {
             $items['admin-overview'] = ['/admin/index.php', tl_product_role_allows($role, 'manager') ? 'Manage' : 'Review'];
         }
-        $items['account'] = ['/account.php', 'Account'];
         return $items;
     }
 }
