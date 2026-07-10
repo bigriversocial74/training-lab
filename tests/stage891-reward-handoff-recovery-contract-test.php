@@ -50,7 +50,7 @@ $check(str_contains($requeueBody, 'stage891_recovery_history'), 'operator histor
 $check(!str_contains($requeueBody, 'tl_stage890_call_adapter'), 'manual requeue never calls Microgifter adapter');
 
 $check(str_contains($ownedProcessor, 'function tl_stage891_process_handoff_owned'), 'owned processor exists');
-$check(str_contains($ownedProcessor, "hash_equals((string)($current['locked_by'] ?? ''), $worker)"), 'owned processor verifies worker token');
+$check(str_contains($ownedProcessor, "hash_equals((string)(\$current['locked_by'] ?? ''), \$worker)"), 'owned processor verifies worker token');
 $check(str_contains($ownedProcessor, "handoff_status='processing' AND locked_by=?"), 'final updates require active worker ownership');
 $check(str_contains($ownedProcessor, 'ownership_lost'), 'late worker result is rejected');
 $check(str_contains($ownedProcessor, 'adapter_result_unapplied'), 'lost-lease adapter result is not applied');
