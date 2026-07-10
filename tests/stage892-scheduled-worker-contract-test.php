@@ -46,18 +46,18 @@ $check(empty($repoLockStatus['ready']), 'lock path inside repository is rejected
 $check(empty($repoLockStatus['outside_repository_tree']), 'repository lock path is identified');
 
 $check(str_contains($cli, "PHP_SAPI !== 'cli'"), 'worker entrypoint is CLI-only');
-$check(str_contains($cli, "'mode'=>(string)$parsed['mode']"), 'CLI passes parsed mode to service');
-$check(str_contains($cli, "'explicit_process'=>!empty($parsed['explicit_process'])"), 'CLI passes explicit process proof');
+$check(str_contains($cli, "'mode'=>(string)\$parsed['mode']"), 'CLI passes parsed mode to service');
+$check(str_contains($cli, "'explicit_process'=>!empty(\$parsed['explicit_process'])"), 'CLI passes explicit process proof');
 $check(str_contains($cli, 'exit(max(0, min(255'), 'CLI returns bounded process exit code');
 $check(str_contains($deny, 'Require all denied') || str_contains($deny, 'Deny from all'), 'worker directory denies web access');
 
 $check(str_contains($service, 'LOCK_EX | LOCK_NB'), 'worker uses non-blocking exclusive lock');
 $check(str_contains($service, 'outside_repository_tree'), 'worker validates lock location');
-$check(str_contains($service, "if ($mode !== 'observe' && empty($config['worker_enabled']))"), 'recover and process require worker enablement');
-$check(str_contains($service, "if ($mode === 'process' && empty($input['explicit_process']))"), 'process requires explicit CLI flag');
-$check(str_contains($service, "if ($mode === 'process' && empty($adapter['can_process']))"), 'process requires all adapter gates');
-$check(str_contains($service, "if ($mode === 'recover' || $mode === 'process')"), 'observe mode excludes recovery writes');
-$check(str_contains($service, "if ($mode === 'process')"), 'adapter processing is isolated to process mode');
+$check(str_contains($service, "if (\$mode !== 'observe' && empty(\$config['worker_enabled']))"), 'recover and process require worker enablement');
+$check(str_contains($service, "if (\$mode === 'process' && empty(\$input['explicit_process']))"), 'process requires explicit CLI flag');
+$check(str_contains($service, "if (\$mode === 'process' && empty(\$adapter['can_process']))"), 'process requires all adapter gates');
+$check(str_contains($service, "if (\$mode === 'recover' || \$mode === 'process')"), 'observe mode excludes recovery writes');
+$check(str_contains($service, "if (\$mode === 'process')"), 'adapter processing is isolated to process mode');
 $check(str_contains($service, 'microtime(true) >= $deadline'), 'worker checks runtime deadline between handoffs');
 $check(str_contains($service, 'tl_stage892_due_handoff_ids'), 'worker selects bounded due handoffs');
 $check(str_contains($service, 'tl_stage891_process_handoff_owned'), 'worker uses lease-owned processor');
@@ -69,7 +69,7 @@ $check(!str_contains($service, 'TL_MICROGIFTER_DEVELOPER_API_KEY'), 'worker does
 $check(!str_contains($service, 'identity_shared_secret'), 'worker does not read or log identity secret');
 $check(str_contains($service, "'credentials_are_not_logged'=>true"), 'worker declares credential exclusion boundary');
 
-$check(str_contains($statusApi, "if ($method !== 'GET')"), 'worker status API is GET-only');
+$check(str_contains($statusApi, "if (\$method !== 'GET')"), 'worker status API is GET-only');
 $check(str_contains($statusApi, 'tl_auth_role_allowed'), 'worker status API requires manager role');
 $check(str_contains($statusApi, 'tl_security_json_exception'), 'worker status API uses safe JSON errors');
 $check(str_contains($rewardBridge, 'tl_stage892_render_admin_panel'), 'Reward Bridge renders worker panel');
