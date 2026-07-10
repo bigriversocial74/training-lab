@@ -4,11 +4,7 @@ require_once __DIR__ . '/../includes/labs-layout.php';
 require_once __DIR__ . '/../includes/training-lab-app-service.php';
 $stage885Path = __DIR__ . '/../includes/training-lab-stage885-proof-review-handoff.php';
 if (is_file($stage885Path)) require_once $stage885Path;
-$stage890Path = __DIR__ . '/../includes/training-lab-stage890-reward-handoff-outbox.php';
-if (is_file($stage890Path)) require_once $stage890Path;
-$stage891Path = __DIR__ . '/../includes/training-lab-stage891-reward-handoff-recovery.php';
-if (is_file($stage891Path)) require_once $stage891Path;
-$stage893Path = __DIR__ . '/../includes/training-lab-stage893-processing-wrapper.php';
+$stage893Path = __DIR__ . '/../includes/training-lab-stage893-legacy-action-guard.php';
 if (is_file($stage893Path)) require_once $stage893Path;
 
 $result = null;
@@ -24,18 +20,20 @@ try {
     $stage893Actions = [
         'stage893_reconcile_delivery' => ['Reconcile external reward delivery', 'tl_stage893_reconcile_handoff_guarded'],
         'stage893_reconcile_delivery_batch' => ['Reconcile external reward delivery batch', 'tl_stage893_reconcile_batch_guarded'],
+        'claim_training_reward' => ['Claim Training Lab reward', 'tl_stage893_claim_or_retry_reward_guarded'],
+        'retry_microgifter_reward_issue' => ['Retry Microgifter reward issue', 'tl_stage893_claim_or_retry_reward_guarded'],
     ];
     $stage891Actions = [
         'stage891_recover_stale_handoffs' => ['Recover stale reward handoffs', 'tl_stage891_recover_stale_processing'],
         'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage893_requeue_handoff_guarded'],
-        'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage893_process_guarded_batch'],
+        'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage893_process_batch_production_guarded'],
         'stage891_run_handoff_acceptance' => ['Run reward handoff acceptance', 'tl_stage891_run_acceptance'],
     ];
     $stage890Actions = [
         'enqueue_reward_handoff' => ['Enqueue reward handoff', 'tl_stage893_enqueue_reward_event_guarded'],
         'sync_reward_handoff_outbox' => ['Sync reward handoff outbox', 'tl_stage893_sync_outbox_guarded'],
-        'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_guarded'],
-        'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage893_process_guarded_batch'],
+        'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_production_guarded'],
+        'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage893_process_batch_production_guarded'],
         'cancel_reward_handoff' => ['Cancel reward handoff', 'tl_stage890_cancel_handoff'],
     ];
     if (isset($stage893Actions[$action]) && function_exists($stage893Actions[$action][1])) {
