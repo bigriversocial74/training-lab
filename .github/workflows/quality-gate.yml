@@ -7,10 +7,6 @@ on:
   push:
     branches:
       - main
-      - 'feature/**'
-      - 'fix/**'
-      - 'hotfix/**'
-      - 'qa/**'
 
 permissions:
   contents: read
