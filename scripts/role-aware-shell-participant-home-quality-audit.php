@@ -29,7 +29,7 @@ $sections = [
         $has('includes/training-lab-participant-home.php', 'WHERE c.owner_user_id=?'),
         $has('includes/training-lab-participant-home.php', 'WHERE owner_user_id=?'),
         $has('includes/training-lab-participant-home.php', '$countStmt = $pdo->prepare($countSql)'),
-        $has('includes/training-lab-participant-home.php', "$role === 'manager'"),
+        $has('includes/training-lab-participant-home.php', '$role === \'manager\''),
         $has('includes/training-lab-participant-home.php', "'scope' => 'owned_campaigns'"),
         $has('docs/ROLE-AWARE-SHELL-PARTICIPANT-HOME-V1.md', 'Merchant managers see only campaigns where `training_campaigns.owner_user_id` matches their trusted account'),
     ],
