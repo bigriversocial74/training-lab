@@ -41,6 +41,7 @@ $lookupBody = $functionBody($service, 'tl_stage893_lookup_external', 'tl_stage89
 $reconcileBody = $functionBody($service, 'tl_stage893_reconcile_handoff', 'tl_stage893_reconcile_batch');
 $quarantineBody = $functionBody($service, 'tl_stage893_quarantine_lost_outcome', 'tl_stage893_process_handoff_guarded');
 $guardBody = $functionBody($service, 'tl_stage893_process_handoff_guarded', 'tl_stage893_candidate_rows');
+$requeueBody = $functionBody($processing, 'tl_stage893_requeue_handoff_guarded', 'tl_stage893_process_guarded_batch');
 
 $check(str_contains($service, 'microgifter_training_reward_lookup'), 'read adapter contract includes training reward lookup');
 $check(str_contains($service, 'microgifter_find_reward_by_idempotency_key'), 'read adapter contract supports idempotency lookup');
@@ -75,6 +76,8 @@ $check(!str_contains($reconcileBody, 'microgifter_issue_training_reward'), 'reco
 $check(str_contains($processing, "failure_code<>'external_delivery_confirmation_required'"), 'guarded due query excludes reconciliation quarantine');
 $check(str_contains($processing, 'tl_stage893_reconcile_batch'), 'guarded batch reconciles before delivery');
 $check(str_contains($processing, 'tl_stage893_process_handoff_guarded'), 'guarded batch uses quarantine wrapper');
+$check(str_contains($requeueBody, 'external_delivery_reconciliation_required'), 'manual requeue rejects reconciliation quarantine');
+$check(str_contains($requeueBody, 'tl_stage891_requeue_handoff'), 'safe requeue delegates to Stage 891');
 $check(str_contains($workerWrapper, 'external_delivery_reconciliation_disabled'), 'scheduled process requires reconciliation gate');
 $check(str_contains($workerWrapper, 'tl_stage893_reconcile_batch'), 'worker runs reconciliation preflight');
 $check(str_contains($workerWrapper, 'tl_stage893_quarantine_lost_outcome'), 'worker applies post-run quarantine');
@@ -87,7 +90,9 @@ $check(str_contains($reconciliationApi, 'tl_auth_role_allowed'), 'reconciliation
 $check(str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage893_process_handoff_guarded'"), 'outbox API uses guarded single processor');
 $check(str_contains($outboxApi, "'process_reward_handoff_batch' => 'tl_stage893_process_guarded_batch'"), 'outbox API uses guarded batch');
 $check(str_contains($operationsApi, 'tl_stage893_process_guarded_batch'), 'operations API uses guarded batch');
+$check(str_contains($operationsApi, 'tl_stage893_requeue_handoff_guarded'), 'operations API guards manual requeue');
 $check(str_contains($actionResult, 'stage893_reconcile_delivery_batch'), 'admin action router wires reconciliation batch');
+$check(str_contains($actionResult, "'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage893_requeue_handoff_guarded']"), 'admin requeue uses Stage 893 guard');
 $check(str_contains($actionResult, "'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_guarded']"), 'admin single processing uses guard');
 $check(str_contains($rewardBridge, 'tl_stage893_render_admin_panel'), 'Reward Bridge renders Stage 893 panel');
 
