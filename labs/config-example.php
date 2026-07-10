@@ -8,7 +8,8 @@
  * moving the CONTENTS of the first /labs/ folder into web root, it lands at
  * /labs/config.php. Edit only that deployed private file.
  *
- * Do not commit live credentials, developer keys, or identity shared secrets.
+ * Do not commit live credentials, developer keys, identity shared secrets, or
+ * the Stage 894 reward lookup shared secret.
  */
 return [
     'db' => [
@@ -48,7 +49,14 @@ return [
         'reward_delivery_reconciliation_enabled' => false,
         'reward_delivery_reconciliation_batch_size' => 25,
         'reward_delivery_reconciliation_min_age_seconds' => 300,
+        'microgifter_reward_lookup_enabled' => false,
+        'microgifter_reward_lookup_url' => 'https://microgifter.com/api/integrations/training-lab-reward-lookup.php',
+        'microgifter_reward_lookup_allowed_hosts' => ['microgifter.com', 'www.microgifter.com'],
+        'microgifter_reward_lookup_timeout_seconds' => 8,
+        'microgifter_reward_lookup_connect_timeout_seconds' => 3,
+        'microgifter_reward_lookup_max_response_bytes' => 131072,
         // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
+        // 'microgifter_reward_lookup_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
     ],
 ];
