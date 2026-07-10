@@ -81,7 +81,7 @@ $check(str_contains($workerWrapper, 'tl_stage893_quarantine_lost_outcome'), 'wor
 $check(str_contains($cli, 'training-lab-stage893-worker-wrapper.php'), 'CLI loads Stage 893 wrapper');
 $check(str_contains($cli, 'tl_stage893_run_scheduled_worker'), 'CLI calls Stage 893 worker wrapper');
 
-$check(str_contains($reconciliationApi, "if ($method === 'GET')"), 'reconciliation API supports protected GET summary');
+$check(str_contains($reconciliationApi, 'if ($method === \'GET\')'), 'reconciliation API supports protected GET summary');
 $check(str_contains($reconciliationApi, 'tl_security_guard_write($action, $raw)'), 'reconciliation API protects writes');
 $check(str_contains($reconciliationApi, 'tl_auth_role_allowed'), 'reconciliation API restricts GET to manager/admin');
 $check(str_contains($outboxApi, "'process_reward_handoff' => 'tl_stage893_process_handoff_guarded'"), 'outbox API uses guarded single processor');
