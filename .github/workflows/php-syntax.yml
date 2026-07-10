@@ -30,4 +30,21 @@ jobs:
           coverage: none
 
       - name: Run recursive syntax check
-        run: bash ./run-full-syntax-check.sh
+        id: syntax
+        continue-on-error: true
+        run: bash ./run-full-syntax-check.sh > php-syntax.log 2>&1
+
+      - name: Upload syntax output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-syntax-output
+          path: php-syntax.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce syntax result
+        if: steps.syntax.outcome == 'failure'
+        run: |
+          cat php-syntax.log
+          exit 1
