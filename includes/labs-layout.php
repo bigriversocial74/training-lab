@@ -1,13 +1,11 @@
 <?php
-$componentPath = __DIR__ . '/labs-components.php';
-if (is_file($componentPath)) {
-    require_once $componentPath;
-}
+require_once __DIR__ . '/training-lab-security.php';
+tl_security_headers(false);
 
+$componentPath = __DIR__ . '/labs-components.php';
+if (is_file($componentPath)) require_once $componentPath;
 $designPath = __DIR__ . '/training-lab-design-assets.php';
-if (is_file($designPath)) {
-    require_once $designPath;
-}
+if (is_file($designPath)) require_once $designPath;
 
 if (!function_exists('labs_base_path')) {
     function labs_base_path(): string
@@ -37,24 +35,19 @@ if (!function_exists('labs_url')) {
 }
 
 if (!function_exists('labs_asset')) {
-    function labs_asset(string $path): string
-    {
-        return labs_url('/assets/' . ltrim($path, '/'));
-    }
+    function labs_asset(string $path): string { return labs_url('/assets/' . ltrim($path, '/')); }
 }
 
 if (!function_exists('labs_is_active')) {
-    function labs_is_active(string $current, string $target): string
-    {
-        return $current === $target ? ' is-active' : '';
-    }
+    function labs_is_active(string $current, string $target): string { return $current === $target ? ' is-active' : ''; }
 }
 
 if (!function_exists('labs_nav_link')) {
     function labs_nav_link(string $active, string $key, string $href, string $label, string $class = ''): void
     {
-        $classes = trim($class . labs_is_active($active, $key));
-        echo '<a class="' . htmlspecialchars($classes, ENT_QUOTES, 'UTF-8') . '" href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</a>';
+        $isActive = $active === $key;
+        $classes = trim($class . ($isActive ? ' is-active' : ''));
+        echo '<a class="' . htmlspecialchars($classes, ENT_QUOTES, 'UTF-8') . '" href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '"' . ($isActive ? ' aria-current="page"' : '') . '>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</a>';
     }
 }
 
@@ -121,9 +114,7 @@ if (!function_exists('labs_flatten_nav')) {
     function labs_flatten_nav(array $groups): array
     {
         $flat = [];
-        foreach ($groups as $items) {
-            foreach ($items as $key => $item) $flat[$key] = $item;
-        }
+        foreach ($groups as $items) foreach ($items as $key => $item) $flat[$key] = $item;
         return $flat;
     }
 }
@@ -141,13 +132,16 @@ if (!function_exists('labs_page_start')) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="<?php echo htmlspecialchars(tl_security_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
   <title><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></title>
-  <link rel="stylesheet" href="<?php echo labs_asset('css/labs.css'); ?>">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/labs.css'), ENT_QUOTES, 'UTF-8'); ?>">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars(labs_asset('css/security-accessibility.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body class="<?php echo htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8'); ?>">
+  <a class="labs-skip-link" href="#main-content">Skip to main content</a>
   <div class="labs-page">
     <header class="labs-topbar">
-      <a class="labs-brand" href="<?php echo labs_url('/'); ?>">
+      <a class="labs-brand" href="<?php echo htmlspecialchars(labs_url('/'), ENT_QUOTES, 'UTF-8'); ?>">
         <span class="labs-brand-mark">TL</span>
         <span><strong>Training Lab</strong><small>standalone script</small></span>
       </a>
@@ -163,7 +157,7 @@ if (!function_exists('labs_page_start')) {
         <?php labs_nav_link($active, 'admin-command-center', labs_url('/admin/command-center.php'), 'Admin'); ?>
         <?php labs_nav_link($active, 'admin-backend-readiness', labs_url('/admin/backend-readiness.php'), 'Backend'); ?>
         <?php if ($labsUser): ?>
-          <a class="labs-account-chip<?php echo labs_is_active($active, 'account'); ?>" href="<?php echo labs_url('/account.php'); ?>"><span><?php echo labs_e((string)($labsUser['name'] ?? 'Account')); ?></span><small><?php echo labs_e((string)($labsUser['role'] ?? 'participant')); ?></small></a>
+          <a class="labs-account-chip<?php echo labs_is_active($active, 'account'); ?>" href="<?php echo htmlspecialchars(labs_url('/account.php'), ENT_QUOTES, 'UTF-8'); ?>"<?php echo $active === 'account' ? ' aria-current="page"' : ''; ?>><span><?php echo labs_e((string)($labsUser['name'] ?? 'Account')); ?></span><small><?php echo labs_e((string)($labsUser['role'] ?? 'participant')); ?></small></a>
         <?php else: ?>
           <?php labs_nav_link($active, 'signin', labs_url('/signin.php'), 'Login'); ?>
           <?php labs_nav_link($active, 'signup', labs_url('/signup.php'), 'Start Training', 'labs-nav-cta'); ?>
@@ -172,11 +166,8 @@ if (!function_exists('labs_page_start')) {
       <div class="labs-nav-overlay" data-labs-menu-close></div>
     </header>
 <?php
-        if ($section === 'app' || $section === 'admin') {
-            labs_workspace_start($section, $active);
-        } else {
-            echo '<main class="labs-main">';
-        }
+        if ($section === 'app' || $section === 'admin') labs_workspace_start($section, $active);
+        else echo '<main id="main-content" class="labs-main" tabindex="-1">';
     }
 }
 
@@ -187,7 +178,7 @@ if (!function_exists('labs_workspace_start')) {
         $groups = $isAdmin ? labs_core_admin_nav() : labs_core_app_nav();
         ?>
     <div class="labs-workspace">
-      <button class="labs-workspace-toggle" type="button" data-labs-workspace-open><?php echo $isAdmin ? 'Admin Menu' : 'App Menu'; ?></button>
+      <button class="labs-workspace-toggle" type="button" aria-controls="labs-workspace-nav" aria-expanded="false" data-labs-workspace-open><?php echo $isAdmin ? 'Admin Menu' : 'App Menu'; ?></button>
       <aside class="labs-sidebar" id="labs-workspace-nav">
         <div class="labs-sidebar-head">
           <div><div class="labs-sidebar-label"><?php echo $isAdmin ? 'Training Lab Admin' : 'Training Lab App'; ?></div><strong><?php echo $isAdmin ? 'Core backend' : 'Core workflow'; ?></strong></div>
@@ -196,16 +187,16 @@ if (!function_exists('labs_workspace_start')) {
         <nav aria-label="Workspace navigation">
           <?php foreach ($groups as $groupLabel => $items): ?>
             <div class="labs-sidebar-group-label"><?php echo htmlspecialchars((string)$groupLabel, ENT_QUOTES, 'UTF-8'); ?></div>
-            <?php foreach ($items as $key => [$href, $label]): ?>
-              <a class="<?php echo labs_is_active($active, $key); ?>" href="<?php echo htmlspecialchars(labs_url($href), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></a>
+            <?php foreach ($items as $key => [$href, $label]): $isActive = $active === $key; ?>
+              <a class="<?php echo $isActive ? 'is-active' : ''; ?>" href="<?php echo htmlspecialchars(labs_url($href), ENT_QUOTES, 'UTF-8'); ?>"<?php echo $isActive ? ' aria-current="page"' : ''; ?>><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></a>
             <?php endforeach; ?>
           <?php endforeach; ?>
         </nav>
         <div class="labs-sidebar-note">Focused core menus. Account sync, roles, workflow, review, and diagnostics stay active.</div>
       </aside>
       <div class="labs-workspace-overlay" data-labs-workspace-close></div>
-      <main class="labs-main labs-workspace-main">
-        <?php
+      <main id="main-content" class="labs-main labs-workspace-main" tabindex="-1">
+<?php
     }
 }
 
@@ -215,9 +206,9 @@ if (!function_exists('labs_page_end')) {
         $section = $page['section'] ?? 'public';
         if ($section === 'app' || $section === 'admin') echo "      </main>\n    </div>\n"; else echo "    </main>\n";
         ?>
-    <footer class="labs-footer"><span>Training Lab by Microgifter</span><nav><a href="<?php echo labs_url('/about.php'); ?>">About</a><a href="<?php echo labs_url('/how-it-works.php'); ?>">How It Works</a><a href="<?php echo labs_url('/contact.php'); ?>">Contact</a></nav><span>Standalone safe mode</span></footer>
+    <footer class="labs-footer"><span>Training Lab by Microgifter</span><nav><a href="<?php echo htmlspecialchars(labs_url('/about.php'), ENT_QUOTES, 'UTF-8'); ?>">About</a><a href="<?php echo htmlspecialchars(labs_url('/how-it-works.php'), ENT_QUOTES, 'UTF-8'); ?>">How It Works</a><a href="<?php echo htmlspecialchars(labs_url('/contact.php'), ENT_QUOTES, 'UTF-8'); ?>">Contact</a></nav><span>Standalone safe mode</span></footer>
   </div>
-  <script src="<?php echo labs_asset('js/labs.js'); ?>"></script>
+  <script src="<?php echo htmlspecialchars(labs_asset('js/labs.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 </body>
 </html>
 <?php
