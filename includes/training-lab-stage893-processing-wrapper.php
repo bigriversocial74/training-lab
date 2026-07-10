@@ -12,6 +12,23 @@ if (!function_exists('tl_stage893_due_handoff_ids')) {
     }
 }
 
+if (!function_exists('tl_stage893_requeue_handoff_guarded')) {
+    function tl_stage893_requeue_handoff_guarded(array $input): array
+    {
+        if (!tl_stage890_table_ready()) throw new TlHttpException('Stage 890 database migration is required.', 503, 'stage890_schema_missing');
+        $ref = trim((string)($input['handoff_id'] ?? $input['public_id'] ?? ''));
+        if ($ref === '') throw new TlHttpException('Handoff reference is required.', 422, 'handoff_required');
+        $pdo = tl_require_db();
+        $stmt = $pdo->prepare('SELECT failure_code FROM training_reward_handoffs WHERE public_id=? OR id=? LIMIT 1');
+        $stmt->execute([$ref, ctype_digit($ref) ? (int)$ref : 0]);
+        $failureCode = (string)($stmt->fetchColumn() ?: '');
+        if ($failureCode === 'external_delivery_confirmation_required') {
+            throw new TlHttpException('This handoff is quarantined pending external delivery confirmation and cannot be manually requeued.', 409, 'external_delivery_reconciliation_required');
+        }
+        return tl_stage891_requeue_handoff($input);
+    }
+}
+
 if (!function_exists('tl_stage893_process_guarded_batch')) {
     function tl_stage893_process_guarded_batch(array $input = []): array
     {
