@@ -46,7 +46,7 @@ $requeueBody = ($requeueStart !== false && $requeueEnd !== false) ? substr($serv
 $check(str_contains($requeueBody, 'LIMIT 1 FOR UPDATE'), 'manual requeue row locks handoff');
 $check(str_contains($requeueBody, "attempt_count=0"), 'manual requeue starts a fresh retry cycle');
 $check(str_contains($requeueBody, 'stage891_handoff_requeued'), 'manual requeue writes audit event');
-$check(str_contains($requeueBody, 'stage891_recovery_history'), 'operator history is retained');
+$check(str_contains($service, 'stage891_recovery_history') && str_contains($requeueBody, 'tl_stage891_merge_metadata'), 'operator history is retained');
 $check(!str_contains($requeueBody, 'tl_stage890_call_adapter'), 'manual requeue never calls Microgifter adapter');
 
 $check(str_contains($ownedProcessor, 'function tl_stage891_process_handoff_owned'), 'owned processor exists');
