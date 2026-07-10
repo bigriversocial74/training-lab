@@ -44,12 +44,12 @@ labs_page_start($page);
       <span class="labs-product-kicker">Your status</span>
       <h2><?php echo labs_e((string)$state['label']); ?></h2>
       <p><?php echo labs_e((string)$state['reason']); ?></p>
-      <?php if ($state['spots_remaining'] !== null): ?><p><strong><?php echo (int)$state['spots_remaining']; ?></strong> spots remaining</p><?php endif; ?>
+      <?php if ($state['spots_remaining'] !== null && empty($state['has_access'])): ?><p><strong><?php echo (int)$state['spots_remaining']; ?></strong> spots remaining</p><?php endif; ?>
     </div>
     <?php if (!empty($state['enrolled'])): ?>
       <?php if ($state['key'] === 'completed'): ?>
         <a class="labs-btn labs-btn-primary" href="<?php echo htmlspecialchars(labs_url('/app/progress-map.php?campaign=' . rawurlencode((string)$campaign['ref'])), ENT_QUOTES, 'UTF-8'); ?>">View Completed Training</a>
-      <?php elseif ($state['key'] === 'paused'): ?>
+      <?php elseif (in_array((string)$state['key'], ['paused','ended_enrolled'], true)): ?>
         <a class="labs-btn" href="<?php echo htmlspecialchars(labs_url('/app/progress-map.php?campaign=' . rawurlencode((string)$campaign['ref'])), ENT_QUOTES, 'UTF-8'); ?>">View Progress</a>
       <?php else: ?>
         <a class="labs-btn labs-btn-primary" href="<?php echo htmlspecialchars(labs_url((string)$campaign['continue_href']), ENT_QUOTES, 'UTF-8'); ?>">Continue Training</a>
@@ -58,7 +58,7 @@ labs_page_start($page);
       <form method="post" action="<?php echo htmlspecialchars(labs_url('/app/campaign-enroll.php'), ENT_QUOTES, 'UTF-8'); ?>">
         <?php echo tl_security_csrf_field(); ?>
         <input type="hidden" name="campaign_id" value="<?php echo labs_e((string)$campaign['ref']); ?>">
-        <button class="labs-btn labs-btn-primary" type="submit">Join Campaign</button>
+        <button class="labs-btn labs-btn-primary" type="submit"><?php echo $state['key'] === 'invited' ? 'Accept Invitation' : 'Join Campaign'; ?></button>
       </form>
     <?php else: ?>
       <button class="labs-btn" type="button" disabled><?php echo labs_e((string)$state['label']); ?></button>
