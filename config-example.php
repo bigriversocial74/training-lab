@@ -55,6 +55,7 @@ return [
         'microgifter_reward_lookup_timeout_seconds' => 8,
         'microgifter_reward_lookup_connect_timeout_seconds' => 3,
         'microgifter_reward_lookup_max_response_bytes' => 131072,
+        'stage895_live_acceptance_enabled' => false,
         // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
         // 'microgifter_reward_lookup_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
