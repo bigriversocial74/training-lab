@@ -1,0 +1,21 @@
+<?php
+require_once __DIR__ . '/../includes/labs-layout.php';
+require_once __DIR__ . '/../includes/training-lab-reward-management.php';
+$page=['title'=>'Analytics | Training Lab','section'=>'admin','active'=>'admin-analytics','required_role'=>'manager'];
+$user=tl_product_require_page_access($page);
+$state=tl_reward_management_analytics($user ?? []);
+$t=$state['totals'];
+labs_page_start($page);
+?>
+<section class="labs-product-hero"><article class="labs-product-hero-main"><span class="labs-product-kicker">Training analytics</span><h1>See where training turns into verified outcomes.</h1><p>Track enrollment, completion, proof decisions, reward eligibility, and delivery without exposing private participant or Microgifter payload data.</p></article><aside class="labs-product-next"><div><span>Analytics scope</span><h2><?php echo $state['scope']==='platform'?'Platform':'Your campaigns'; ?></h2><p><?php echo (int)$t['campaigns']; ?> campaign<?php echo (int)$t['campaigns']===1?'':'s'; ?> included.</p></div><a class="labs-btn labs-btn-primary" href="<?php echo htmlspecialchars(labs_url('/admin/reward-rules.php'),ENT_QUOTES,'UTF-8'); ?>">Reward Rules</a></aside></section>
+<section class="labs-product-stats" aria-label="Training outcome summary">
+<article class="labs-product-stat"><span>Participants</span><strong><?php echo (int)$t['participants']; ?></strong><small>enrolled</small></article>
+<article class="labs-product-stat"><span>Completion</span><strong><?php echo (int)$t['completion_rate']; ?>%</strong><small><?php echo (int)$t['completed']; ?> completed</small></article>
+<article class="labs-product-stat"><span>Proof approval</span><strong><?php echo (int)$t['approval_rate']; ?>%</strong><small><?php echo (int)$t['reviews']; ?> decisions</small></article>
+<article class="labs-product-stat"><span>Rewards</span><strong><?php echo (int)$t['rewards']; ?></strong><small>eligibility records</small></article>
+<article class="labs-product-stat"><span>Delivery</span><strong><?php echo (int)$t['delivery_rate']; ?>%</strong><small><?php echo (int)$t['delivered']; ?> confirmed</small></article>
+<article class="labs-product-stat"><span>Reward value</span><strong>$<?php echo number_format(((int)$t['reward_value_cents'])/100,2); ?></strong><small>configured events</small></article>
+</section>
+<section class="labs-product-card"><div class="labs-product-card-head"><div><span class="labs-product-kicker">Campaign funnel</span><h2>Performance by campaign</h2><p>Rates use distinct campaign participants, recorded review decisions, reward events, and confirmed delivery states.</p></div></div><?php if($state['campaigns']): ?><div class="labs-analytics-table" role="region" aria-label="Campaign analytics" tabindex="0"><table><thead><tr><th>Campaign</th><th>Participants</th><th>Complete</th><th>Proofs</th><th>Approval</th><th>Review time</th><th>Rewards</th><th>Delivered</th></tr></thead><tbody><?php foreach($state['campaigns'] as $row): ?><tr><th scope="row"><strong><?php echo labs_e((string)$row['title']); ?></strong><small><?php echo labs_e(ucfirst((string)$row['status'])); ?></small></th><td><?php echo (int)$row['participants']; ?></td><td><?php echo (int)$row['completion_rate']; ?>%</td><td><?php echo (int)$row['proofs']; ?></td><td><?php echo (int)$row['approval_rate']; ?>%</td><td><?php echo $row['avg_review_minutes']===null?'—':(int)$row['avg_review_minutes'].' min'; ?></td><td><?php echo (int)$row['rewards']; ?></td><td><?php echo (int)$row['delivery_rate']; ?>%</td></tr><?php endforeach; ?></tbody></table></div><?php else: ?><div class="labs-product-empty"><h3>No campaign analytics yet.</h3><p>Create a campaign and enroll participants to begin measuring verified outcomes.</p></div><?php endif; ?></section>
+<section class="labs-safe-note">Analytics are aggregated from existing Training Lab records. No browser-selected user IDs, raw adapter payloads, account secrets, or wallet balances are returned.</section>
+<?php labs_page_end(['section'=>'admin']); ?>
