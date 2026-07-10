@@ -1,13 +1,22 @@
 <?php
+require_once __DIR__ . '/../../includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/../../includes/training-lab-account-bridge.php';
+
 try {
-    $input = tl_request_data();
-    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && !empty($input['auth_action'])) {
-        $result = tl_account_bridge_handle_auth_action($input);
-    } else {
-        $result = null;
+    $result = null;
+    if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST') {
+        $raw = tl_security_request_data(false);
+        $action = preg_replace('/[^a-z0-9_\-]/i', '', (string)($raw['auth_action'] ?? $raw['action'] ?? ''));
+        if ($action === '') throw new TlHttpException('Account action is required.', 422, 'action_required');
+        tl_security_guard_auth_action($action, $raw);
+        $result = tl_account_bridge_handle_auth_action(tl_security_normalize_auth_input($raw));
     }
-    tl_stage34_json(['ok' => true, 'action_result' => $result, 'account_bridge' => tl_account_bridge_current_context()]);
+    tl_security_json_response([
+        'ok'=>true,
+        'action_result'=>$result,
+        'account_bridge'=>tl_account_bridge_current_context(),
+        'csrf_token'=>tl_security_csrf_token(),
+    ]);
 } catch (Throwable $e) {
-    tl_stage34_json(['ok' => false, 'error' => $e->getMessage(), 'account_bridge' => tl_account_bridge_current_context()], 400);
+    tl_security_json_exception($e);
 }
