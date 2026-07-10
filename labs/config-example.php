@@ -4,9 +4,9 @@
  *
  * IMPORTANT FOR DAVID'S CPANEL WORKFLOW
  * ------------------------------------
- * This file is packaged at /labs/labs/config.php. After extracting the zip and
- * moving the CONTENTS of the first /labs/ folder into web root, it lands at
- * /labs/config.php. Edit only that deployed private file.
+ * This template is packaged as config-example.php so repository uploads cannot
+ * overwrite the active private /labs/config.php file. After deployment, copy
+ * /labs/config-example.php to /labs/config.php only when creating a new config.
  *
  * Do not commit live credentials, developer keys, identity shared secrets, or
  * signed integration shared secrets.
