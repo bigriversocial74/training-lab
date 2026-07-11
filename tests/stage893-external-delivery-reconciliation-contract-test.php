@@ -27,7 +27,7 @@ $operationsApi = $read('api/training/reward-handoff-operations.php');
 $reconciliationApi = $read('api/training/reward-delivery-reconciliation.php');
 $proofReviewApi = $read('api/training/proof-review-workflow.php');
 $actionResult = $read('admin/action-result.php');
-$rewardBridge = $read('admin/reward-bridge.php');
+$advancedOperations = $read('admin/reward-operations.php');
 $config = $read('config-example.php');
 $labsConfig = $read('labs/config-example.php');
 
@@ -120,7 +120,7 @@ $check(str_contains($appAction, 'tl_stage893_claim_or_retry_reward_guarded'), 'g
 $check(!str_contains($appAction, 'tl_mg_claim_training_reward($data)'), 'generic route does not call legacy claim function');
 $check(!str_contains($appAction, 'tl_mg_stage160_retry_microgifter_issue($data)'), 'generic route does not call legacy retry function');
 
-$check(str_contains($reconciliationApi, 'if ($method === \'GET\')'), 'reconciliation API supports protected GET summary');
+$check(str_contains($reconciliationApi, "if (\$method === 'GET')"), 'reconciliation API supports protected GET summary');
 $check(str_contains($reconciliationApi, 'tl_security_guard_write($action, $raw)'), 'reconciliation API protects writes');
 $check(str_contains($reconciliationApi, 'tl_auth_role_allowed'), 'reconciliation API restricts GET to manager/admin');
 $check(str_contains($reconciliationApi, 'tl_stage893_reconcile_handoff_guarded'), 'reconciliation API guards active leases');
@@ -141,7 +141,7 @@ $check(str_contains($actionResult, "'enqueue_reward_handoff' => ['Enqueue reward
 $check(str_contains($actionResult, "'sync_reward_handoff_outbox' => ['Sync reward handoff outbox', 'tl_stage893_sync_outbox_guarded']"), 'admin sync uses Stage 893 guard');
 $check(str_contains($actionResult, "'process_reward_handoff' => ['Process reward handoff', 'tl_stage893_process_handoff_production_guarded']"), 'admin single processing requires reconciliation');
 $check(str_contains($actionResult, "'process_reward_handoff_batch' => ['Process reward handoff batch', 'tl_stage893_process_batch_production_guarded']"), 'admin batch processing requires reconciliation');
-$check(str_contains($rewardBridge, 'tl_stage893_render_admin_panel_guarded'), 'Reward Bridge renders guarded Stage 893 panel');
+$check(str_contains($advancedOperations, 'tl_stage893_render_admin_panel_guarded'), 'Advanced Reward Operations renders the guarded Stage 893 panel');
 
 foreach ([$config, $labsConfig] as $index => $example) {
     $label = $index === 0 ? 'root config example' : 'labs config example';
