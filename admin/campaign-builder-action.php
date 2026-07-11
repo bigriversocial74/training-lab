@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../includes/training-lab-campaign-builder.php';
+require_once __DIR__ . '/../includes/training-lab-campaign-builder-runtime.php';
 
 try {
     $input = tl_security_request_data(false);
@@ -12,13 +12,13 @@ try {
         'create_campaign' => tl_campaign_builder_create($user, $input),
         'save_campaign' => tl_campaign_builder_save_campaign($user, $input),
         'publish_campaign' => tl_campaign_builder_save_campaign($user, $input + ['status'=>'active','visibility'=>'published']),
-        'duplicate_campaign' => tl_campaign_builder_duplicate($user, $input),
+        'duplicate_campaign' => tl_campaign_builder_duplicate_v2($user, $input),
         'archive_campaign' => tl_campaign_builder_archive($user, $input),
-        'add_task' => tl_campaign_builder_add_task($user, $input),
-        'update_task' => tl_campaign_builder_update_task($user, $input),
+        'add_task' => tl_campaign_builder_add_task_v2($user, $input),
+        'update_task' => tl_campaign_builder_update_task_v2($user, $input),
         'reorder_tasks' => tl_campaign_builder_reorder_tasks($user, $input),
-        'delete_task' => tl_campaign_builder_delete_task($user, $input),
-        'attach_reward' => tl_campaign_builder_attach_reward($user, $input),
+        'delete_task' => tl_campaign_builder_delete_task_v2($user, $input),
+        'attach_reward' => tl_campaign_builder_attach_reward_v2($user, $input),
         default => throw new TlHttpException('Unsupported campaign-builder action.', 422, 'campaign_builder_action_invalid'),
     };
 
