@@ -38,6 +38,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'pilot_communications'=>'admin/pilot-communications.php',
             'notification_templates'=>'admin/notification-templates.php',
             'pilot_reporting'=>'admin/pilot-reporting.php',
+            'email_provider'=>'admin/email-provider.php',
             'notification_incidents'=>'admin/notification-incidents.php',
             'notification_preferences'=>'notification-preferences.php',
             'communications_api'=>'api/training/pilot-communications.php',
@@ -61,6 +62,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'pilot_communications'=>'includes/training-lab-pilot-communications.php',
             'pilot_communication_actions'=>'includes/training-lab-pilot-communications-actions.php',
             'pilot_communication_reporting'=>'includes/training-lab-pilot-communications-reporting.php',
+            'resend_provider'=>'includes/training-lab-resend-email-provider.php',
             'product_acceptance'=>'includes/training-lab-product-acceptance.php',
             'production_readiness'=>'includes/training-lab-production-readiness.php',
             'live_acceptance'=>'includes/training-lab-live-acceptance.php',
@@ -96,11 +98,14 @@ if (!function_exists('tl_product_acceptance_report')) {
             'tests/end-to-end-acceptance-deployment-contract-test.php',
             'tests/production-deployment-live-acceptance-contract-test.php',
             'tests/pilot-operations-communications-contract-test.php',
+            'tests/email-provider-controlled-delivery-contract-test.php',
             'scripts/end-to-end-acceptance-deployment-quality-audit.php',
             'scripts/production-deployment-live-acceptance-quality-audit.php',
             'scripts/pilot-operations-communications-quality-audit.php',
+            'scripts/email-provider-controlled-delivery-quality-audit.php',
             'docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md',
             'docs/PILOT-OPERATIONS-COMMUNICATIONS-V1.md',
+            'docs/EMAIL-PROVIDER-CONTROLLED-DELIVERY-V1.md',
             'database/pilot_operations_communications_v1.sql',
             'run-quality-gate.sh',
             'run-full-syntax-check.sh',
@@ -109,6 +114,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'bin/verify-release-package.php',
             'bin/live-acceptance.php',
             'bin/notification-worker.php',
+            'bin/email-provider-check.php',
         ];
         foreach ($acceptanceFiles as $file) {
             $checks[] = tl_acceptance_check('acceptance_' . md5($file), 'Acceptance asset', tl_acceptance_file($file), $file, 'acceptance');
@@ -118,6 +124,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'account_bridge'=>'includes/training-lab-account-bridge.php',
             'route_bootstrap'=>'includes/training-lab-route-bootstrap.php',
             'security'=>'includes/training-lab-security.php',
+            'email_provider'=>'includes/training-lab-resend-email-provider.php',
             'signed_lookup'=>'includes/training-lab-stage894-signed-reward-lookup-client.php',
             'limited_scheduler'=>'includes/training-lab-stage899-limited-scheduled-processing.php',
         ];
