@@ -35,6 +35,12 @@ php ./tests/onboarding-guided-empty-states-contract-test.php
 echo "== Onboarding and guided empty states scored audit =="
 php ./scripts/onboarding-guided-empty-states-quality-audit.php
 
+echo "== Mobile and accessibility completion contracts =="
+php ./tests/mobile-accessibility-completion-contract-test.php
+
+echo "== Mobile and accessibility completion scored audit =="
+php ./scripts/mobile-accessibility-completion-quality-audit.php
+
 echo "== Security runtime =="
 php ./tests/security-runtime-test.php
 

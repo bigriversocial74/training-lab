@@ -82,6 +82,12 @@ jobs:
       - name: Onboarding and guided empty states scored audit
         run: php ./scripts/onboarding-guided-empty-states-quality-audit.php
 
+      - name: Mobile and accessibility completion contract
+        run: php ./tests/mobile-accessibility-completion-contract-test.php
+
+      - name: Mobile and accessibility completion scored audit
+        run: php ./scripts/mobile-accessibility-completion-quality-audit.php
+
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
 
