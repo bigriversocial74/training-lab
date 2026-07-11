@@ -2,6 +2,7 @@
 $root = dirname(__DIR__);
 $files = [
     'service'=>(string)file_get_contents($root . '/includes/training-lab-campaign-builder.php'),
+    'runtime'=>(string)file_get_contents($root . '/includes/training-lab-campaign-builder-runtime.php'),
     'page'=>(string)file_get_contents($root . '/admin/campaign-builder.php'),
     'legacy'=>(string)file_get_contents($root . '/admin/campaigns.php'),
     'action'=>(string)file_get_contents($root . '/admin/campaign-builder-action.php'),
@@ -12,57 +13,61 @@ $files = [
     'docs'=>(string)file_get_contents($root . '/docs/MERCHANT-CAMPAIGN-TASK-BUILDER-COMPLETION-V1.md'),
 ];
 $css = (string)file_get_contents($root . '/assets/css/campaign-builder.css');
+$combined = $files['service'] . $files['runtime'];
 $categories = [
     'Merchant ownership'=>[
         str_contains($files['service'], 'owner_user_id = ?'),
         str_contains($files['service'], 'campaign_builder_campaign_not_found'),
+        str_contains($files['runtime'], "c.owner_user_id = ?"),
         str_contains($files['page'], "'required_role'=>'manager'"),
     ],
     'Campaign lifecycle'=>[
         str_contains($files['service'], 'tl_campaign_builder_create'),
-        str_contains($files['service'], 'tl_campaign_builder_duplicate'),
+        str_contains($files['runtime'], 'tl_campaign_builder_duplicate_v2'),
         str_contains($files['service'], 'tl_campaign_builder_archive'),
-        !str_contains($files['service'], 'DELETE FROM training_campaigns'),
+        !str_contains($combined, 'DELETE FROM training_campaigns'),
     ],
     'Task authoring'=>[
-        str_contains($files['service'], 'tl_campaign_builder_add_task'),
-        str_contains($files['service'], 'tl_campaign_builder_update_task'),
+        str_contains($files['runtime'], 'tl_campaign_builder_add_task_v2'),
+        str_contains($files['runtime'], 'tl_campaign_builder_update_task_v2'),
         str_contains($files['service'], 'tl_campaign_builder_reorder_tasks'),
-        str_contains($files['service'], 'tl_campaign_builder_delete_task'),
+        str_contains($files['runtime'], 'tl_campaign_builder_delete_task_v2'),
     ],
     'Proof and prerequisites'=>[
-        str_contains($files['service'], 'proof_instructions'),
-        str_contains($files['service'], 'prerequisite_task_id'),
-        str_contains($files['service'], 'close_after_due'),
-        str_contains($files['service'], 'training_proof_submissions WHERE task_id = ?'),
+        str_contains($files['runtime'], 'proof_instructions'),
+        str_contains($files['runtime'], 'campaign_builder_prerequisite_order_invalid'),
+        str_contains($files['runtime'], "\$settings['prerequisite_task_id'] = \$prerequisiteId"),
+        str_contains($files['runtime'], 'tl_campaign_builder_clear_prerequisite_references'),
     ],
     'Schedule and cohort'=>[
         str_contains($files['service'], 'starts_at'),
         str_contains($files['service'], 'ends_at'),
         str_contains($files['service'], 'capacity'),
-        str_contains($files['service'], 'enrollment_mode'),
+        str_contains($files['runtime'], "\$settings['due_at'] = \$dueAt"),
     ],
     'Rewards and preview'=>[
-        str_contains($files['service'], 'tl_campaign_builder_attach_reward'),
+        str_contains($files['runtime'], 'tl_campaign_builder_attach_reward_v2'),
+        str_contains($files['runtime'], 'sequence_completed'),
         str_contains($files['page'], 'Participant Preview'),
         str_contains($files['page'], 'Advanced Reward Rules'),
-        str_contains($files['legacy'], '/admin/campaign-builder.php'),
     ],
     'Publish readiness'=>[
         str_contains($files['service'], 'tl_campaign_builder_readiness'),
         str_contains($files['service'], 'campaign_builder_not_ready'),
+        str_contains($files['runtime'], 'campaign_builder_live_task_not_ready'),
         str_contains($files['page'], 'Publish Campaign'),
     ],
     'Write security'=>[
         str_contains($files['action'], 'tl_security_guard_write'),
-        str_contains($files['service'], 'beginTransaction()'),
-        str_contains($files['service'], 'FOR UPDATE'),
-        str_contains($files['action'], "tl_security_guard_write('update_campaign_plan'"),
+        substr_count($combined, 'beginTransaction()') >= 10,
+        str_contains($combined, 'FOR UPDATE'),
+        str_contains($files['action'], 'training-lab-campaign-builder-runtime.php'),
     ],
     'Responsive operations'=>[
         is_file($root . '/assets/css/campaign-builder.css'),
         str_contains($css, '@media(max-width:760px)'),
         str_contains($css, '@media(forced-colors:active)'),
+        str_contains($files['page'], 'labs-builder-shell'),
     ],
     'Acceptance and deployment'=>[
         str_contains($files['acceptance'], "'campaign_builder'=>'admin/campaign-builder.php'"),
