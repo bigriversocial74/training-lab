@@ -86,7 +86,8 @@ $assert(in_array('direct_adapter_missing', $blocked, true), 'Missing direct adap
 $sql = file_get_contents($root . '/database/stage890_reward_handoff_outbox_v1.sql') ?: '';
 $service = file_get_contents($root . '/includes/training-lab-stage890-reward-handoff-outbox.php') ?: '';
 $api = file_get_contents($root . '/api/training/reward-handoff-outbox.php') ?: '';
-$admin = file_get_contents($root . '/admin/reward-bridge.php') ?: '';
+$merchantFulfillment = file_get_contents($root . '/admin/reward-bridge.php') ?: '';
+$advancedOperations = file_get_contents($root . '/admin/reward-operations.php') ?: '';
 $actions = file_get_contents($root . '/admin/action-result.php') ?: '';
 $configExample = file_get_contents($root . '/labs/config-example.php') ?: '';
 
@@ -100,7 +101,8 @@ $assert(str_contains($service, 'tl_stage890_adapter_state') && str_contains($ser
 $assert(str_contains($service, 'training_account_links'), 'Outbox must resolve the recipient through the persistent account link.');
 $assert(str_contains($service, 'no_password_claims'), 'Outbox payload must declare credential exclusion.');
 $assert(str_contains($api, 'tl_security_guard_write') && str_contains($api, 'tl_auth_role_allowed'), 'Outbox API must protect reads and writes.');
-$assert(str_contains($admin, 'tl_stage890_render_admin_panel'), 'Reward Bridge must render the Stage 890 operating panel.');
+$assert(str_contains($advancedOperations, 'tl_stage890_render_admin_panel'), 'Advanced Reward Operations must render the Stage 890 operating panel.');
+$assert(!str_contains($merchantFulfillment, 'tl_stage890_render_admin_panel'), 'Merchant fulfillment must not render the Stage 890 operating panel.');
 $assert(str_contains($actions, 'process_reward_handoff_batch') && str_contains($actions, 'sync_reward_handoff_outbox'), 'Protected action page must dispatch Stage 890 operations.');
 $assert(str_contains($configExample, 'reward_handoff_processing_enabled') && str_contains($configExample, 'reward_handoff_max_attempts'), 'Deployment config must document Stage 890 controls.');
 
