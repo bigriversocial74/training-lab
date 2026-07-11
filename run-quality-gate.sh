@@ -77,6 +77,12 @@ php ./tests/limited-live-email-pilot-graduation-contract-test.php
 echo "== Limited live email pilot and graduation scored audit =="
 php ./scripts/limited-live-email-pilot-graduation-quality-audit.php
 
+echo "== Merchant campaign and task builder completion contracts =="
+php ./tests/merchant-campaign-task-builder-completion-contract-test.php
+
+echo "== Merchant campaign and task builder completion scored audit =="
+php ./scripts/merchant-campaign-task-builder-completion-quality-audit.php
+
 echo "== Release package build and verification =="
 TL_PACKAGE_PATH="${TMPDIR:-/tmp}/training-lab-release-$$.zip"
 trap 'rm -f "$TL_PACKAGE_PATH"' EXIT
