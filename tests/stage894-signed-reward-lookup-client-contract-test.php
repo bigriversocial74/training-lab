@@ -20,7 +20,7 @@ $outboxApi = $read('api/training/reward-handoff-outbox.php');
 $appAction = $read('api/training/app-action.php');
 $proofReview = $read('api/training/proof-review-workflow.php');
 $adminAction = $read('admin/action-result.php');
-$rewardBridge = $read('admin/reward-bridge.php');
+$advancedOperations = $read('admin/reward-operations.php');
 $worker = $read('bin/reward-handoff-worker.php');
 $config = $read('config-example.php');
 $labsConfig = $read('labs/config-example.php');
@@ -56,11 +56,11 @@ $check(!str_contains($client, 'HTTP_COOKIE') && !str_contains($client, 'Authoriz
 $check(str_contains($client, "'shared_secret_not_returned'=>true") && !str_contains($client, "'secret'=>(string)"), 'summary never returns the shared secret');
 
 $check(strpos($bootstrap, 'training-lab-stage894-signed-reward-lookup-client.php') < strpos($bootstrap, 'training-lab-stage893-processing-wrapper.php'), 'Stage 894 loads before Stage 893 reconciliation');
-foreach ([$reconciliationApi,$operationsApi,$outboxApi,$appAction,$proofReview,$adminAction,$rewardBridge] as $route) {
+foreach ([$reconciliationApi,$operationsApi,$outboxApi,$appAction,$proofReview,$adminAction,$advancedOperations] as $route) {
     $check(str_contains($route, 'training-lab-stage894-reconciliation-bootstrap.php'), 'active route loads Stage 894 bootstrap');
 }
 $check(str_contains($worker, 'training-lab-stage894-signed-reward-lookup-client.php') && strpos($worker, 'training-lab-stage894-signed-reward-lookup-client.php') < strpos($worker, 'training-lab-stage893-worker-wrapper.php'), 'CLI loads Stage 894 before worker reconciliation');
-$check(str_contains($rewardBridge, 'tl_stage894_render_admin_panel'), 'Reward Bridge renders Stage 894 readiness panel');
+$check(str_contains($advancedOperations, 'tl_stage894_render_admin_panel'), 'Advanced Reward Operations renders Stage 894 readiness panel');
 $check(str_contains($reconciliationApi, 'tl_stage894_summary') && str_contains($operationsApi, 'tl_stage894_summary') && str_contains($outboxApi, 'tl_stage894_summary'), 'protected APIs expose sanitized client readiness');
 
 foreach ([$config,$labsConfig] as $index => $example) {

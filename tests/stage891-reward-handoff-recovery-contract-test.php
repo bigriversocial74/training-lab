@@ -19,7 +19,7 @@ $panel = $read('includes/training-lab-stage891-terminal-failure-panel.php');
 $api = $read('api/training/reward-handoff-operations.php');
 $outboxApi = $read('api/training/reward-handoff-outbox.php');
 $actionResult = $read('admin/action-result.php');
-$rewardBridge = $read('admin/reward-bridge.php');
+$advancedOperations = $read('admin/reward-operations.php');
 $config = $read('config-example.php');
 $labsConfig = $read('labs/config-example.php');
 
@@ -88,8 +88,8 @@ $check(str_contains($actionResult, 'stage891_recover_stale_handoffs'), 'admin ac
 $check(str_contains($actionResult, "'stage891_requeue_handoff' => ['Requeue reward handoff', 'tl_stage893_requeue_handoff_guarded']"), 'admin action router preserves Stage 891 requeue behind quarantine guard');
 $check(str_contains($actionResult, "'stage891_process_resilient_batch' => ['Recover and process reward handoff batch', 'tl_stage893_process_batch_production_guarded']"), 'resilient batch action uses production guarded owned processor');
 $check(str_contains($actionResult, 'stage891_run_handoff_acceptance'), 'admin action router wires acceptance');
-$check(str_contains($rewardBridge, 'tl_stage891_render_admin_panel'), 'Reward Bridge renders Stage 891 acceptance panel');
-$check(str_contains($rewardBridge, 'tl_stage891_render_terminal_failure_panel'), 'Reward Bridge renders terminal failure queue');
+$check(str_contains($advancedOperations, 'tl_stage891_render_admin_panel'), 'Advanced Reward Operations renders Stage 891 acceptance panel');
+$check(str_contains($advancedOperations, 'tl_stage891_render_terminal_failure_panel'), 'Advanced Reward Operations renders terminal failure queue');
 $check(str_contains($panel, 'stage891_requeue_handoff'), 'terminal failure panel provides protected requeue action');
 
 foreach ([$config, $labsConfig] as $index => $example) {

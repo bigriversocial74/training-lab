@@ -1,70 +1,14 @@
 <?php
 require_once __DIR__ . '/../includes/labs-layout.php';
-require_once __DIR__ . '/../includes/training-lab-app-service.php';
-require_once __DIR__ . '/../includes/training-lab-microgifter-rewards.php';
-require_once __DIR__ . '/../includes/training-lab-stage890-reward-handoff-outbox.php';
-require_once __DIR__ . '/../includes/training-lab-stage891-reward-handoff-recovery.php';
-require_once __DIR__ . '/../includes/training-lab-stage891-terminal-failure-panel.php';
-require_once __DIR__ . '/../includes/training-lab-stage892-scheduled-worker.php';
-require_once __DIR__ . '/../includes/training-lab-stage894-reconciliation-bootstrap.php';
-require_once __DIR__ . '/../includes/training-lab-stage895-integration-acceptance.php';
-require_once __DIR__ . '/../includes/training-lab-stage896-limited-reward-pilot.php';
-require_once __DIR__ . '/../includes/training-lab-stage897-controlled-batch-rollout.php';
-require_once __DIR__ . '/../includes/training-lab-stage898-worker-canary-monitoring.php';
-require_once __DIR__ . '/../includes/training-lab-stage899-limited-scheduled-processing.php';
-$bridge = tl_mg_stage160_bridge_summary();
-$counts = $bridge['counts'] ?? [];
-$rewards = $bridge['admin_rewards'] ?? [];
-$stage240Fulfillment = tl_stage240_reward_fulfillment_state();
-
-labs_page_start(['title' => 'Reward Bridge | Training Lab', 'section' => 'admin', 'active' => 'admin-reward-bridge']);
+require_once __DIR__ . '/../includes/training-lab-reward-management-queries.php';
+$page=['title'=>'Reward Fulfillment | Training Lab','section'=>'admin','active'=>'admin-reward-bridge','required_role'=>'manager'];
+$user=tl_product_require_page_access($page);
+$state=tl_reward_management_fulfillment_v2($user ?? [],150);
+$c=$state['counts'];
+labs_page_start($page);
 ?>
-<?php if (function_exists('tl_design_render_logged_in_template')) tl_design_render_logged_in_template('admin-reward-bridge'); ?>
-<?php if (function_exists('tl_stage880_render_adapter_configuration_center')) tl_stage880_render_adapter_configuration_center(); ?>
-<?php if (function_exists('tl_stage880_render_campaign_sync_health')) tl_stage880_render_campaign_sync_health(); ?>
-<?php if (function_exists('tl_stage890_render_admin_panel')) tl_stage890_render_admin_panel(); ?>
-<?php if (function_exists('tl_stage891_render_admin_panel')) tl_stage891_render_admin_panel(); ?>
-<?php if (function_exists('tl_stage891_render_terminal_failure_panel')) tl_stage891_render_terminal_failure_panel(); ?>
-<?php if (function_exists('tl_stage892_render_admin_panel')) tl_stage892_render_admin_panel(); ?>
-<?php if (function_exists('tl_stage894_render_admin_panel')) tl_stage894_render_admin_panel(); ?>
-<?php if (function_exists('tl_stage895_render_reward_bridge_panel')) tl_stage895_render_reward_bridge_panel(); ?>
-<?php if (function_exists('tl_stage896_render_reward_bridge_panel')) tl_stage896_render_reward_bridge_panel(); ?>
-<?php if (function_exists('tl_stage897_render_reward_bridge_panel')) tl_stage897_render_reward_bridge_panel(); ?>
-<?php if (function_exists('tl_stage898_render_reward_bridge_panel')) tl_stage898_render_reward_bridge_panel(); ?>
-<?php if (function_exists('tl_stage899_render_reward_bridge_panel')) tl_stage899_render_reward_bridge_panel(); ?>
-<?php if (function_exists('tl_stage893_render_admin_panel_guarded')) tl_stage893_render_admin_panel_guarded(); ?>
-<?php if (function_exists('tl_stage880_render_award_handoff_queue')) tl_stage880_render_award_handoff_queue(max(0, (int)($_GET['user_id'] ?? 0))); ?>
-<?php if (function_exists('tl_stage800_render_reward_campaign_import')) tl_stage800_render_reward_campaign_import(); ?>
-<?php if (function_exists('tl_stage800_render_reward_inventory_board')) tl_stage800_render_reward_inventory_board(); ?>
-<?php if (function_exists('tl_stage800_render_assignment_preview')) tl_stage800_render_assignment_preview((string)($_GET['campaign'] ?? '')); ?>
-<?php if (function_exists('tl_stage760_render_reward_package_builder')) tl_stage760_render_reward_package_builder((string)($_GET['campaign'] ?? '')); ?>
-<?php if (function_exists('tl_stage760_render_merchant_operations_console')) tl_stage760_render_merchant_operations_console(); ?>
-
-<?php if (function_exists('tl_stage640_render_reward_audit_assurance')) tl_stage640_render_reward_audit_assurance(); ?>
-
-<?php if (function_exists('tl_stage520_render_admin_operations')) tl_stage520_render_admin_operations(); ?>
-<?php if (function_exists('tl_stage560_render_review_reward_assurance')) tl_stage560_render_review_reward_assurance(); ?>
-
-<?php if (function_exists('tl_stage600_render_reward_operations')) tl_stage600_render_reward_operations(); ?>
-
-
-<section class="labs-page-title labs-stage200-title"><div><span class="labs-eyebrow">Reward bridge</span><h1>Operate Microgifter reward sync safely.</h1><p class="labs-copy">Use this page to inspect pending reward claims, retry adapter issuing, mark manual issue, cancel training rewards, and reconcile lifecycle metadata.</p></div><div class="labs-actions"><a class="labs-btn" href="<?php echo labs_url('/api/training/reward-bridge.php'); ?>">Bridge API</a><a class="labs-btn labs-btn-primary" href="<?php echo labs_url('/admin/backend-readiness.php'); ?>">Readiness</a></div></section>
-<section class="labs-kpis labs-stage160-kpis"><div class="labs-kpi"><span>Total</span><strong><?php echo (int)($counts['total'] ?? 0); ?></strong><small>reward events</small></div><div class="labs-kpi"><span>Claimable</span><strong><?php echo (int)($counts['claimable'] ?? 0); ?></strong><small>user action</small></div><div class="labs-kpi"><span>Pending</span><strong><?php echo (int)($counts['pending_microgifter_sync'] ?? 0); ?></strong><small>sync queue</small></div><div class="labs-kpi"><span>Failed</span><strong><?php echo (int)($counts['failed_retry_available'] ?? 0); ?></strong><small>retry needed</small></div><div class="labs-kpi"><span>Issued</span><strong><?php echo (int)(($counts['issued'] ?? 0)+($counts['linked_to_microgifter'] ?? 0)); ?></strong><small>complete</small></div></section>
-<section class="labs-card"><div class="labs-card-headline"><div><span class="labs-eyebrow">Lifecycle operations</span><h2>Reward event queue</h2></div><form action="<?php echo labs_url('/admin/action-result.php'); ?>" method="post"><input type="hidden" name="confirm_training_action" value="1"><input type="hidden" name="training_action" value="reconcile_reward_lifecycle"><button class="labs-btn" type="submit">Reconcile</button></form></div><div class="labs-stage160-claim-table"><?php foreach ($rewards as $reward): ?><div class="labs-stage160-claim-row labs-lifecycle-<?php echo labs_e((string)$reward['lifecycle_status']); ?>"><div><span class="labs-pill"><?php echo labs_e((string)$reward['lifecycle_status']); ?></span><strong><?php echo labs_e((string)$reward['display_label']); ?></strong><p><?php echo labs_e((string)($reward['campaign_title'] ?? 'Campaign')); ?> · <?php echo labs_e((string)($reward['participant_label'] ?? 'Participant')); ?> · <?php echo labs_e((string)$reward['display_value']); ?></p><small><?php echo labs_e((string)($reward['failure_message'] ?? $reward['eligibility_reason'] ?? '')); ?></small></div><div class="labs-stage160-claim-actions"><form action="<?php echo labs_url('/admin/action-result.php'); ?>" method="post"><input type="hidden" name="confirm_training_action" value="1"><input type="hidden" name="training_action" value="retry_microgifter_reward_issue"><input type="hidden" name="reward_event_id" value="<?php echo (int)$reward['id']; ?>"><button class="labs-btn" type="submit">Retry</button></form><form action="<?php echo labs_url('/admin/action-result.php'); ?>" method="post"><input type="hidden" name="confirm_training_action" value="1"><input type="hidden" name="training_action" value="mark_reward_manual_issued"><input type="hidden" name="reward_event_id" value="<?php echo (int)$reward['id']; ?>"><button class="labs-btn" type="submit">Manual Issue</button></form><form action="<?php echo labs_url('/admin/action-result.php'); ?>" method="post"><input type="hidden" name="confirm_training_action" value="1"><input type="hidden" name="training_action" value="cancel_training_reward"><input type="hidden" name="reward_event_id" value="<?php echo (int)$reward['id']; ?>"><button class="labs-btn labs-btn-danger" type="submit">Cancel</button></form></div></div><?php endforeach; ?><?php if (!$rewards): ?><div class="labs-empty-state"><strong>No reward events yet</strong><p>Approve proof or complete a sequence to create eligible rewards.</p></div><?php endif; ?></div></section>
-<section class="labs-safe-note">Real Microgifter issuing is adapter/developer-key gated. Manual issue records are Training Lab records only and do not mutate wallet balances.</section>
-
-<section class="labs-card labs-stage240-panel">
-  <div class="labs-card-headline"><div><span class="labs-eyebrow">Build 9</span><h2>Reward Fulfillment Queue</h2></div><a class="labs-btn" href="<?php echo labs_url('/api/training/fulfillment-queue.php'); ?>">Fulfillment API</a></div>
-  <div class="labs-kpis labs-stage200-kpis"><div class="labs-kpi"><span>Open</span><strong><?php echo (int)$stage240Fulfillment['open_count']; ?></strong><small>eligible/queued/failed</small></div><div class="labs-kpi"><span>Failed</span><strong><?php echo (int)$stage240Fulfillment['counts']['failed']; ?></strong><small>retry needed</small></div><div class="labs-kpi"><span>Score</span><strong><?php echo (int)$stage240Fulfillment['score']; ?>/100</strong><small>fulfillment health</small></div></div>
-  <form action="<?php echo labs_url('/admin/action-result.php'); ?>" method="post" class="labs-stage30-form"><input type="hidden" name="confirm_training_action" value="1"><input type="hidden" name="training_action" value="create_fulfillment_snapshot"><button class="labs-btn" type="submit">Save Fulfillment Snapshot</button></form>
-</section>
-
-
-<section class="labs-card labs-stage280-panel">
-  <?php $stage280Assurance = tl_stage280_reward_assurance(null, ''); ?>
-  <div class="labs-card-headline"><div><span class="labs-eyebrow">Build 14</span><h2>Reward Claim Assurance</h2></div><a class="labs-btn" href="<?php echo labs_url('/api/training/reward-assurance.php'); ?>">Assurance API</a></div>
-  <div class="labs-kpis labs-stage200-kpis"><div class="labs-kpi"><span>Assurance</span><strong><?php echo (int)$stage280Assurance['score']; ?>/100</strong><small>bridge and recovery</small></div><div class="labs-kpi"><span>Needs Action</span><strong><?php echo (int)$stage280Assurance['needs_action_count']; ?></strong><small>reward queue</small></div></div>
-  <form action="<?php echo labs_url('/admin/action-result.php'); ?>" method="post" class="labs-stage30-form"><input type="hidden" name="confirm_training_action" value="1"><input type="hidden" name="training_action" value="run_reward_assurance"><input type="hidden" name="reconcile" value="1"><button class="labs-btn labs-btn-primary" type="submit">Run Assurance + Reconcile</button></form>
-</section>
-
-<?php labs_page_end(['section' => 'admin']); ?>
+<section class="labs-product-hero"><article class="labs-product-hero-main"><span class="labs-product-kicker">Reward fulfillment</span><h1>Track reward delivery without operating the pipeline.</h1><p>See what is ready, processing, delivered, blocked, or failed. Existing Microgifter issuing and reconciliation controls remain protected.</p></article><aside class="labs-product-next"><div><span>Current health</span><h2><?php echo (int)$c['failed']>0?'Needs attention':((int)$c['processing']>0?'Delivery in progress':'Fulfillment is stable'); ?></h2><p><?php echo (int)$c['total']; ?> reward event<?php echo (int)$c['total']===1?'':'s'; ?> in scope.</p></div><?php if(!empty($state['advanced_available'])): ?><a class="labs-btn" href="<?php echo htmlspecialchars(labs_url('/admin/reward-operations.php'),ENT_QUOTES,'UTF-8'); ?>">Advanced Operations</a><?php endif; ?></aside></section>
+<section class="labs-product-stats" aria-label="Reward fulfillment summary"><article class="labs-product-stat"><span>Ready</span><strong><?php echo (int)$c['ready']; ?></strong><small>eligible or queued</small></article><article class="labs-product-stat"><span>Processing</span><strong><?php echo (int)$c['processing']; ?></strong><small>delivery underway</small></article><article class="labs-product-stat"><span>Delivered</span><strong><?php echo (int)$c['delivered']; ?></strong><small>confirmed</small></article><article class="labs-product-stat"><span>Blocked</span><strong><?php echo (int)$c['blocked']; ?></strong><small>guarded</small></article><article class="labs-product-stat"><span>Failed</span><strong><?php echo (int)$c['failed']; ?></strong><small>operator review</small></article></section>
+<section class="labs-product-card"><div class="labs-product-card-head"><div><span class="labs-product-kicker">Delivery activity</span><h2>Reward event health</h2><p>Confirmation references are one-way hashes. Adapter payloads, external IDs, idempotency keys, and account identifiers remain private.</p></div><a class="labs-btn labs-btn-primary" href="<?php echo htmlspecialchars(labs_url('/admin/reward-rules.php'),ENT_QUOTES,'UTF-8'); ?>">Reward Rules</a></div><?php if($state['rows']): ?><div class="labs-fulfillment-list"><?php foreach($state['rows'] as $row): ?><article class="labs-fulfillment-row"><div><span class="labs-product-status is-<?php echo (string)$row['health_bucket']==='delivered'?'success':((string)$row['health_bucket']==='failed'?'danger':((string)$row['health_bucket']==='blocked'?'warning':'info')); ?>"><?php echo labs_e(ucfirst((string)$row['health_bucket'])); ?></span><h3><?php echo labs_e((string)($row['reward_label'] ?: 'Training reward')); ?></h3><p><?php echo labs_e((string)$row['campaign_title']); ?> · <?php echo labs_e((string)($row['participant_label'] ?: 'Participant')); ?> · <?php echo labs_e((string)$row['display_value']); ?></p><?php if($row['last_error']): ?><small><?php echo labs_e((string)$row['last_error']); ?></small><?php endif; ?></div><dl><div><dt>Reward state</dt><dd><?php echo labs_e(ucwords(str_replace('_',' ',(string)$row['status']))); ?></dd></div><div><dt>Delivery state</dt><dd><?php echo labs_e(ucwords(str_replace('_',' ',(string)$row['handoff_status']))); ?></dd></div><div><dt>Attempts</dt><dd><?php echo (int)$row['attempt_count']; ?></dd></div><div><dt>Confirmation</dt><dd><code><?php echo labs_e((string)$row['confirmation']); ?></code></dd></div></dl></article><?php endforeach; ?></div><?php else: ?><div class="labs-product-empty"><h3>No reward fulfillment activity yet.</h3><p>Reward events appear after participants reach an active eligibility rule.</p></div><?php endif; ?></section>
+<section class="labs-safe-note">This merchant page is read-only. Retrying, issuing, reconciliation, pilot, canary, and scheduler controls remain in the administrator-only Advanced Reward Operations console.</section>
+<?php labs_page_end(['section'=>'admin']); ?>

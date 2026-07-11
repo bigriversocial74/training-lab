@@ -84,7 +84,7 @@ $dueAt = $status['due_at'] ?? null;
         <?php endif; ?>
       </form>
       <?php elseif (($status['key'] ?? '') === 'in_review'): ?>
-        <div class="labs-task-waiting"><strong>Proof received</strong><p>A reviewer will approve it, request an update, or reject it. You cannot submit another version while this one is in review.</p></div>
+        <div class="labs-task-waiting"><strong>Your current proof is already in review</strong><p>A reviewer will approve it, request an update, or reject it. You cannot submit another version while this one is in review.</p></div>
       <?php elseif (($status['key'] ?? '') === 'complete'): ?>
         <div class="labs-task-complete"><strong>Task verified</strong><p>Your completion receipt is part of your campaign progress and reward eligibility.</p></div>
       <?php else: ?>

@@ -23,6 +23,12 @@ php ./tests/task-detail-status-proof-revisions-contract-test.php
 echo "== Task detail status and proof revisions scored audit =="
 php ./scripts/task-detail-status-proof-revisions-quality-audit.php
 
+echo "== Reward rules analytics and operational health contracts =="
+php ./tests/reward-rules-analytics-operational-health-contract-test.php
+
+echo "== Reward rules analytics and operational health scored audit =="
+php ./scripts/reward-rules-analytics-operational-health-quality-audit.php
+
 echo "== Security runtime =="
 php ./tests/security-runtime-test.php
 

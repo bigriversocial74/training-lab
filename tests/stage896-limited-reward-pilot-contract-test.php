@@ -19,7 +19,7 @@ $client = $read('includes/training-lab-stage896-signed-pilot-issue-client.php');
 $bootstrap = $read('includes/training-lab-stage896-pilot-bootstrap.php');
 $admin = $read('admin/reward-pilot.php');
 $api = $read('api/training/reward-pilot.php');
-$bridge = $read('admin/reward-bridge.php');
+$advancedOperations = $read('admin/reward-operations.php');
 $config = $read('config-example.php');
 $labsConfig = $read('labs/config-example.php');
 $gate = $read('run-quality-gate.sh');
@@ -41,7 +41,7 @@ $check(str_contains($core, 'tl_stage896_finalize_verification') && str_contains(
 $check(str_contains($core, "return ['verified','closed_absent','cancelled_before_processing']") && str_contains($core, "'verification_pending'"), 'only evidence-backed terminal states release the next pilot');
 $check(str_contains($core, 'raw_identity_reference_and_adapter_payload_excluded') && str_contains($core, 'microgifter_user_fingerprint'), 'pilot event evidence is sanitized');
 
-$check(str_contains($client, 'training-lab-reward-issue-v1\\n') && str_contains($client, "hash_hmac('sha256'") && str_contains($client, 'random_bytes(24)'), 'signed issue client uses versioned HMAC and nonce');
+$check(str_contains($client, 'training-lab-reward-issue-v1\n') && str_contains($client, "hash_hmac('sha256'") && str_contains($client, 'random_bytes(24)'), 'signed issue client uses versioned HMAC and nonce');
 $check(str_contains($client, 'CURLOPT_SSL_VERIFYPEER=>true') && str_contains($client, 'CURLOPT_SSL_VERIFYHOST=>2') && str_contains($client, 'CURLOPT_FOLLOWLOCATION=>false'), 'signed issue transport verifies TLS and blocks redirects');
 $check(str_contains($client, "'training_lab_reward_issue_pilot_v1'") && str_contains($client, "'pilot_only'=>true") && str_contains($client, "'readback_required'=>true"), 'pilot-only remote contract is enforced');
 $check(str_contains($client, "handoff_status'] !== 'processing'") && str_contains($client, "pilot['status'] ?? '') !== 'processing'") && str_contains($client, 'count($active) !== 1'), 'adapter can run only for the single processing pilot');
@@ -50,7 +50,7 @@ $check(str_contains($bootstrap, "'signed_pilot_authentication_ready'") && str_co
 
 $check(str_contains($admin, 'training-lab-stage896-pilot-bootstrap.php') && str_contains($admin, 'tl_security_guard_write'), 'admin pilot page is protected and uses isolated bootstrap');
 $check(str_contains($api, 'training-lab-stage896-pilot-bootstrap.php') && str_contains($api, 'tl_auth_role_allowed') && str_contains($api, 'tl_security_guard_write'), 'pilot API GET and POST are protected');
-$check(str_contains($bridge, 'tl_stage896_render_reward_bridge_panel'), 'Reward Bridge exposes pilot status');
+$check(str_contains($advancedOperations, 'tl_stage896_render_reward_bridge_panel'), 'Advanced Reward Operations exposes pilot status');
 foreach ([$config, $labsConfig] as $index => $example) {
     $label = $index === 0 ? 'root config' : 'labs config';
     $check(str_contains($example, "'stage896_limited_pilot_enabled' => false") && str_contains($example, "'microgifter_pilot_issue_enabled' => false"), $label . ' keeps pilot and issue client disabled');

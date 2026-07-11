@@ -7,6 +7,7 @@ $exists = static fn(string $path): bool => is_file($root . '/' . $path);
 $core = $read('includes/training-lab-stage897-controlled-batch-rollout.php');
 $admin = $read('admin/reward-batch.php');
 $api = $read('api/training/reward-batch.php');
+$advancedOperations = $read('admin/reward-operations.php');
 
 $checks = [
     'isolated_stage897_service'=>$exists('includes/training-lab-stage897-controlled-batch-rollout.php'),
@@ -18,7 +19,7 @@ $checks = [
     'verified_stage896_prerequisite'=>str_contains($core, "event_type='stage896_pilot_delivery_verified'") && str_contains($core, 'verified_stage896_pilot_fresh'),
     'fresh_stage896_evidence'=>str_contains($core, 'verified_pilot_max_age_seconds') && str_contains($core, "'fresh'=>\$fresh"),
     'holds_stage896_lock'=>str_contains($core, 'tl_stage896_acquire_lock($pdo)') && str_contains($core, 'tl_stage896_release_lock($pdo)'),
-    'sequential_stage896_execution'=>str_contains($core, 'foreach ($plan[\'items\'] as $item)') && str_contains($core, 'tl_stage896_run_pilot(['),
+    'sequential_stage896_execution'=>str_contains($core, "foreach (\$plan['items'] as \$item)") && str_contains($core, 'tl_stage896_run_pilot(['),
     'exact_stage896_confirmation'=>str_contains($core, "'confirmation_phrase'=>'ISSUE ONE PILOT'"),
     'batch_confirmation'=>str_contains($core, 'ISSUE CONTROLLED BATCH'),
     'recipient_reentry_per_item'=>str_contains($core, 'confirm_microgifter_user_ids') && str_contains($core, 'stage897_recipient_mismatch'),
@@ -32,7 +33,7 @@ $checks = [
     'protected_admin_surface'=>$exists('admin/reward-batch.php') && str_contains($admin, 'tl_security_guard_write'),
     'protected_api_surface'=>$exists('api/training/reward-batch.php') && str_contains($api, 'tl_security_guard_write') && str_contains($api, 'tl_auth_role_allowed'),
     'csrf_operator_form'=>str_contains($core, 'tl_security_csrf_field'),
-    'reward_bridge_entry'=>str_contains($read('admin/reward-bridge.php'), 'tl_stage897_render_reward_bridge_panel'),
+    'advanced_operations_entry'=>str_contains($advancedOperations, 'tl_stage897_render_reward_bridge_panel'),
     'quality_runner_entry'=>str_contains($read('run-quality-gate.sh'), 'stage897-controlled-batch-rollout-contract-test.php'),
     'workflow_entry'=>str_contains($read('.github/workflows/quality-gate.yml'), 'Stage 897 controlled batch rollout contract'),
     'scored_audit_entry'=>str_contains($read('run-quality-gate.sh'), 'stage897-quality-audit.php') && str_contains($read('.github/workflows/quality-gate.yml'), 'Stage 897 scored quality audit'),

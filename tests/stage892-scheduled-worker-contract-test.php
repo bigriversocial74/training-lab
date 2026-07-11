@@ -14,7 +14,7 @@ $service = $read('includes/training-lab-stage892-scheduled-worker.php');
 $cli = $read('bin/reward-handoff-worker.php');
 $deny = $read('bin/.htaccess');
 $statusApi = $read('api/training/reward-handoff-worker-status.php');
-$rewardBridge = $read('admin/reward-bridge.php');
+$advancedOperations = $read('admin/reward-operations.php');
 $config = $read('config-example.php');
 $labsConfig = $read('labs/config-example.php');
 
@@ -72,7 +72,7 @@ $check(str_contains($service, "'credentials_are_not_logged'=>true"), 'worker dec
 $check(str_contains($statusApi, "if (\$method !== 'GET')"), 'worker status API is GET-only');
 $check(str_contains($statusApi, 'tl_auth_role_allowed'), 'worker status API requires manager role');
 $check(str_contains($statusApi, 'tl_security_json_exception'), 'worker status API uses safe JSON errors');
-$check(str_contains($rewardBridge, 'tl_stage892_render_admin_panel'), 'Reward Bridge renders worker panel');
+$check(str_contains($advancedOperations, 'tl_stage892_render_admin_panel'), 'Advanced Reward Operations renders the worker panel');
 
 foreach ([$config, $labsConfig] as $index => $example) {
     $label = $index === 0 ? 'root config example' : 'labs config example';
