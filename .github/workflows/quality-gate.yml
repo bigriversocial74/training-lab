@@ -88,6 +88,12 @@ jobs:
       - name: Mobile and accessibility completion scored audit
         run: php ./scripts/mobile-accessibility-completion-quality-audit.php
 
+      - name: End-to-end acceptance and deployment contract
+        run: php ./tests/end-to-end-acceptance-deployment-contract-test.php
+
+      - name: End-to-end acceptance and deployment scored audit
+        run: php ./scripts/end-to-end-acceptance-deployment-quality-audit.php
+
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
 

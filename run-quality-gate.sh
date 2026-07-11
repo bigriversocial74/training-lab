@@ -41,6 +41,12 @@ php ./tests/mobile-accessibility-completion-contract-test.php
 echo "== Mobile and accessibility completion scored audit =="
 php ./scripts/mobile-accessibility-completion-quality-audit.php
 
+echo "== End-to-end acceptance and deployment contracts =="
+php ./tests/end-to-end-acceptance-deployment-contract-test.php
+
+echo "== End-to-end acceptance and deployment scored audit =="
+php ./scripts/end-to-end-acceptance-deployment-quality-audit.php
+
 echo "== Security runtime =="
 php ./tests/security-runtime-test.php
 
