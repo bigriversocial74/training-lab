@@ -29,6 +29,12 @@ php ./tests/reward-rules-analytics-operational-health-contract-test.php
 echo "== Reward rules analytics and operational health scored audit =="
 php ./scripts/reward-rules-analytics-operational-health-quality-audit.php
 
+echo "== Onboarding and guided empty states contracts =="
+php ./tests/onboarding-guided-empty-states-contract-test.php
+
+echo "== Onboarding and guided empty states scored audit =="
+php ./scripts/onboarding-guided-empty-states-quality-audit.php
+
 echo "== Security runtime =="
 php ./tests/security-runtime-test.php
 
