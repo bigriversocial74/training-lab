@@ -39,7 +39,11 @@ foreach ($cases as $label=>$payload) {
 }
 
 $valid = $make($claims);
-$tampered = substr($valid, 0, -1) . (substr($valid, -1) === 'a' ? 'b' : 'a');
+$parts = explode('.', $valid, 3);
+if (count($parts) === 3 && $parts[2] !== '') {
+    $parts[2][0] = $parts[2][0] === 'a' ? 'b' : 'a';
+}
+$tampered = implode('.', $parts);
 try { tl_stage886_verify_token($tampered, $now); $failures[] = 'Tampered token was accepted.'; }
 catch (TlHttpException $e) { $assert($e->errorCode() === 'identity_signature_invalid', 'Tampered token must fail signature verification.'); }
 
