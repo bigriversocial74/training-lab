@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/training-lab-production-readiness.php';
 $page = [
     'title' => 'Production Readiness | Training Lab',
     'section' => 'admin',
-    'active' => 'admin-live-acceptance',
+    'active' => 'admin-deployment-acceptance',
     'required_role' => 'admin',
 ];
 tl_product_require_page_access($page);
