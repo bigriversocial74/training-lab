@@ -35,6 +35,12 @@ if (!function_exists('tl_product_acceptance_report')) {
             'reward_rules'=>'admin/reward-rules.php',
             'analytics'=>'admin/analytics.php',
             'fulfillment'=>'admin/reward-bridge.php',
+            'pilot_communications'=>'admin/pilot-communications.php',
+            'notification_templates'=>'admin/notification-templates.php',
+            'pilot_reporting'=>'admin/pilot-reporting.php',
+            'notification_incidents'=>'admin/notification-incidents.php',
+            'notification_preferences'=>'notification-preferences.php',
+            'communications_api'=>'api/training/pilot-communications.php',
             'advanced_rewards'=>'admin/reward-operations.php',
             'product_acceptance'=>'admin/product-acceptance.php',
             'live_acceptance'=>'admin/live-acceptance.php',
@@ -52,6 +58,9 @@ if (!function_exists('tl_product_acceptance_report')) {
             'reward_management'=>'includes/training-lab-reward-management.php',
             'onboarding'=>'includes/training-lab-onboarding.php',
             'accessibility_helpers'=>'includes/training-lab-accessibility.php',
+            'pilot_communications'=>'includes/training-lab-pilot-communications.php',
+            'pilot_communication_actions'=>'includes/training-lab-pilot-communications-actions.php',
+            'pilot_communication_reporting'=>'includes/training-lab-pilot-communications-reporting.php',
             'product_acceptance'=>'includes/training-lab-product-acceptance.php',
             'production_readiness'=>'includes/training-lab-production-readiness.php',
             'live_acceptance'=>'includes/training-lab-live-acceptance.php',
@@ -72,6 +81,10 @@ if (!function_exists('tl_product_acceptance_report')) {
         }
         $handoffPresent = $dbConnected && tl_table_exists('training_reward_handoffs');
         $checks[] = tl_acceptance_check('table_training_reward_handoffs', 'Reward handoff outbox', $handoffPresent, $handoffPresent ? 'Stage 890 handoff table is present.' : 'Import the existing Stage 890 handoff migration before enabling delivery operations.', 'database');
+        foreach (['training_notification_templates','training_notification_preferences','training_notification_suppressions','training_pilot_controls','training_notification_outbox','training_notification_attempts'] as $table) {
+            $present = $dbConnected && tl_table_exists($table);
+            $checks[] = tl_acceptance_check('table_' . $table, 'Table: ' . $table, $present, $present ? 'Section 15 communication table is present.' : 'Import database/pilot_operations_communications_v1.sql.', 'database');
+        }
 
         $acceptanceFiles = [
             'tests/role-aware-shell-participant-home-contract-test.php',
@@ -82,15 +95,20 @@ if (!function_exists('tl_product_acceptance_report')) {
             'tests/mobile-accessibility-completion-contract-test.php',
             'tests/end-to-end-acceptance-deployment-contract-test.php',
             'tests/production-deployment-live-acceptance-contract-test.php',
+            'tests/pilot-operations-communications-contract-test.php',
             'scripts/end-to-end-acceptance-deployment-quality-audit.php',
             'scripts/production-deployment-live-acceptance-quality-audit.php',
+            'scripts/pilot-operations-communications-quality-audit.php',
             'docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md',
+            'docs/PILOT-OPERATIONS-COMMUNICATIONS-V1.md',
+            'database/pilot_operations_communications_v1.sql',
             'run-quality-gate.sh',
             'run-full-syntax-check.sh',
             'bin/product-acceptance.php',
             'bin/build-release-package.php',
             'bin/verify-release-package.php',
             'bin/live-acceptance.php',
+            'bin/notification-worker.php',
         ];
         foreach ($acceptanceFiles as $file) {
             $checks[] = tl_acceptance_check('acceptance_' . md5($file), 'Acceptance asset', tl_acceptance_file($file), $file, 'acceptance');
