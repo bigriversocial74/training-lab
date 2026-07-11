@@ -36,13 +36,13 @@ $assert(!str_contains($sql, 'ALTER TABLE users') && !str_contains($sql, 'ALTER T
 
 $assert(str_contains($service, '$id . \'.\' . $timestamp . \'.\' . $rawBody'), 'Signature input must use id.timestamp.raw-body.');
 $assert(str_contains($service, "hash_hmac('sha256'") && str_contains($service, 'hash_equals'), 'Verification must use HMAC-SHA256 and constant-time comparison.');
-$assert(str_contains($service, "str_starts_with($secret, 'whsec_')"), 'Webhook secret must use the whsec_ format.');
-$assert(str_contains($service, "str_starts_with($candidate, 'v1,')"), 'Only v1 signature candidates may be accepted.');
+$assert(str_contains($service, 'str_starts_with($secret, \'whsec_\')'), 'Webhook secret must use the whsec_ format.');
+$assert(str_contains($service, 'str_starts_with($candidate, \'v1,\')'), 'Only v1 signature candidates may be accepted.');
 $assert(str_contains($service, 'abs($clock - $timestampValue)'), 'Webhook timestamp tolerance must be enforced.');
-$assert(str_contains($service, "duplicate_count=duplicate_count+1"), 'Duplicate deliveries must be acknowledged without reapplying state.');
+$assert(str_contains($service, 'duplicate_count=duplicate_count+1'), 'Duplicate deliveries must be acknowledged without reapplying state.');
 $assert(str_contains($service, 'tl_resend_webhook_should_apply'), 'Out-of-order reconciliation must use an explicit ordering decision.');
 $assert(str_contains($service, "'email.delivery_delayed'") && str_contains($service, "'email.bounced'") && str_contains($service, "'email.complained'"), 'Delivery, delay, bounce, and complaint events must be supported.');
-$assert(str_contains($service, 'provider_message_hash') && str_contains($service, "hash('sha256', $messageId)"), 'Provider messages must correlate by SHA-256 hash only.');
+$assert(str_contains($service, 'provider_message_hash') && str_contains($service, 'hash(\'sha256\', $messageId)'), 'Provider messages must correlate by SHA-256 hash only.');
 $assert(str_contains($service, 'tl_resend_webhook_add_suppression') && str_contains($service, "'hard_bounce'") && str_contains($service, "'complaint'"), 'Bounces and complaints must create suppressions.');
 $assert(str_contains($service, "raw_payload_stored'=>false") && str_contains($service, "recipient_address_stored'=>false") && str_contains($service, "provider_message_id_stored'=>false"), 'Persisted webhook metadata must explicitly exclude raw and identifying values.');
 $assert(!preg_match('/\bmail\s*\(/i', $service) && !str_contains($service, 'curl_init('), 'Webhook reconciliation must not send email or make outbound HTTP calls.');
