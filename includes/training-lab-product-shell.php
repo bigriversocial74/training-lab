@@ -196,6 +196,7 @@ if (!function_exists('tl_product_admin_nav')) {
             $groups['System'] = [
                 'admin-email-provider' => ['/admin/email-provider.php', 'Email Provider'],
                 'admin-email-webhooks' => ['/admin/email-webhooks.php', 'Email Webhooks'],
+                'admin-email-pilot' => ['/admin/email-pilot.php', 'Limited Email Pilot'],
                 'admin-notification-incidents' => ['/admin/notification-incidents.php', 'Notification Incidents'],
                 'admin-product-acceptance' => ['/admin/product-acceptance.php', 'Product Acceptance'],
                 'admin-reward-operations' => ['/admin/reward-operations.php', 'Advanced Rewards'],
