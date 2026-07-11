@@ -65,6 +65,12 @@ php ./tests/email-provider-controlled-delivery-contract-test.php
 echo "== Email provider and controlled delivery scored audit =="
 php ./scripts/email-provider-controlled-delivery-quality-audit.php
 
+echo "== Resend webhooks and delivery reconciliation contracts =="
+php ./tests/resend-webhooks-delivery-reconciliation-contract-test.php
+
+echo "== Resend webhooks and delivery reconciliation scored audit =="
+php ./scripts/resend-webhooks-delivery-reconciliation-quality-audit.php
+
 echo "== Release package build and verification =="
 TL_PACKAGE_PATH="${TMPDIR:-/tmp}/training-lab-release-$$.zip"
 trap 'rm -f "$TL_PACKAGE_PATH"' EXIT
