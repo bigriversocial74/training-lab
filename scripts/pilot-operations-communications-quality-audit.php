@@ -5,6 +5,8 @@ $load = static fn(string $path): string => is_file($root . '/' . $path) ? (file_
 $has = static fn(string $path, string $needle): bool => str_contains($load($path), $needle);
 $lacks = static fn(string $path, string $needle): bool => !str_contains($load($path), $needle);
 $exists = static fn(string $path): bool => is_file($root . '/' . $path);
+$serviceSource = $load('includes/training-lab-pilot-communications.php');
+$noPhpMailFallback = !preg_match('/\bmail\s*\(/i', $serviceSource);
 
 $sections = [
     'Schema and idempotency' => [
@@ -17,6 +19,7 @@ $sections = [
         $has('includes/training-lab-pilot-communications.php', 'training_account_links'),
         $has('includes/training-lab-pilot-communications.php', 'tl_reward_management_scope'),
         $has('includes/training-lab-pilot-communications-actions.php', 'c.owner_user_id'),
+        $has('includes/training-lab-pilot-communications-sync.php', 'WHERE 1=1'),
         $lacks('admin/pilot-communications.php', "['email']"),
     ],
     'Lifecycle synchronization' => [
@@ -24,19 +27,19 @@ $sections = [
         $has('includes/training-lab-pilot-communications.php', 'proof_submitted'),
         $has('includes/training-lab-pilot-communications.php', 'review_revision_required'),
         $has('includes/training-lab-pilot-communications.php', 'reward_delivery_succeeded'),
-        $has('bin/notification-worker.php', "'include-reminders'"),
+        $has('bin/notification-worker.php', 'tl_notifications_sync_events_scoped'),
     ],
     'Delivery and retry safety' => [
         $has('includes/training-lab-pilot-communications.php', 'FOR UPDATE'),
         $has('includes/training-lab-pilot-communications.php', 'lease_token_hash'),
         $has('includes/training-lab-pilot-communications.php', 'tl_notifications_retry_delay'),
         $has('includes/training-lab-pilot-communications.php', 'training_lab_send_notification_email'),
-        $lacks('includes/training-lab-pilot-communications.php', 'mail('),
+        $noPhpMailFallback,
     ],
     'Templates and previews' => [
         $exists('admin/notification-templates.php'),
         $has('includes/training-lab-pilot-communications.php', 'tl_notifications_allowed_placeholders'),
-        $has('includes/training-lab-pilot-communications.php', 'str_replace(["\\r", "\\n"]'),
+        $has('includes/training-lab-pilot-communications.php', 'str_replace(["\r", "\n"]'),
         $has('admin/notification-templates.php', 'Participant preview'),
         $has('includes/training-lab-pilot-communications-actions.php', 'is_system=0'),
     ],
