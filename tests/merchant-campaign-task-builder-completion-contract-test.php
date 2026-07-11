@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../includes/training-lab-campaign-builder.php';
+require_once __DIR__ . '/../includes/training-lab-campaign-builder-runtime.php';
 
 $root = dirname(__DIR__);
 $failures = [];
@@ -13,6 +13,7 @@ $read = static function (string $path) use ($root, $check): string {
 };
 
 $service = $read('includes/training-lab-campaign-builder.php');
+$runtime = $read('includes/training-lab-campaign-builder-runtime.php');
 $page = $read('admin/campaign-builder.php');
 $legacy = $read('admin/campaigns.php');
 $action = $read('admin/campaign-builder-action.php');
@@ -26,21 +27,27 @@ $docs = $read('docs/MERCHANT-CAMPAIGN-TASK-BUILDER-COMPLETION-V1.md');
 
 $check(str_contains($service, "owner_user_id = ?"), 'Manager campaign reads must enforce owner_user_id scope.');
 $check(str_contains($service, "INNER JOIN training_campaigns c ON c.id = t.campaign_id"), 'Task writes must resolve ownership through the campaign.');
-$check(substr_count($service, 'beginTransaction()') >= 7, 'Campaign and task mutations must use transactions.');
-$check(str_contains($service, 'FOR UPDATE'), 'Campaign and task mutations must use row locks.');
-$check(str_contains($service, 'campaign_builder_archived_immutable'), 'Archived campaign immutability is required.');
-$check(!str_contains($service, 'DELETE FROM training_campaigns'), 'Campaign deletion is prohibited; campaigns must be archived.');
-$check(str_contains($service, "SELECT COUNT(*) FROM training_proof_submissions WHERE task_id = ?"), 'Task deletion must preserve tasks that have proof history.');
-$check(str_contains($service, "UPDATE training_campaign_tasks SET status = 'archived'"), 'Referenced tasks must be archived instead of deleted.');
+$check(substr_count($service . $runtime, 'beginTransaction()') >= 10, 'Campaign and task mutations must use transactions.');
+$check(str_contains($service . $runtime, 'FOR UPDATE'), 'Campaign and task mutations must use row locks.');
+$check(str_contains($service . $runtime, 'campaign_builder_archived_immutable'), 'Archived campaign immutability is required.');
+$check(!str_contains($service . $runtime, 'DELETE FROM training_campaigns'), 'Campaign deletion is prohibited; campaigns must be archived.');
+$check(str_contains($runtime, "SELECT COUNT(*) FROM training_proof_submissions WHERE task_id = ?"), 'Task deletion must preserve tasks that have proof history.');
+$check(str_contains($runtime, "UPDATE training_campaign_tasks SET status = 'archived'"), 'Referenced tasks must be archived instead of deleted.');
 $check(str_contains($service, 'tl_campaign_builder_readiness'), 'Publish readiness service is required.');
 $check(str_contains($service, 'campaign_builder_not_ready'), 'Publishing must fail closed when readiness checks fail.');
-$check(str_contains($service, 'proof_instructions'), 'Proof-required task instructions are required.');
-$check(str_contains($service, 'prerequisite_task_id'), 'Task prerequisite configuration is required.');
+$check(str_contains($service . $runtime, 'proof_instructions'), 'Proof-required task instructions are required.');
+$check(str_contains($runtime, 'campaign_builder_prerequisite_order_invalid'), 'Prerequisites must be restricted to earlier tasks.');
+$check(str_contains($runtime, "(int)\$prerequisite['campaign_id'] !== \$campaignId"), 'Prerequisites must be restricted to the same campaign.');
+$check(str_contains($runtime, "\$settings['due_at'] = \$dueAt"), 'Builder due dates must use the participant task-engine setting contract.');
+$check(str_contains($runtime, "\$settings['close_after_due'] = \$closeAfterDue"), 'Close-after-due must use the participant task-engine setting contract.');
+$check(str_contains($runtime, "\$settings['prerequisite_task_id'] = \$prerequisiteId"), 'Prerequisite metadata must be available at the shared task setting level.');
+$check(str_contains($runtime, 'tl_campaign_builder_clear_prerequisite_references'), 'Task removal must clear dependent prerequisite references.');
 $check(str_contains($service, 'tl_campaign_builder_reorder_tasks'), 'Task reordering is required.');
-$check(str_contains($service, 'tl_campaign_builder_duplicate'), 'Campaign duplication is required.');
-$check(str_contains($service, 'tl_campaign_builder_attach_reward'), 'Reward-rule attachment is required.');
+$check(str_contains($runtime, 'tl_campaign_builder_duplicate_v2'), 'Campaign duplication must preserve builder task metadata.');
+$check(str_contains($runtime, "if (\$requestedTrigger === 'campaign_completion') \$requestedTrigger = 'sequence_completed'"), 'Campaign-completion rewards must normalize to the established sequence_completed trigger.');
+$check(str_contains($runtime, "['action_count','sequence_completed','streak_days','manual']"), 'Reward trigger values must match the established reward schema.');
 $check(str_contains($service, "'status'=>'draft'") || str_contains($service, "'status' => 'draft'"), 'New and duplicated campaigns must be drafts.');
-$check(!preg_match('/\b(?:curl_|file_get_contents\s*\(\s*[\'\"]https?:|microgifter_training_reward_issue|training_lab_send_notification_email)\b/i', $service), 'Campaign Builder must not make external calls, send email, or issue rewards.');
+$check(!preg_match('/\b(?:curl_|file_get_contents\s*\(\s*[\'\"]https?:|microgifter_training_reward_issue|training_lab_send_notification_email)\b/i', $service . $runtime), 'Campaign Builder must not make external calls, send email, or issue rewards.');
 
 $check(str_contains($page, 'Build the ordered participant experience'), 'Merchant task-builder UI is required.');
 $check(str_contains($page, 'Publish readiness'), 'Publish-readiness UI is required.');
@@ -48,15 +55,20 @@ $check(str_contains($page, 'Participant Preview'), 'Participant preview is requi
 $check(str_contains($page, 'Duplicate as Draft'), 'Duplicate action must be visible.');
 $check(str_contains($page, 'Archive Campaign'), 'Archive action must be visible.');
 $check(str_contains($page, 'Attach Reward Rule'), 'Reward attachment UI is required.');
+$check(str_contains($page, 'prerequisite_task_id'), 'Task prerequisite editor is required.');
 $check(str_contains($page, 'task_order'), 'Task reorder UI is required.');
 $check(str_contains($page, "'required_role'=>'manager'"), 'Campaign Builder page must require manager access.');
 $check(str_contains($page, 'campaign-builder.css'), 'Campaign Builder stylesheet must load on the builder page.');
 $check(str_contains($legacy, '/admin/campaign-builder.php'), 'Legacy Campaigns route must forward to the completed builder.');
 
+$check(str_contains($action, 'training-lab-campaign-builder-runtime.php'), 'Builder action route must load runtime hardening.');
 $check(str_contains($action, 'tl_security_request_data(false)'), 'Builder action route must parse POST body only.');
 $check(str_contains($action, "tl_security_guard_write('update_campaign_plan'"), 'Builder actions must use the existing campaign-manage permission contract.');
+$check(str_contains($action, 'tl_campaign_builder_add_task_v2'), 'Task creation must use the hardened runtime.');
+$check(str_contains($action, 'tl_campaign_builder_update_task_v2'), 'Task updates must use the hardened runtime.');
+$check(str_contains($action, 'tl_campaign_builder_delete_task_v2'), 'Task removal must use the hardened runtime.');
+$check(str_contains($action, 'tl_campaign_builder_attach_reward_v2'), 'Reward attachment must use the established-schema runtime.');
 $check(str_contains($action, "'publish_campaign'"), 'Builder action route must expose guarded publishing.');
-$check(str_contains($action, "'delete_task'"), 'Builder action route must expose guarded task removal.');
 $check(str_contains($action, '303'), 'Builder writes must use Post/Redirect/Get.');
 
 $order = tl_campaign_builder_normalize_task_order('4, 2,4, 7');
