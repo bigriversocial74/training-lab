@@ -192,6 +192,29 @@ jobs:
       - name: Limited live email pilot and graduation scored audit
         run: php ./scripts/limited-live-email-pilot-graduation-quality-audit.php
 
+      - name: Merchant campaign and task builder completion contract
+        id: campaign_builder_contract
+        continue-on-error: true
+        run: php ./tests/merchant-campaign-task-builder-completion-contract-test.php > campaign-builder-contract.log 2>&1
+
+      - name: Upload campaign builder contract output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: campaign-builder-contract-php-${{ matrix.php }}
+          path: campaign-builder-contract.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce campaign builder contract result
+        if: steps.campaign_builder_contract.outcome == 'failure'
+        run: |
+          cat campaign-builder-contract.log
+          exit 1
+
+      - name: Merchant campaign and task builder completion scored audit
+        run: php ./scripts/merchant-campaign-task-builder-completion-quality-audit.php
+
       - name: Build and verify release package
         id: release_package
         continue-on-error: true
