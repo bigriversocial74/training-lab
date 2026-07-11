@@ -64,8 +64,8 @@ CREATE TABLE IF NOT EXISTS training_notification_pilot_members (
     PRIMARY KEY (id),
     UNIQUE KEY uq_training_notification_pilot_members_public (public_id),
     UNIQUE KEY uq_training_notification_pilot_members_run_participant (pilot_run_id, participant_id),
+    UNIQUE KEY uq_training_notification_pilot_members_run_user (pilot_run_id, user_id),
     KEY idx_training_notification_pilot_members_run_status (pilot_run_id, member_status),
-    KEY idx_training_notification_pilot_members_user (user_id, pilot_run_id),
     KEY idx_training_notification_pilot_members_account (account_link_id, member_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
