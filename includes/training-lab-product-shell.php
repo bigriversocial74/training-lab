@@ -194,6 +194,7 @@ if (!function_exists('tl_product_admin_nav')) {
 
         if ($role === 'admin') {
             $groups['System'] = [
+                'admin-email-provider' => ['/admin/email-provider.php', 'Email Provider'],
                 'admin-notification-incidents' => ['/admin/notification-incidents.php', 'Notification Incidents'],
                 'admin-product-acceptance' => ['/admin/product-acceptance.php', 'Product Acceptance'],
                 'admin-reward-operations' => ['/admin/reward-operations.php', 'Advanced Rewards'],
