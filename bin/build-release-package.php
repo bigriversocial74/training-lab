@@ -51,6 +51,7 @@ foreach ($iterator as $file) {
     }
     if ($excluded) continue;
     if (preg_match('#(^|/)(?:\.env(?:\..*)?|config\.php)$#i', $relative)) continue;
+    if (preg_match('#\.(?:zip|tar|tgz|gz|bz2|7z)$#i', $relative)) continue;
     $bytes = (int)$file->getSize();
     if ($bytes > $maxFileBytes) {
         fwrite(STDERR, "Refusing oversized file: {$relative}\n");
@@ -84,6 +85,7 @@ $manifest = [
     'total_bytes' => $totalBytes,
     'files' => $manifestFiles,
     'excluded_private_paths' => ['config.php', 'labs/config.php', '.env*'],
+    'excluded_archive_artifacts' => ['*.zip', '*.tar', '*.tgz', '*.gz', '*.bz2', '*.7z'],
     'deployment_contract' => [
         'extract_outer_labs_then_move_contents_to_web_root' => true,
         'preserve_active_labs_config_php' => true,
@@ -116,3 +118,4 @@ echo "Release package: {$output}\n";
 echo 'SHA-256: ' . hash_file('sha256', $output) . "\n";
 echo 'Files: ' . count($manifestFiles) . "\n";
 echo "Private config excluded: yes\n";
+echo "Nested archives excluded: yes\n";
