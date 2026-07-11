@@ -17,7 +17,7 @@ $sections = [
     'Signature and timestamp verification' => [
         $has('includes/training-lab-resend-webhooks.php', "hash_hmac('sha256'"),
         $has('includes/training-lab-resend-webhooks.php', 'hash_equals'),
-        $has('includes/training-lab-resend-webhooks.php', "str_starts_with($candidate, 'v1,')"),
+        $has('includes/training-lab-resend-webhooks.php', 'str_starts_with($candidate, \'v1,\')'),
         $has('includes/training-lab-resend-webhooks.php', 'abs($clock - $timestampValue)'),
     ],
     'Raw-body and endpoint discipline' => [
@@ -33,7 +33,7 @@ $sections = [
         $has('includes/training-lab-resend-webhooks.php', 'tl_resend_webhook_should_apply'),
     ],
     'Correlation and privacy' => [
-        $has('includes/training-lab-resend-webhooks.php', "hash('sha256', $messageId)"),
+        $has('includes/training-lab-resend-webhooks.php', 'hash(\'sha256\', $messageId)'),
         $has('includes/training-lab-resend-webhooks.php', "raw_payload_stored'=>false"),
         $has('includes/training-lab-resend-webhooks.php', "recipient_address_stored'=>false"),
         $has('includes/training-lab-resend-webhooks.php', "provider_message_id_stored'=>false"),
