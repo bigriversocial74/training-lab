@@ -176,6 +176,11 @@ if (!function_exists('tl_product_admin_nav')) {
                 'admin-cohort-manager' => ['/admin/cohort-manager.php', 'Participants'],
                 'admin-review-workbench' => ['/admin/review-workbench.php', 'Reviews'],
             ],
+            'Pilot Communications' => [
+                'admin-pilot-communications' => ['/admin/pilot-communications.php', 'Communications'],
+                'admin-notification-templates' => ['/admin/notification-templates.php', 'Templates'],
+                'admin-pilot-reporting' => ['/admin/pilot-reporting.php', 'Pilot Reporting'],
+            ],
             'Rewards & Insights' => [
                 'admin-reward-rules' => ['/admin/reward-rules.php', 'Reward Rules'],
                 'admin-reward-bridge' => ['/admin/reward-bridge.php', 'Fulfillment'],
@@ -189,6 +194,7 @@ if (!function_exists('tl_product_admin_nav')) {
 
         if ($role === 'admin') {
             $groups['System'] = [
+                'admin-notification-incidents' => ['/admin/notification-incidents.php', 'Notification Incidents'],
                 'admin-product-acceptance' => ['/admin/product-acceptance.php', 'Product Acceptance'],
                 'admin-reward-operations' => ['/admin/reward-operations.php', 'Advanced Rewards'],
                 'admin-permissions' => ['/admin/permissions.php', 'Access'],
