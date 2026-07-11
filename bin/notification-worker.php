@@ -2,7 +2,7 @@
 <?php
 declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit(1); }
-require_once dirname(__DIR__) . '/includes/training-lab-pilot-communications.php';
+require_once dirname(__DIR__) . '/includes/training-lab-pilot-communications-sync.php';
 
 $options = getopt('', ['sync','process','campaign::','include-reminders','limit::','json']);
 $sync = array_key_exists('sync', $options);
@@ -18,7 +18,7 @@ $actor = ['id'=>(string)$actorId,'numeric_user_id'=>$actorId,'role'=>'admin','so
 
 $result = ['ok'=>true,'synced'=>null,'processed'=>null,'provider'=>tl_notifications_provider_state()];
 try {
-    if ($sync) $result['synced'] = tl_notifications_sync_events($actor, $campaign, $limit, $includeReminders);
+    if ($sync) $result['synced'] = tl_notifications_sync_events_scoped($actor, $campaign, $limit, $includeReminders);
     if ($process) $result['processed'] = tl_notifications_process_batch(min(100, $limit));
 } catch (Throwable $error) {
     [$payload] = tl_security_error_payload($error);
