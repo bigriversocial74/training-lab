@@ -100,6 +100,12 @@ jobs:
       - name: Production deployment and live acceptance scored audit
         run: php ./scripts/production-deployment-live-acceptance-quality-audit.php
 
+      - name: Pilot operations and communications contract
+        run: php ./tests/pilot-operations-communications-contract-test.php
+
+      - name: Pilot operations and communications scored audit
+        run: php ./scripts/pilot-operations-communications-quality-audit.php
+
       - name: Build and verify release package
         id: release_package
         continue-on-error: true
