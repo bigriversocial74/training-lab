@@ -3,7 +3,7 @@ require_once __DIR__ . '/../includes/training-lab-production-integration-closeou
 $root=dirname(__DIR__);$failures=[];
 $check=static function(bool $condition,string $message)use(&$failures):void{if(!$condition)$failures[]=$message;};
 $read=static function(string $path)use($root,$check):string{$full=$root.'/'.$path;$check(is_file($full),'Missing required file: '.$path);return is_file($full)?(string)file_get_contents($full):'';};
-$service=$read('includes/training-lab-production-integration-closeout.php');$page=$read('admin/integration-closeout.php');$action=$read('admin/integration-closeout-action.php');$api=$read('api/training/integration-closeout.php');$cli=$read('bin/integration-closeout.php');$migration=$read('database/production_integration_closeout_v1.sql');$config=$read('labs/config-example.php');$acceptance=$read('includes/training-lab-product-acceptance.php');$gate=$read('run-quality-gate.sh');$workflow=$read('.github/workflows/quality-gate.yml');$docs=$read('docs/PRODUCTION-INTEGRATION-CLOSEOUT-V1.md');
+$service=$read('includes/training-lab-production-integration-closeout.php');$page=$read('admin/integration-closeout.php');$action=$read('admin/integration-closeout-action.php');$api=$read('api/training/integration-closeout.php');$cli=$read('bin/integration-closeout.php');$migration=$read('database/production_integration_closeout_v1.sql');$config=$read('labs/config-example.php');$acceptance=$read('includes/training-lab-product-acceptance.php');$gate=$read('run-quality-gate.sh');$workflow=$read('.github/workflows/production-integration-closeout.yml');$docs=$read('docs/PRODUCTION-INTEGRATION-CLOSEOUT-V1.md');
 foreach(['training_integration_closeout_runs','training_integration_closeout_checks','training_integration_closeout_events'] as $table)$check(str_contains($migration,$table),'Migration missing '.$table.'.');
 $check(str_contains($migration,"ENUM('recorded','blocked','approved','rejected')"),'Closeout decisions require controlled states.');
 $check(str_contains($migration,'report_hash CHAR(64)'),'Closeout reports require a SHA-256 fingerprint.');
@@ -28,6 +28,7 @@ $check(str_contains($acceptance,"'integration_closeout'=>'admin/integration-clos
 $check(str_contains($acceptance,'production_integration_closeout_v1.sql'),'Canonical acceptance must require closeout migration.');
 $check(str_contains($gate,'production-integration-closeout-contract-test.php'),'Local gate must run Section 20.');
 $check(str_contains($workflow,'Production integration closeout contract'),'PHP matrix must run Section 20.');
+$check(str_contains($workflow,'bash ./run-quality-gate.sh'),'Closeout matrix must execute the complete Training Lab gate.');
 $check(str_contains($docs,'Rollback')&&str_contains($docs,'Emergency stop'),'Closeout guide needs rollback and emergency stop.');
 $check(str_contains($docs,'does not enable email')||str_contains($docs,'do not enable email'),'Documentation must preserve authority separation.');
 $sample=tl_closeout_check('account','sample','Sample',true,'active','active','detail','evidence');
