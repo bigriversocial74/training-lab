@@ -18,7 +18,7 @@ $read = static fn(string $path): string => is_file($root . '/' . $path) ? (file_
 $service = $read('includes/training-lab-stage895-integration-acceptance.php');
 $admin = $read('admin/integration-acceptance.php');
 $api = $read('api/training/integration-acceptance.php');
-$bridge = $read('admin/reward-bridge.php');
+$advancedOperations = $read('admin/reward-operations.php');
 $config = $read('config-example.php');
 $labsConfig = $read('labs/config-example.php');
 $gate = $read('run-quality-gate.sh');
@@ -54,7 +54,7 @@ $check(!str_contains($service, 'tl_stage890_call_adapter(') && !str_contains($se
 $check(str_contains($admin, 'tl_security_guard_write') && str_contains($admin, 'stage895_run_signed_acceptance'), 'admin acceptance POST is protected');
 $check(str_contains($service, 'tl_security_csrf_field'), 'admin form includes CSRF protection');
 $check(str_contains($api, 'tl_auth_role_allowed') && str_contains($api, 'tl_security_guard_write'), 'acceptance API GET and POST are protected');
-$check(str_contains($bridge, 'tl_stage895_render_reward_bridge_panel'), 'Reward Bridge links the acceptance center');
+$check(str_contains($advancedOperations, 'tl_stage895_render_reward_bridge_panel'), 'Advanced Reward Operations links the acceptance center');
 
 foreach ([$config, $labsConfig] as $index => $example) {
     $label = $index === 0 ? 'root config' : 'labs config';
