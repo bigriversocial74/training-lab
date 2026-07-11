@@ -48,6 +48,9 @@ if (!function_exists('tl_product_acceptance_report')) {
             'notification_preferences'=>'notification-preferences.php',
             'communications_api'=>'api/training/pilot-communications.php',
             'advanced_rewards'=>'admin/reward-operations.php',
+            'integration_closeout'=>'admin/integration-closeout.php',
+            'integration_closeout_action'=>'admin/integration-closeout-action.php',
+            'integration_closeout_api'=>'api/training/integration-closeout.php',
             'product_acceptance'=>'admin/product-acceptance.php',
             'live_acceptance'=>'admin/live-acceptance.php',
             'accessibility'=>'accessibility.php',
@@ -60,6 +63,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'product_shell'=>'includes/training-lab-product-shell.php',
             'campaign_experience'=>'includes/training-lab-campaign-experience.php',
             'campaign_builder'=>'includes/training-lab-campaign-builder.php',
+            'campaign_builder_runtime'=>'includes/training-lab-campaign-builder-runtime.php',
             'task_experience'=>'includes/training-lab-task-experience.php',
             'progress_experience'=>'includes/training-lab-progress-experience.php',
             'reward_management'=>'includes/training-lab-reward-management.php',
@@ -71,6 +75,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'resend_provider'=>'includes/training-lab-resend-email-provider.php',
             'resend_webhooks'=>'includes/training-lab-resend-webhooks.php',
             'limited_email_pilot'=>'includes/training-lab-limited-email-pilot.php',
+            'integration_closeout'=>'includes/training-lab-production-integration-closeout.php',
             'product_acceptance'=>'includes/training-lab-product-acceptance.php',
             'production_readiness'=>'includes/training-lab-production-readiness.php',
             'live_acceptance'=>'includes/training-lab-live-acceptance.php',
@@ -89,8 +94,10 @@ if (!function_exists('tl_product_acceptance_report')) {
             $present = $dbConnected && tl_table_exists($table);
             $checks[] = tl_acceptance_check('table_' . $table, 'Table: ' . $table, $present, $present ? 'Present.' : 'Missing or unavailable.', 'database');
         }
+
         $handoffPresent = $dbConnected && tl_table_exists('training_reward_handoffs');
-        $checks[] = tl_acceptance_check('table_training_reward_handoffs', 'Reward handoff outbox', $handoffPresent, $handoffPresent ? 'Stage 890 handoff table is present.' : 'Import the existing Stage 890 handoff migration before enabling delivery operations.', 'database');
+        $checks[] = tl_acceptance_check('table_training_reward_handoffs', 'Reward handoff outbox', $handoffPresent, $handoffPresent ? 'Stage 890 handoff table is present.' : 'Import database/stage890_reward_handoff_outbox_v1.sql.', 'database');
+
         foreach (['training_notification_templates','training_notification_preferences','training_notification_suppressions','training_pilot_controls','training_notification_outbox','training_notification_attempts'] as $table) {
             $present = $dbConnected && tl_table_exists($table);
             $checks[] = tl_acceptance_check('table_' . $table, 'Table: ' . $table, $present, $present ? 'Section 15 communication table is present.' : 'Import database/pilot_operations_communications_v1.sql.', 'database');
@@ -102,6 +109,10 @@ if (!function_exists('tl_product_acceptance_report')) {
         foreach (['training_notification_pilot_runs','training_notification_pilot_members','training_notification_pilot_checks','training_notification_pilot_events'] as $table) {
             $present = $dbConnected && tl_table_exists($table);
             $checks[] = tl_acceptance_check('table_' . $table, 'Table: ' . $table, $present, $present ? 'Section 18 limited pilot table is present.' : 'Import database/limited_email_pilot_graduation_v1.sql.', 'database');
+        }
+        foreach (['training_integration_closeout_runs','training_integration_closeout_checks','training_integration_closeout_events'] as $table) {
+            $present = $dbConnected && tl_table_exists($table);
+            $checks[] = tl_acceptance_check('table_' . $table, 'Table: ' . $table, $present, $present ? 'Section 20 closeout table is present.' : 'Import database/production_integration_closeout_v1.sql.', 'database');
         }
 
         $acceptanceFiles = [
@@ -118,6 +129,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'tests/resend-webhooks-delivery-reconciliation-contract-test.php',
             'tests/limited-live-email-pilot-graduation-contract-test.php',
             'tests/merchant-campaign-task-builder-completion-contract-test.php',
+            'tests/production-integration-closeout-contract-test.php',
             'scripts/end-to-end-acceptance-deployment-quality-audit.php',
             'scripts/production-deployment-live-acceptance-quality-audit.php',
             'scripts/pilot-operations-communications-quality-audit.php',
@@ -125,15 +137,18 @@ if (!function_exists('tl_product_acceptance_report')) {
             'scripts/resend-webhooks-delivery-reconciliation-quality-audit.php',
             'scripts/limited-live-email-pilot-graduation-quality-audit.php',
             'scripts/merchant-campaign-task-builder-completion-quality-audit.php',
+            'scripts/production-integration-closeout-quality-audit.php',
             'docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md',
             'docs/PILOT-OPERATIONS-COMMUNICATIONS-V1.md',
             'docs/EMAIL-PROVIDER-CONTROLLED-DELIVERY-V1.md',
             'docs/RESEND-WEBHOOKS-DELIVERY-RECONCILIATION-V1.md',
             'docs/LIMITED-LIVE-EMAIL-PILOT-GRADUATION-V1.md',
             'docs/MERCHANT-CAMPAIGN-TASK-BUILDER-COMPLETION-V1.md',
+            'docs/PRODUCTION-INTEGRATION-CLOSEOUT-V1.md',
             'database/pilot_operations_communications_v1.sql',
             'database/notification_provider_webhooks_v1.sql',
             'database/limited_email_pilot_graduation_v1.sql',
+            'database/production_integration_closeout_v1.sql',
             'run-quality-gate.sh',
             'run-full-syntax-check.sh',
             'bin/product-acceptance.php',
@@ -145,6 +160,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'bin/webhook-reconciliation-check.php',
             'bin/limited-email-pilot-check.php',
             'bin/limited-email-pilot-worker.php',
+            'bin/integration-closeout.php',
         ];
         foreach ($acceptanceFiles as $file) {
             $checks[] = tl_acceptance_check('acceptance_' . md5($file), 'Acceptance asset', tl_acceptance_file($file), $file, 'acceptance');
@@ -155,9 +171,11 @@ if (!function_exists('tl_product_acceptance_report')) {
             'route_bootstrap'=>'includes/training-lab-route-bootstrap.php',
             'security'=>'includes/training-lab-security.php',
             'campaign_builder'=>'includes/training-lab-campaign-builder.php',
+            'campaign_builder_runtime'=>'includes/training-lab-campaign-builder-runtime.php',
             'email_provider'=>'includes/training-lab-resend-email-provider.php',
             'email_webhooks'=>'includes/training-lab-resend-webhooks.php',
             'limited_email_pilot'=>'includes/training-lab-limited-email-pilot.php',
+            'integration_closeout'=>'includes/training-lab-production-integration-closeout.php',
             'signed_lookup'=>'includes/training-lab-stage894-signed-reward-lookup-client.php',
             'limited_scheduler'=>'includes/training-lab-stage899-limited-scheduled-processing.php',
         ];

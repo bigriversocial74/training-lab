@@ -1,0 +1,59 @@
+name: Production Integration Closeout Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  production-integration-closeout:
+    name: PHP ${{ matrix.php }} production integration closeout
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php:
+          - '8.2'
+          - '8.3'
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          extensions: mbstring, pdo, pdo_mysql, zip, curl
+
+      - name: Production integration closeout contract
+        id: closeout_contract
+        continue-on-error: true
+        run: php ./tests/production-integration-closeout-contract-test.php > production-integration-closeout.log 2>&1
+
+      - name: Upload production integration closeout diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-integration-closeout-php-${{ matrix.php }}
+          path: production-integration-closeout.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce production integration closeout contract
+        if: steps.closeout_contract.outcome == 'failure'
+        run: |
+          cat production-integration-closeout.log
+          exit 1
+
+      - name: Production integration closeout scored audit
+        run: php ./scripts/production-integration-closeout-quality-audit.php
+
+      - name: Complete Training Lab quality gate
+        run: bash ./run-quality-gate.sh

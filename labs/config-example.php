@@ -120,6 +120,8 @@ return [
         'stage899_stale_after_seconds' => 10800,
         'stage899_actor_user_id' => 1,
         'stage899_lock_file' => sys_get_temp_dir() . '/training-lab-stage899-limited-scheduler.lock',
+        'production_integration_closeout_enabled' => false,
+        'production_integration_closeout_approval_enabled' => false,
         // Prefer server environment variables for all secrets and production gates.
         // 'identity_shared_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
         // 'notification_unsubscribe_secret' => 'DO_NOT_COMMIT_A_REAL_SECRET',
