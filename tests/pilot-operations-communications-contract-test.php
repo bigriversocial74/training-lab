@@ -10,6 +10,7 @@ putenv('TL_PUBLIC_BASE_URL=https://labs.example.test');
 if (!function_exists('training_lab_send_notification_email')) {
     function training_lab_send_notification_email(array $payload): array { return ['ok'=>true,'message_id'=>'test-message']; }
 }
+require_once $root . '/includes/training-lab-pilot-communications-sync.php';
 require_once $root . '/includes/training-lab-pilot-communications-reporting.php';
 
 $failures = [];
@@ -22,9 +23,11 @@ $read = static function (string $path) use ($root, &$failures): string {
 
 $sql = $read('database/pilot_operations_communications_v1.sql');
 $service = $read('includes/training-lab-pilot-communications.php');
+$syncService = $read('includes/training-lab-pilot-communications-sync.php');
 $actions = $read('includes/training-lab-pilot-communications-actions.php');
 $reporting = $read('includes/training-lab-pilot-communications-reporting.php');
 $worker = $read('bin/notification-worker.php');
+$actionRoute = $read('admin/pilot-communications-action.php');
 $dashboard = $read('admin/pilot-communications.php');
 $templates = $read('admin/notification-templates.php');
 $incidents = $read('admin/notification-incidents.php');
@@ -55,8 +58,10 @@ $assert(!str_contains($service, 'microgifter_issue') && !str_contains($service, 
 $assert(str_contains($service, 'no_raw_provider_response_storage'), 'Provider state must declare raw-response exclusion.');
 $assert(str_contains($service, 'recipient_suppressed') && str_contains($service, 'reminders_disabled'), 'Suppressions and reminder preferences must block delivery.');
 $assert(str_contains($service, 'participant_invited') && str_contains($service, 'proof_submitted') && str_contains($service, 'review_approved') && str_contains($service, 'reward_earned') && str_contains($service, 'reward_delivery_succeeded'), 'Core lifecycle events must be synchronized.');
+$assert(str_contains($syncService, 'WHERE 1=1') && str_contains($syncService, 'c.owner_user_id=') && str_contains($syncService, 'c.id='), 'Every operational synchronization query must support strict owner and campaign filters.');
+$assert(str_contains($actionRoute, 'tl_notifications_sync_events_scoped') && str_contains($worker, 'tl_notifications_sync_events_scoped'), 'Web and CLI synchronization must use the strictly scoped service.');
 $assert(str_contains($actions, 'tl_notifications_owned_outbox') && str_contains($actions, 'c.owner_user_id'), 'Retry and cancel actions must enforce campaign ownership.');
-$assert(str_contains($actions, "tl_product_role($user) !== 'admin'"), 'Suppressions must remain administrator-only.');
+$assert(str_contains($actions, 'tl_product_role($user) !== \'admin\''), 'Suppressions must remain administrator-only.');
 $assert(str_contains($reporting, 'engagement_rate') && str_contains($reporting, 'completion_rate') && str_contains($reporting, 'delivery_rate'), 'Pilot reporting must cover engagement, completion, and delivery.');
 
 $assert(str_contains($dashboard, "'required_role'=>'manager'"), 'Pilot dashboard must require manager access.');
@@ -73,7 +78,7 @@ $assert(str_contains($config, "'notification_provider' => 'adapter'"), 'Provider
 $assert(str_contains($config, "'notification_unsubscribe_secret'"), 'Config example must document the unsubscribe secret without providing it.');
 $assert(str_contains($docs, 'database/pilot_operations_communications_v1.sql'), 'Deployment guide must name the migration.');
 $assert(str_contains($docs, 'training_lab_send_notification_email'), 'Deployment guide must document the adapter contract.');
-$assert(str_contains($docs, 'No PHP `mail()` fallback'), 'Deployment guide must state the mail fallback boundary.');
+$assert(str_contains(strtolower($docs), 'no php `mail()` fallback'), 'Deployment guide must state the mail fallback boundary.');
 $assert(str_contains($docs, 'Rollback'), 'Deployment guide must include rollback.');
 $assert(str_contains($css, '@media(max-width:680px)'), 'Communications UI must include mobile reflow.');
 $assert(str_contains($nav, 'admin-pilot-communications') && str_contains($nav, 'admin-notification-incidents'), 'Role-aware navigation must expose merchant and administrator surfaces.');
