@@ -37,6 +37,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'fulfillment'=>'admin/reward-bridge.php',
             'advanced_rewards'=>'admin/reward-operations.php',
             'product_acceptance'=>'admin/product-acceptance.php',
+            'live_acceptance'=>'admin/live-acceptance.php',
             'accessibility'=>'accessibility.php',
         ];
         foreach ($requiredRoutes as $key => $route) {
@@ -52,6 +53,8 @@ if (!function_exists('tl_product_acceptance_report')) {
             'onboarding'=>'includes/training-lab-onboarding.php',
             'accessibility_helpers'=>'includes/training-lab-accessibility.php',
             'product_acceptance'=>'includes/training-lab-product-acceptance.php',
+            'production_readiness'=>'includes/training-lab-production-readiness.php',
+            'live_acceptance'=>'includes/training-lab-live-acceptance.php',
         ];
         foreach ($requiredServices as $key => $file) {
             $checks[] = tl_acceptance_check('service_' . $key, 'Service: ' . str_replace('_', ' ', $key), tl_acceptance_file($file), $file, 'services');
@@ -78,10 +81,16 @@ if (!function_exists('tl_product_acceptance_report')) {
             'tests/onboarding-guided-empty-states-contract-test.php',
             'tests/mobile-accessibility-completion-contract-test.php',
             'tests/end-to-end-acceptance-deployment-contract-test.php',
+            'tests/production-deployment-live-acceptance-contract-test.php',
             'scripts/end-to-end-acceptance-deployment-quality-audit.php',
+            'scripts/production-deployment-live-acceptance-quality-audit.php',
+            'docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md',
             'run-quality-gate.sh',
             'run-full-syntax-check.sh',
             'bin/product-acceptance.php',
+            'bin/build-release-package.php',
+            'bin/verify-release-package.php',
+            'bin/live-acceptance.php',
         ];
         foreach ($acceptanceFiles as $file) {
             $checks[] = tl_acceptance_check('acceptance_' . md5($file), 'Acceptance asset', tl_acceptance_file($file), $file, 'acceptance');
