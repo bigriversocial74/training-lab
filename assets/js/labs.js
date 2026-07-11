@@ -14,7 +14,7 @@
   document.querySelectorAll('[data-labs-toggle]').forEach((toggle)=>toggle.addEventListener('click',()=>{const selector=toggle.getAttribute('data-labs-toggle');const target=selector?document.querySelector(selector):null;if(!target)return;const open=target.classList.toggle('is-open');toggle.setAttribute('aria-expanded',String(open));}));
   const closeMenu=setupDrawer({openButton:document.querySelector('[data-labs-menu-open]'),drawer:document.querySelector('#labs-primary-nav'),openClass:'labs-nav-open',closeSelector:'[data-labs-menu-close]',label:'Main menu'});
   const closeWorkspace=setupDrawer({openButton:document.querySelector('[data-labs-workspace-open]'),drawer:document.querySelector('#labs-workspace-nav'),openClass:'labs-workspace-open',closeSelector:'[data-labs-workspace-close]',label:'Training menu'});
-  document.addEventListener('keydown',(event)=>{if(event.key==='Escape'){closeMenu();closeWorkspace();}});
+  document.addEventListener('keydown',(event)=>{if(event.key === 'Escape'){closeMenu();closeWorkspace();}});
   const errorSummary=document.querySelector('[data-labs-error-summary]');if(errorSummary)requestAnimationFrame(()=>errorSummary.focus());
   document.querySelectorAll('[role="status"],[role="alert"]').forEach((node)=>{if(!node.hasAttribute('aria-live'))node.setAttribute('aria-live',node.getAttribute('role')==='alert'?'assertive':'polite');});
 })();
