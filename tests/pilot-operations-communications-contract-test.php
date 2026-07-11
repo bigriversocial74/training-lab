@@ -74,7 +74,7 @@ $assert(str_contains($worker, "'sync'") && str_contains($worker, "'process'") &&
 
 $assert(str_contains($config, "'notification_delivery_enabled' => false"), 'Delivery must default to disabled.');
 $assert(str_contains($config, "'notification_worker_enabled' => false"), 'Worker must default to disabled.');
-$assert(str_contains($config, "'notification_provider' => 'adapter'"), 'Provider must default to adapter mode.');
+$assert(str_contains($config, "'notification_provider' => 'resend'"), 'The concrete provider must remain behind the existing adapter contract.');
 $assert(str_contains($config, "'notification_unsubscribe_secret'"), 'Config example must document the unsubscribe secret without providing it.');
 $assert(str_contains($docs, 'database/pilot_operations_communications_v1.sql'), 'Deployment guide must name the migration.');
 $assert(str_contains($docs, 'training_lab_send_notification_email'), 'Deployment guide must document the adapter contract.');

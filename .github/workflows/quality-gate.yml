@@ -30,7 +30,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-          extensions: mbstring, pdo, pdo_mysql, zip
+          extensions: mbstring, pdo, pdo_mysql, zip, curl
 
       - name: Recursive PHP syntax
         run: bash ./run-full-syntax-check.sh
@@ -122,6 +122,29 @@ jobs:
 
       - name: Pilot operations and communications scored audit
         run: php ./scripts/pilot-operations-communications-quality-audit.php
+
+      - name: Email provider and controlled delivery contract
+        id: email_provider_contract
+        continue-on-error: true
+        run: php ./tests/email-provider-controlled-delivery-contract-test.php > email-provider-contract.log 2>&1
+
+      - name: Upload email provider contract output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: email-provider-contract-php-${{ matrix.php }}
+          path: email-provider-contract.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce email provider contract result
+        if: steps.email_provider_contract.outcome == 'failure'
+        run: |
+          cat email-provider-contract.log
+          exit 1
+
+      - name: Email provider and controlled delivery scored audit
+        run: php ./scripts/email-provider-controlled-delivery-quality-audit.php
 
       - name: Build and verify release package
         id: release_package

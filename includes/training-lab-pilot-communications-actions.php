@@ -1,5 +1,6 @@
 <?php
 /** Protected operational actions for Pilot Operations + Communications. */
+require_once __DIR__ . '/training-lab-resend-email-provider.php';
 require_once __DIR__ . '/training-lab-pilot-communications.php';
 
 if (!function_exists('tl_notifications_owned_outbox')) {
