@@ -44,11 +44,15 @@ $requires($builder, "'package_root' => 'labs'", 'Release package must use the ou
 $requires($builder, "'config.php', 'labs/config.php'", 'Release builder must exclude private configs.');
 $requires($builder, "'.env', '.env.local'", 'Release builder must exclude environment files.');
 $requires($builder, '$file->isLink()', 'Release builder must exclude symbolic links.');
+$requires($builder, "preg_match('#\\.(?:zip|tar|tgz|gz|bz2|7z)$#i'", 'Release builder must exclude nested archive artifacts.');
+$requires($builder, "'excluded_archive_artifacts'", 'Release manifest must declare archive exclusions.');
 $requires($builder, "hash_file('sha256'", 'Release builder must hash packaged files.');
 $requires($builder, "'preserve_active_labs_config_php' => true", 'Manifest must preserve active config.');
 $requires($builder, "'does_not_enable_reward_delivery' => true", 'Manifest must preserve delivery gates.');
 $requires($verifier, "preg_match('#(^|/)\\.\\.(/|$)#'", 'Verifier must reject path traversal.');
 $requires($verifier, 'Private configuration must not be packaged', 'Verifier must reject private config.');
+$requires($verifier, 'Nested archive artifact must not be packaged', 'Verifier must reject nested archive artifacts.');
+$requires($verifier, "'excluded_archive_artifacts'", 'Verifier must require the archive-exclusion declaration.');
 $requires($verifier, "hash_equals(\$expectedHash, hash('sha256', \$contents))", 'Verifier must validate every manifest hash.');
 $requires($verifier, "'labs/release-manifest.json'", 'Verifier must require the release manifest.');
 
@@ -77,6 +81,7 @@ $requires($imports, "@import url('production-readiness.css')", 'Production readi
 $requires($docs, 'Back up the current Training Lab application files.', 'Deployment guide must require file backups.');
 $requires($docs, 'Back up the `ywzyeite_microlabs` database.', 'Deployment guide must require database backups.');
 $requires($docs, 'Do **not** overwrite the existing `/labs/config.php`.', 'Deployment guide must preserve private config.');
+$requires($docs, 'existing ZIP, TAR, GZ, and 7z archive artifacts', 'Deployment guide must document nested archive exclusions.');
 $requires($docs, 'php ./bin/verify-release-package.php', 'Deployment guide must require package verification.');
 $requires($docs, 'php ./bin/live-acceptance.php --require-role-sessions', 'Deployment guide must require role smoke tests.');
 $requires($docs, 'Cookie values are used only as request headers and are never printed', 'Deployment guide must protect session cookies.');
