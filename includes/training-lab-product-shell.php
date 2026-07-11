@@ -189,6 +189,7 @@ if (!function_exists('tl_product_admin_nav')) {
 
         if ($role === 'admin') {
             $groups['System'] = [
+                'admin-product-acceptance' => ['/admin/product-acceptance.php', 'Product Acceptance'],
                 'admin-reward-operations' => ['/admin/reward-operations.php', 'Advanced Rewards'],
                 'admin-permissions' => ['/admin/permissions.php', 'Access'],
                 'admin-backend-readiness' => ['/admin/backend-readiness.php', 'System Health'],
