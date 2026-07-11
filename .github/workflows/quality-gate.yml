@@ -65,7 +65,24 @@ jobs:
         run: php ./scripts/campaign-discovery-detail-enrollment-quality-audit.php
 
       - name: Task detail status and proof revisions contract
-        run: php ./tests/task-detail-status-proof-revisions-contract-test.php
+        id: task_contract
+        continue-on-error: true
+        run: php ./tests/task-detail-status-proof-revisions-contract-test.php > task-contract.log 2>&1
+
+      - name: Upload task contract output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: task-contract-php-${{ matrix.php }}
+          path: task-contract.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce task contract result
+        if: steps.task_contract.outcome == 'failure'
+        run: |
+          cat task-contract.log
+          exit 1
 
       - name: Task detail status and proof revisions scored audit
         run: php ./scripts/task-detail-status-proof-revisions-quality-audit.php
