@@ -101,7 +101,24 @@ jobs:
         run: php ./scripts/production-deployment-live-acceptance-quality-audit.php
 
       - name: Pilot operations and communications contract
-        run: php ./tests/pilot-operations-communications-contract-test.php
+        id: pilot_communications_contract
+        continue-on-error: true
+        run: php ./tests/pilot-operations-communications-contract-test.php > pilot-communications-contract.log 2>&1
+
+      - name: Upload pilot communications contract output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pilot-communications-contract-php-${{ matrix.php }}
+          path: pilot-communications-contract.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce pilot communications contract result
+        if: steps.pilot_communications_contract.outcome == 'failure'
+        run: |
+          cat pilot-communications-contract.log
+          exit 1
 
       - name: Pilot operations and communications scored audit
         run: php ./scripts/pilot-operations-communications-quality-audit.php
@@ -115,7 +132,7 @@ jobs:
           php ./bin/verify-release-package.php --file=./dist/ci-training-lab.zip 2>&1 | tee -a release-package.log
 
       - name: Upload release package diagnostics
-        if: always()
+        if: steps.release_package.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: release-package-php-${{ matrix.php }}
