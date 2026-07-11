@@ -30,9 +30,10 @@ The builder excludes:
 - `/labs/config.php`;
 - `.env` files;
 - `.git`, GitHub workflow, generated package, private runtime, and storage folders;
-- symbolic links.
+- symbolic links;
+- existing ZIP, TAR, GZ, and 7z archive artifacts.
 
-The active private configuration is never included or replaced.
+The active private configuration is never included or replaced. Excluding previous archives prevents old deployments, backups, or release packages from being embedded inside the new production package.
 
 ## 3. Verify the package
 
@@ -44,6 +45,7 @@ Verification fails when:
 
 - an entry escapes the outer `labs/` folder;
 - a private config or `.env` file is present;
+- a nested ZIP, TAR, GZ, or 7z archive artifact is present;
 - a required application route or release tool is missing;
 - the manifest is invalid;
 - a packaged file does not match its SHA-256 hash;
