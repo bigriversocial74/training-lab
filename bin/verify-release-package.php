@@ -34,6 +34,9 @@ for ($index = 0; $index < $zip->numFiles; $index++) {
     if (preg_match('#(^|/)(?:\.env(?:\..*)?|config\.php)$#i', (string)$relative)) {
         $failures[] = 'Private configuration must not be packaged: ' . $name;
     }
+    if ($name !== 'labs/release-manifest.json' && preg_match('#\.(?:zip|tar|tgz|gz|bz2|7z)$#i', (string)$relative)) {
+        $failures[] = 'Nested archive artifact must not be packaged: ' . $name;
+    }
 }
 
 $manifestPath = 'labs/release-manifest.json';
@@ -61,6 +64,9 @@ if (empty($manifest['deployment_contract']['preserve_active_labs_config_php'])) 
 }
 if (empty($manifest['deployment_contract']['does_not_enable_reward_delivery'])) {
     $failures[] = 'Manifest must preserve reward-delivery gates.';
+}
+if (empty($manifest['excluded_archive_artifacts'])) {
+    $failures[] = 'Manifest must declare nested archive exclusions.';
 }
 
 $requiredEntries = [
@@ -101,3 +107,4 @@ echo "Release package verified.\n";
 echo 'Archive SHA-256: ' . hash_file('sha256', $file) . "\n";
 echo 'Manifest files: ' . count($manifestFiles) . "\n";
 echo "Private config excluded: yes\n";
+echo "Nested archives excluded: yes\n";
