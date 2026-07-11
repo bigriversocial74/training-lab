@@ -40,6 +40,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'pilot_reporting'=>'admin/pilot-reporting.php',
             'email_provider'=>'admin/email-provider.php',
             'email_webhooks'=>'admin/email-webhooks.php',
+            'email_pilot'=>'admin/email-pilot.php',
             'resend_webhook'=>'api/webhooks/resend.php',
             'notification_incidents'=>'admin/notification-incidents.php',
             'notification_preferences'=>'notification-preferences.php',
@@ -66,6 +67,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'pilot_communication_reporting'=>'includes/training-lab-pilot-communications-reporting.php',
             'resend_provider'=>'includes/training-lab-resend-email-provider.php',
             'resend_webhooks'=>'includes/training-lab-resend-webhooks.php',
+            'limited_email_pilot'=>'includes/training-lab-limited-email-pilot.php',
             'product_acceptance'=>'includes/training-lab-product-acceptance.php',
             'production_readiness'=>'includes/training-lab-production-readiness.php',
             'live_acceptance'=>'includes/training-lab-live-acceptance.php',
@@ -94,6 +96,10 @@ if (!function_exists('tl_product_acceptance_report')) {
             $present = $dbConnected && tl_table_exists($table);
             $checks[] = tl_acceptance_check('table_' . $table, 'Table: ' . $table, $present, $present ? 'Section 17 provider reconciliation table is present.' : 'Import database/notification_provider_webhooks_v1.sql.', 'database');
         }
+        foreach (['training_notification_pilot_runs','training_notification_pilot_members','training_notification_pilot_checks','training_notification_pilot_events'] as $table) {
+            $present = $dbConnected && tl_table_exists($table);
+            $checks[] = tl_acceptance_check('table_' . $table, 'Table: ' . $table, $present, $present ? 'Section 18 limited pilot table is present.' : 'Import database/limited_email_pilot_graduation_v1.sql.', 'database');
+        }
 
         $acceptanceFiles = [
             'tests/role-aware-shell-participant-home-contract-test.php',
@@ -107,17 +113,21 @@ if (!function_exists('tl_product_acceptance_report')) {
             'tests/pilot-operations-communications-contract-test.php',
             'tests/email-provider-controlled-delivery-contract-test.php',
             'tests/resend-webhooks-delivery-reconciliation-contract-test.php',
+            'tests/limited-live-email-pilot-graduation-contract-test.php',
             'scripts/end-to-end-acceptance-deployment-quality-audit.php',
             'scripts/production-deployment-live-acceptance-quality-audit.php',
             'scripts/pilot-operations-communications-quality-audit.php',
             'scripts/email-provider-controlled-delivery-quality-audit.php',
             'scripts/resend-webhooks-delivery-reconciliation-quality-audit.php',
+            'scripts/limited-live-email-pilot-graduation-quality-audit.php',
             'docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md',
             'docs/PILOT-OPERATIONS-COMMUNICATIONS-V1.md',
             'docs/EMAIL-PROVIDER-CONTROLLED-DELIVERY-V1.md',
             'docs/RESEND-WEBHOOKS-DELIVERY-RECONCILIATION-V1.md',
+            'docs/LIMITED-LIVE-EMAIL-PILOT-GRADUATION-V1.md',
             'database/pilot_operations_communications_v1.sql',
             'database/notification_provider_webhooks_v1.sql',
+            'database/limited_email_pilot_graduation_v1.sql',
             'run-quality-gate.sh',
             'run-full-syntax-check.sh',
             'bin/product-acceptance.php',
@@ -127,6 +137,8 @@ if (!function_exists('tl_product_acceptance_report')) {
             'bin/notification-worker.php',
             'bin/email-provider-check.php',
             'bin/webhook-reconciliation-check.php',
+            'bin/limited-email-pilot-check.php',
+            'bin/limited-email-pilot-worker.php',
         ];
         foreach ($acceptanceFiles as $file) {
             $checks[] = tl_acceptance_check('acceptance_' . md5($file), 'Acceptance asset', tl_acceptance_file($file), $file, 'acceptance');
@@ -138,6 +150,7 @@ if (!function_exists('tl_product_acceptance_report')) {
             'security'=>'includes/training-lab-security.php',
             'email_provider'=>'includes/training-lab-resend-email-provider.php',
             'email_webhooks'=>'includes/training-lab-resend-webhooks.php',
+            'limited_email_pilot'=>'includes/training-lab-limited-email-pilot.php',
             'signed_lookup'=>'includes/training-lab-stage894-signed-reward-lookup-client.php',
             'limited_scheduler'=>'includes/training-lab-stage899-limited-scheduled-processing.php',
         ];

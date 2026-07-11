@@ -169,6 +169,29 @@ jobs:
       - name: Resend webhooks and delivery reconciliation scored audit
         run: php ./scripts/resend-webhooks-delivery-reconciliation-quality-audit.php
 
+      - name: Limited live email pilot and graduation contract
+        id: limited_email_pilot_contract
+        continue-on-error: true
+        run: php ./tests/limited-live-email-pilot-graduation-contract-test.php > limited-email-pilot-contract.log 2>&1
+
+      - name: Upload limited email pilot contract output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: limited-email-pilot-contract-php-${{ matrix.php }}
+          path: limited-email-pilot-contract.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce limited email pilot contract result
+        if: steps.limited_email_pilot_contract.outcome == 'failure'
+        run: |
+          cat limited-email-pilot-contract.log
+          exit 1
+
+      - name: Limited live email pilot and graduation scored audit
+        run: php ./scripts/limited-live-email-pilot-graduation-quality-audit.php
+
       - name: Build and verify release package
         id: release_package
         continue-on-error: true
