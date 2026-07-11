@@ -30,7 +30,7 @@ labs_page_start($page);
   </article>
   <aside class="labs-product-next">
     <div><span>Provider readiness</span><h2><?php echo !empty($provider['configured']) ? 'Configured' : 'Blocked'; ?></h2><p><?php echo labs_e((string)$provider['provider_name']); ?> · campaign delivery <?php echo !empty($provider['can_process']) ? 'ready' : 'disabled'; ?></p></div>
-    <a class="labs-btn" href="<?php echo labs_url('/admin/notification-incidents.php'); ?>">Notification Incidents</a>
+    <a class="labs-btn" href="<?php echo labs_url('/admin/email-webhooks.php'); ?>">Email Webhooks</a>
   </aside>
 </section>
 <?php if (is_array($flash)): ?><div class="labs-alert is-<?php echo labs_e((string)($flash['tone'] ?? 'info')); ?>" role="status"><?php echo labs_e((string)($flash['message'] ?? '')); ?></div><?php endif; ?>
@@ -55,8 +55,13 @@ labs_page_start($page);
       <?php if (empty($provider['can_test'])): ?><p class="labs-help">Configure the provider, fixed test recipient, and test-delivery gate before this button becomes available.</p><?php endif; ?>
     </article>
     <article class="labs-product-card">
+      <span class="labs-product-kicker">Delivery reconciliation</span><h2>Provider acceptance is not final delivery.</h2>
+      <p>After the Section 17 migration and signed endpoint are enabled, use webhook monitoring to confirm sent, delivered, delayed, bounced, complained, failed, and suppressed outcomes.</p>
+      <a class="labs-btn" href="<?php echo labs_url('/admin/email-webhooks.php'); ?>">Open Webhook Monitoring</a>
+    </article>
+    <article class="labs-product-card">
       <span class="labs-product-kicker">Activation boundary</span><h2>Test success does not enable campaigns.</h2>
-      <p>Campaign email still requires the global delivery gate, worker gate, an active campaign pilot, campaign email enabled, recipient preferences, and suppression checks.</p>
+      <p>Campaign email still requires the global delivery gate, worker gate, an active campaign pilot, campaign email enabled, recipient preferences, suppression checks, and clean webhook acceptance.</p>
       <a class="labs-btn" href="<?php echo labs_url('/admin/pilot-communications.php'); ?>">Pilot Communications</a>
     </article>
   </aside>

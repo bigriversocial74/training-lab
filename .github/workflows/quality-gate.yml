@@ -146,6 +146,29 @@ jobs:
       - name: Email provider and controlled delivery scored audit
         run: php ./scripts/email-provider-controlled-delivery-quality-audit.php
 
+      - name: Resend webhooks and delivery reconciliation contract
+        id: resend_webhook_contract
+        continue-on-error: true
+        run: php ./tests/resend-webhooks-delivery-reconciliation-contract-test.php > resend-webhook-contract.log 2>&1
+
+      - name: Upload Resend webhook contract output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resend-webhook-contract-php-${{ matrix.php }}
+          path: resend-webhook-contract.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce Resend webhook contract result
+        if: steps.resend_webhook_contract.outcome == 'failure'
+        run: |
+          cat resend-webhook-contract.log
+          exit 1
+
+      - name: Resend webhooks and delivery reconciliation scored audit
+        run: php ./scripts/resend-webhooks-delivery-reconciliation-quality-audit.php
+
       - name: Build and verify release package
         id: release_package
         continue-on-error: true
