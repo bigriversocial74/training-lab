@@ -91,14 +91,17 @@ $assert(str_contains($pageSource, "'required_role'=>'admin'"), 'Provider diagnos
 $assert(!str_contains($pageSource, 'name="email"') && !str_contains($pageSource, 'name="recipient"'), 'Provider test form must not accept an arbitrary recipient.');
 $assert(str_contains($actionSource, "tl_security_guard_write('send_notification_provider_test'"), 'Provider test action must use the protected write guard.');
 $assert(str_contains($actionSource, "tl_product_role($user) !== 'admin'"), 'Provider test action must explicitly enforce administrator access.');
-$assert(str_contains($cliSource, "['test','json']") || str_contains($cliSource, "['test','json']"), 'Provider CLI must make live test delivery explicit.');
+$assert(str_contains($cliSource, "getopt('', ['test','json'])"), 'Provider CLI must make live test delivery explicit.');
 $assert(str_contains($configSource, "'notification_test_delivery_enabled' => false") && str_contains($configSource, "'notification_delivery_enabled' => false") && str_contains($configSource, "'notification_worker_enabled' => false"), 'All provider and campaign delivery gates must default to disabled.');
 $assert(str_contains($configSource, "'notification_provider' => 'resend'"), 'Configuration example must select the built-in Resend provider.');
 $assert(str_contains($configSource, "'resend_api_key' => 'DO_NOT_COMMIT_A_REAL_SECRET'"), 'Configuration example must document the API key without committing a live value.');
 $assert(str_contains($navSource, 'admin-email-provider'), 'Administrator navigation must expose provider diagnostics.');
 $assert(str_contains($acceptanceSource, 'training-lab-resend-email-provider.php') && str_contains($acceptanceSource, 'email-provider-controlled-delivery-contract-test.php'), 'Canonical product acceptance must include Section 16 assets.');
 $assert(str_contains($docsSource, 'No SQL required') && str_contains($docsSource, 'Rollback') && str_contains($docsSource, 'A successful administrator test does **not** enable campaign email'), 'Deployment documentation must cover SQL status, activation boundary, and rollback.');
-$assert(!str_contains($providerSource, 'microgifter_issue') && !str_contains($providerSource, 'wallet') || str_contains($providerSource, 'no_wallet_or_reward_mutation'), 'Provider must not create Microgifter reward or wallet authority.');
+foreach (['microgifter_issue_training_reward','microgifter_create_user_account','UPDATE wallets','INSERT INTO gifts','ALTER TABLE'] as $forbiddenAuthority) {
+    $assert(!str_contains($providerSource, $forbiddenAuthority), 'Provider must not contain authority operation: ' . $forbiddenAuthority . '.');
+}
+$assert(str_contains($providerSource, 'no_wallet_or_reward_mutation'), 'Provider payload must declare the existing no-wallet/no-reward-mutation boundary.');
 
 if ($failures) {
     fwrite(STDERR, "Email Provider + Controlled Delivery contract failed:\n- " . implode("\n- ", $failures) . "\n");
