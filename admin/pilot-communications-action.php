@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/training-lab-route-bootstrap.php';
 require_once __DIR__ . '/../includes/training-lab-pilot-communications-actions.php';
+require_once __DIR__ . '/../includes/training-lab-pilot-communications-sync.php';
 $destination = '/admin/pilot-communications.php';
 try {
     $raw = tl_security_request_data(false);
@@ -13,7 +14,7 @@ try {
     $user = tl_security_guard_write($action, $raw);
     $message = 'Communications action completed.';
     if ($action === 'sync_events') {
-        $result = tl_notifications_sync_events($user, (string)($raw['campaign_id'] ?? ''), max(1,(int)($raw['limit'] ?? 250)), !empty($raw['include_reminders']));
+        $result = tl_notifications_sync_events_scoped($user, (string)($raw['campaign_id'] ?? ''), max(1,(int)($raw['limit'] ?? 250)), !empty($raw['include_reminders']));
         $message = sprintf('Event synchronization completed: %d queued, %d blocked, %d suppressed, %d already present.', (int)$result['queued'], (int)$result['blocked'], (int)$result['suppressed'], (int)$result['duplicate']);
     } elseif ($action === 'save_pilot_control') {
         $result = tl_notifications_save_pilot_control($user, $raw);
