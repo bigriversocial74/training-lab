@@ -10,12 +10,13 @@ $monitor = $read('includes/training-lab-stage899-monitoring.php');
 $cli = $read('bin/reward-limited-scheduler.php');
 $admin = $read('admin/reward-limited-scheduler.php');
 $api = $read('api/training/reward-limited-scheduler.php');
+$advancedOperations = $read('admin/reward-operations.php');
 
 $checks = [
     'modular_stage899_services'=>$exists('includes/training-lab-stage899-limited-scheduled-processing.php') && $exists('includes/training-lab-stage899-config.php') && $exists('includes/training-lab-stage899-runner.php') && $exists('includes/training-lab-stage899-monitoring.php'),
     'disabled_by_default'=>str_contains($config, 'TL_STAGE899_LIMITED_SCHEDULER_ENABLED') && str_contains($read('config-example.php'), "'stage899_limited_scheduler_enabled' => false"),
     'cli_only_explicit_run'=>$exists('bin/reward-limited-scheduler.php') && str_contains($cli, "PHP_SAPI !== 'cli'") && str_contains($cli, '--run') && str_contains($runner, 'explicit_run_flag_required'),
-    'maximum_two_item_batch'=>str_contains($config, 'min(2') && str_contains($runner, 'count($items) >= (int)$config[\'max_batch_size\']'),
+    'maximum_two_item_batch'=>str_contains($config, 'min(2') && str_contains($runner, "count(\$items) >= (int)\$config['max_batch_size']"),
     'item_and_total_value_ceilings'=>str_contains($config, 'TL_STAGE899_MAX_ITEM_VALUE_CENTS') && str_contains($config, 'TL_STAGE899_MAX_TOTAL_VALUE_CENTS') && str_contains($runner, 'max_total_value_cents'),
     'reuses_stage896_controller'=>str_contains($runner, 'tl_stage896_run_pilot([') && str_contains($runner, "'confirmation_phrase'=>'ISSUE ONE PILOT'"),
     'canary_graduation_required'=>str_contains($config, 'stage898_worker_canary_completed') && str_contains($config, 'min_verified_canaries') && str_contains($runner, 'stage898_canaries_graduated'),
@@ -28,7 +29,7 @@ $checks = [
     'sanitized_evidence'=>str_contains($config, 'raw_recipient_secret_signature_nonce_payload_and_response_excluded') && str_contains($config, 'microgifter_user_fingerprint'),
     'no_web_execution'=>!str_contains($admin, 'tl_stage899_run(') && !str_contains($api, 'tl_stage899_run('),
     'protected_operator_surfaces'=>$exists('admin/reward-limited-scheduler.php') && $exists('api/training/reward-limited-scheduler.php') && str_contains($admin, 'tl_security_guard_write') && str_contains($api, 'tl_auth_role_allowed'),
-    'reward_bridge_entry'=>str_contains($read('admin/reward-bridge.php'), 'tl_stage899_render_reward_bridge_panel'),
+    'advanced_operations_entry'=>str_contains($advancedOperations, 'tl_stage899_render_reward_bridge_panel'),
     'config_examples_match'=>str_contains($read('config-example.php'), "'stage899_max_batch_size' => 2") && str_contains($read('labs/config-example.php'), "'stage899_min_verified_canaries' => 3"),
     'quality_gate_entries'=>str_contains($read('run-quality-gate.sh'), 'stage899-canary-graduation-limited-scheduled-processing-contract-test.php') && str_contains($read('.github/workflows/quality-gate.yml'), 'Stage 899 canary graduation limited scheduling contract'),
     'documentation_present'=>$exists('docs/STAGE-899-CANARY-GRADUATION-LIMITED-SCHEDULED-PROCESSING-V1.md'),
