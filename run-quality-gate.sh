@@ -47,6 +47,20 @@ php ./tests/end-to-end-acceptance-deployment-contract-test.php
 echo "== End-to-end acceptance and deployment scored audit =="
 php ./scripts/end-to-end-acceptance-deployment-quality-audit.php
 
+echo "== Production deployment and live acceptance contracts =="
+php ./tests/production-deployment-live-acceptance-contract-test.php
+
+echo "== Production deployment and live acceptance scored audit =="
+php ./scripts/production-deployment-live-acceptance-quality-audit.php
+
+echo "== Release package build and verification =="
+TL_PACKAGE_PATH="${TMPDIR:-/tmp}/training-lab-release-$$.zip"
+trap 'rm -f "$TL_PACKAGE_PATH"' EXIT
+php ./bin/build-release-package.php --release=quality-gate --output="$TL_PACKAGE_PATH"
+php ./bin/verify-release-package.php --file="$TL_PACKAGE_PATH"
+rm -f "$TL_PACKAGE_PATH"
+trap - EXIT
+
 echo "== Security runtime =="
 php ./tests/security-runtime-test.php
 
