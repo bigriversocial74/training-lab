@@ -76,6 +76,12 @@ jobs:
       - name: Reward rules analytics and operational health scored audit
         run: php ./scripts/reward-rules-analytics-operational-health-quality-audit.php
 
+      - name: Onboarding and guided empty states contract
+        run: php ./tests/onboarding-guided-empty-states-contract-test.php
+
+      - name: Onboarding and guided empty states scored audit
+        run: php ./scripts/onboarding-guided-empty-states-quality-audit.php
+
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
 

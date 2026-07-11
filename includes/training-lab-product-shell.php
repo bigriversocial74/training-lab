@@ -135,6 +135,7 @@ if (!function_exists('tl_product_app_nav')) {
                 'app-rewards' => ['/app/rewards.php', 'Rewards'],
             ],
             'Account' => [
+                'app-getting-started' => ['/app/getting-started.php', 'Getting Started'],
                 'app-resource-hub' => ['/app/resource-hub.php', 'Resources'],
                 'account' => ['/account.php', 'Account'],
             ],
@@ -161,6 +162,7 @@ if (!function_exists('tl_product_admin_nav')) {
                 ],
                 'My Training' => [
                     'app-dashboard' => ['/app/index.php', 'Participant Home'],
+                    'app-getting-started' => ['/app/getting-started.php', 'Getting Started'],
                     'account' => ['/account.php', 'Account'],
                 ],
             ];
@@ -169,6 +171,7 @@ if (!function_exists('tl_product_admin_nav')) {
         $groups = [
             'Training Operations' => [
                 'admin-overview' => ['/admin/index.php', 'Dashboard'],
+                'admin-getting-started' => ['/admin/getting-started.php', 'Getting Started'],
                 'admin-campaigns' => ['/admin/campaigns.php', 'Campaigns'],
                 'admin-cohort-manager' => ['/admin/cohort-manager.php', 'Participants'],
                 'admin-review-workbench' => ['/admin/review-workbench.php', 'Reviews'],
