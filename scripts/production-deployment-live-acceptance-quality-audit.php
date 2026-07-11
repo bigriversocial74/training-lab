@@ -26,11 +26,15 @@ $sections = [
         $has('bin/build-release-package.php', "'config.php', 'labs/config.php'"),
         $has('bin/build-release-package.php', "hash_file('sha256'"),
         $has('bin/build-release-package.php', '$file->isLink()'),
+        $has('bin/build-release-package.php', "preg_match('#\\.(?:zip|tar|tgz|gz|bz2|7z)$#i'"),
+        $has('bin/build-release-package.php', "'excluded_archive_artifacts'"),
     ],
     'Package verification' => [
         $exists('bin/verify-release-package.php'),
         $has('bin/verify-release-package.php', 'Unsafe archive path'),
         $has('bin/verify-release-package.php', 'Private configuration must not be packaged'),
+        $has('bin/verify-release-package.php', 'Nested archive artifact must not be packaged'),
+        $has('bin/verify-release-package.php', "'excluded_archive_artifacts'"),
         $has('bin/verify-release-package.php', "hash_equals(\$expectedHash, hash('sha256', \$contents))"),
     ],
     'HTTPS smoke tests' => [
@@ -63,6 +67,7 @@ $sections = [
     'Deployment and rollback' => [
         $has('docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md', 'Back up the current Training Lab application files.'),
         $has('docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md', 'Do **not** overwrite the existing `/labs/config.php`.'),
+        $has('docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md', 'existing ZIP, TAR, GZ, and 7z archive artifacts'),
         $has('docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md', 'Rollback'),
         $has('docs/PRODUCTION-DEPLOYMENT-LIVE-ACCEPTANCE-V1.md', 'No SQL is required for Section 14.'),
     ],
