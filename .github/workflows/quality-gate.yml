@@ -30,7 +30,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-          extensions: mbstring, pdo, pdo_mysql
+          extensions: mbstring, pdo, pdo_mysql, zip
 
       - name: Recursive PHP syntax
         run: bash ./run-full-syntax-check.sh
@@ -93,6 +93,17 @@ jobs:
 
       - name: End-to-end acceptance and deployment scored audit
         run: php ./scripts/end-to-end-acceptance-deployment-quality-audit.php
+
+      - name: Production deployment and live acceptance contract
+        run: php ./tests/production-deployment-live-acceptance-contract-test.php
+
+      - name: Production deployment and live acceptance scored audit
+        run: php ./scripts/production-deployment-live-acceptance-quality-audit.php
+
+      - name: Build and verify release package
+        run: |
+          php ./bin/build-release-package.php --release=${{ github.sha }} --output=./dist/ci-training-lab.zip
+          php ./bin/verify-release-package.php --file=./dist/ci-training-lab.zip
 
       - name: Security runtime contract
         run: php ./tests/security-runtime-test.php
