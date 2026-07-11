@@ -59,6 +59,12 @@ php ./tests/pilot-operations-communications-contract-test.php
 echo "== Pilot operations and communications scored audit =="
 php ./scripts/pilot-operations-communications-quality-audit.php
 
+echo "== Email provider and controlled delivery contracts =="
+php ./tests/email-provider-controlled-delivery-contract-test.php
+
+echo "== Email provider and controlled delivery scored audit =="
+php ./scripts/email-provider-controlled-delivery-quality-audit.php
+
 echo "== Release package build and verification =="
 TL_PACKAGE_PATH="${TMPDIR:-/tmp}/training-lab-release-$$.zip"
 trap 'rm -f "$TL_PACKAGE_PATH"' EXIT
